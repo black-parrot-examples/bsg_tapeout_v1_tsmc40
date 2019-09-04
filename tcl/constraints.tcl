@@ -49,34 +49,67 @@ set tag_clk_uncertainty_ps     20
 ## BP Tile Constraints
 ##
 
-if { ${DESIGN_NAME} == "bp_tile" } {
+if { ${DESIGN_NAME} == "bp_tile_node" } {
 
-  set clk_name           ${bp_clk_name}
-  set clk_period_ps      ${bp_clk_period_ps}
-  set clk_uncertainty_ps ${bp_clk_uncertainty_ps}
+  set core_clk_name           ${bp_clk_name}
+  set core_clk_period_ps      ${bp_clk_period_ps}
+  set core_clk_uncertainty_ps ${bp_clk_uncertainty_ps}
+
+  # TODO: tied to core clock at the moment
+  set coh_clk_name           ${bp_clk_name}
+  set coh_clk_period_ps      ${bp_clk_period_ps}
+  set coh_clk_uncertainty_ps ${bp_clk_uncertainty_ps}
+
+  set mem_clk_name           ${router_clk_name}
+  set mem_clk_period_ps      ${router_clk_period_ps}
+  set mem_clk_uncertainty_ps ${router_clk_uncertainty_ps}
 
   set input_delay_per  20.0
   set output_delay_per 20.0
 
-  set input_delay_ps  [expr ${clk_period_ps}*(${input_delay_per}/100.0)]
-  set output_delay_ps [expr ${clk_period_ps}*(${output_delay_per}/100.0)]
+  set core_input_delay_ps  [expr ${core_clk_period_ps}*(${input_delay_per}/100.0)]
+  set core_output_delay_ps [expr ${core_clk_period_ps}*(${output_delay_per}/100.0)]
+
+  set coh_input_delay_ps  [expr ${coh_clk_period_ps}*(${input_delay_per}/100.0)]
+  set coh_output_delay_ps [expr ${coh_clk_period_ps}*(${output_delay_per}/100.0)]
+
+  set mem_input_delay_ps  [expr ${mem_clk_period_ps}*(${input_delay_per}/100.0)]
+  set mem_output_delay_ps [expr ${mem_clk_period_ps}*(${output_delay_per}/100.0)]
 
   set driving_lib_cell "SC7P5T_INVX2_SSC14SL"
   set load_lib_pin     "SC7P5T_INVX8_SSC14SL/A"
 
   # Reg2Reg
-  create_clock -period ${clk_period_ps} -name ${clk_name} [get_ports clk_i]
-  set_clock_uncertainty ${clk_uncertainty_ps} [get_clocks ${clk_name}]
+  create_clock -period ${core_clk_period_ps} -name ${core_clk_name} [get_ports core_clk_i]
+  create_clock -period ${coh_clk_period_ps} -name ${coh_clk_name} [get_ports coh_clk_i]
+  create_clock -period ${mem_clk_period_ps} -name ${mem_clk_name} [get_ports mem_clk_i]
+  set_clock_uncertainty ${core_clk_uncertainty_ps} [get_clocks ${core_clk_name}]
+  set_clock_uncertainty ${coh_clk_uncertainty_ps} [get_clocks ${coh_clk_name}]
+  set_clock_uncertainty ${mem_clk_uncertainty_ps} [get_clocks ${mem_clk_name}]
 
   # In2Reg
-  set all_input_pins [remove_from_collection [all_inputs] [get_ports clk_i]]
-  set_driving_cell -no_design_rule -lib_cell ${driving_lib_cell} ${all_input_pins}
-  set_input_delay ${input_delay_ps} -clock ${clk_name} ${all_input_pins}
+  set coh_input_pins [filter_collection [all_inputs] "name=~coh*"]
+  set mem_input_pins [filter_collection [all_inputs] "name=~mem*"]
+  set core_input_pins [remove_from_collection [all_inputs] [concat $coh_input_pins $mem_input_pins]]
+
+  set coh_input_pins [filter_collection [$coh_input_pins] "name!~*clk*"]
+  set mem_input_pins [filter_collection [$mem_input_pins] "name!~*clk*"]
+  set core_input_pins [filter_collection [$core_input_pins] "name!~*clk*"]
+
+  set_driving_cell -no_design_rule -lib_cell ${driving_lib_cell} ${}
+  set_input_delay ${core_input_delay_ps} -clock ${core_clk_name} ${core_input_pins}
+  set_input_delay ${coh_input_delay_ps} -clock ${coh_clk_name} ${coh_input_pins}
+  set_input_delay ${mem_input_delay_ps} -clock ${mem_clk_name} ${mem_input_pins}
 
   # Reg2Out
-  set all_output_pins [all_outputs]
-  set_load [load_of [get_lib_pin */${load_lib_pin}]] ${all_output_pins}
-  set_output_delay ${output_delay_ps} -clock ${clk_name} ${all_output_pins}
+  set coh_output_pins [filter_collection [all_outputs] "name=~coh*"]
+  set mem_output_pins [filter_collection [all_outputs] "name=~mem*"]
+  set core_output_pins [remove_from_collection [all_outputs] [concat ${coh_output_pins} ${mem_output_pins}]]
+
+  set_load [load_of [get_lib_pin */${load_lib_pin}]] [all_outputs]
+  set_output_delay ${core_output_delay_ps} -clock ${core_clk_name} ${core_output_pins}
+  set_output_delay ${coh_output_delay_ps} -clock ${coh_clk_name} ${coh_output_pins}
+  set_output_delay ${mem_output_delay_ps} -clock ${mem_clk_name} ${mem_output_pins}
 
   #  Do not constrain unused regfile write-read same address behavior
   #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem0"] -filter "name=~CLKA"] \
@@ -87,7 +120,7 @@ if { ${DESIGN_NAME} == "bp_tile" } {
   #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem1"] -filter "name=~CLKB"]
   #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem1"] -filter "name=~CLKB"] \
   #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem1"] -filter "name=~CLKA"]
-  set_false_path -from [get_ports my_*]
+  set_false_path -from [get_ports *cord*]
 
   # Derate
   set cells_to_derate [list]

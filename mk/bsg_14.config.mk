@@ -61,13 +61,6 @@ export BSG_PADMAPPING :=default
 # PDK Setup Overrides
 #=======================================
 
-# Use CCS or NLDM models. If set to true, the flow will use the composite
-# current source (ccs) timing models rather than the nonlinear delay models
-# (nldm). QoR will be significantly worse when using nldm but TTR will be
-# improved. Never sign-off a chip using nldm models!!!
-
-export PDK_DB_USE_CCS :=true
-
 # Enable or disable pdk kits. Here we can turn on or turn off various kits that
 # we have in the PDK. This includes things like multi-vt cells, low power
 # cells, eco cells, level shifters, IO cells, generated IP, etc. Turning
@@ -108,3 +101,22 @@ export PDK_ENABLE_KIT_IV7P5_SLVT_SHIFT :=false
 export PDK_ENABLE_KIT_IV1P8V_GPIO :=true
 export PDK_ENABLE_KIT_MEMGEN      :=true
 export PDK_ENABLE_KIT_CDMM        := true
+
+# Multi-VT Kits
+export PDK_ENABLE_RVT_LIB  :=true
+export PDK_ENABLE_HVT_LIB  :=false
+export PDK_ENABLE_LVT_LIB  :=true
+export PDK_ENABLE_SLVT_LIB :=true
+
+# Standard cell kits
+export PDK_ENABLE_LPK_LIB   :=false
+export PDK_ENABLE_HPK_LIB   :=true
+export PDK_ENABLE_ECO_LIB   :=false
+export PDK_ENABLE_SHIFT_LIB :=false
+
+# Other kits
+export PDK_ENABLE_GPIO_LIB   :=true
+export PDK_ENABLE_MEMGEN_LIB :=true
+
+#export BSG_POWER_INTENT := mv_standard_pll
+export BSG_POWER_INTENT := sv_standard

@@ -2,6 +2,8 @@
 ## Create Bounds
 ################################################################################
 
+current_design ${DESIGN_NAME}
+
 set prev_uplink_bound [create_bound -name "prev_uplink" -type soft -boundary {{237.0180 2014.3200} {307.1580 2763.1200}}]
 add_to_bound ${prev_uplink_bound} [get_cells -hier -filter "full_name=~prev/uplink/*"]
 
@@ -14,8 +16,8 @@ add_to_bound ${next_downlink_bound} [get_cells -hier -filter "full_name=~next/do
 set next_uplink_bound [create_bound -name "next_uplink" -type soft -boundary {{1959.9420 2697.3600} {2692.8420 2763.1200}}]
 add_to_bound ${next_uplink_bound} [get_cells -hier -filter "full_name=~next/uplink/*"]
 
-set core_height 2500
-set core_width 2500
+#set core_height 2500
+#set core_width 2500
 
 set master_tile "y_0__x_0__tile_node"
 set tile_llx [lindex [get_attribute [get_cell -hier $master_tile] boundary_bbox] 0 0]
@@ -57,6 +59,28 @@ set keepout_margins [list $keepout_margin_x $keepout_margin_y $keepout_margin_x 
 
 ## BP Tile bounds
 current_design bp_tile_node
+
+#set core_bound [create_bound -name "CORE" -type soft -boundary {{0.0000 0.0000} {575.0640 345.1200}}]
+#add_to_bound ${core_bound} [get_cells -hier -filter "full_name=~*core*"]
+#add_to_bound ${core_bound} [get_cells -hier -filter "full_name=~*rof3_*__lce_data_cmd_pkt_encode*"]
+#add_to_bound ${core_bound} [get_cells -hier -filter "full_name=~*rof3_*__data_cmd_adapter_in*"]
+#add_to_bound ${core_bound} [get_cells -hier -filter "full_name=~*rof3_*__data_cmd_adapter_out*"]
+#add_to_bound ${core_bound} [get_cells -hier -filter "full_name=~*rof3_*__lce_data_resp_pkt_encode*"]
+#add_to_bound ${core_bound} [get_cells -hier -filter "full_name=~*rof3_*__data_resp_adapter_in*"]
+#
+#set router_0_bound [create_bound -name "RTR0" -type soft -boundary {{0.0000 345.1200} {291.2950 575.0400}}]
+#add_to_bound ${router_0_bound} [get_cells -hier -filter "full_name=~rof3_0__req_router"]
+#add_to_bound ${router_0_bound} [get_cells -hier -filter "full_name=~rof3_0__resp_router"]
+#add_to_bound ${router_0_bound} [get_cells -hier -filter "full_name=~rof3_0__cmd_router"]
+#add_to_bound ${router_0_bound} [get_cells -hier -filter "full_name=~rof3_0__data_cmd_router"]
+#add_to_bound ${router_0_bound} [get_cells -hier -filter "full_name=~rof3_0__data_resp_router"]
+#
+#set router_1_bound [create_bound -name "RTR1" -type soft -boundary {{291.2950 345.1200} {575.0640 575.0400}}]
+#add_to_bound ${router_1_bound} [get_cells -hier -filter "full_name=~rof3_1__req_router"]
+#add_to_bound ${router_1_bound} [get_cells -hier -filter "full_name=~rof3_1__resp_router"]
+#add_to_bound ${router_1_bound} [get_cells -hier -filter "full_name=~rof3_1__cmd_router"]
+#add_to_bound ${router_1_bound} [get_cells -hier -filter "full_name=~rof3_1__data_cmd_router"]
+#add_to_bound ${router_1_bound} [get_cells -hier -filter "full_name=~rof3_1__data_resp_router"]
 
 #####################################
 ### I CACHE DATA
@@ -209,7 +233,7 @@ set_macro_relative_location \
   -target_corner tl \
   -target_orientation R0 \
   -anchor_corner tl \
-  -offset [list [expr $tile_width/2 - 2*$directory_mem_width] -150.0]
+  -offset [list [expr $tile_width/2 - 2*$directory_mem_width] 0]
 
 create_keepout_margin -type hard -outer $keepout_margins $directory_mems
 
@@ -222,11 +246,11 @@ set cce_instr_width [get_attribute -objects $cce_instr_ram -name width]
 set cce_instr_height [get_attribute -objects $cce_instr_ram -name height]
 set_macro_relative_location \
   -target_object $cce_instr_ram \
-  -target_corner tl \
-  -target_orientation MY \
+  -target_corner tr \
+  -target_orientation R0 \
   -anchor_object $directory_ma \
-  -anchor_corner bl \
-  -offset [list $keepout_margin_x [expr -$keepout_margin_y -15.0]]
+  -anchor_corner tl \
+  -offset [list -$keepout_margin_x -$keepout_margin_y]
 
 create_keepout_margin -type hard -outer $keepout_margins $cce_instr_ram
 
@@ -248,23 +272,24 @@ create_keepout_margin -type hard -outer $keepout_margins $cce_instr_ram
 ### INT RF
 ###
 
-#set int_regfile_mems [get_cells -design bp_tile_node -hier -filter "ref_name=~gf14_* && full_name=~*/int_regfile/*"]
-#set int_regfile_ma [create_macro_array \
-#  -num_rows 2 \
-#  -num_cols 1 \
-#  -align left \
-#  -horizontal_channel_height [expr 2*$keepout_margin_y] \
-#  -vertical_channel_width [expr 2*$keepout_margin_x] \
-#  -orientation FN \
-#  $int_regfile_mems]
-#
-#set_macro_relative_location \
-#  -target_object $int_regfile_ma \
-#  -target_corner bl \
-#  -target_orientation R0 \
-#  -anchor_corner bl \
-#  -offset [list [expr $tile_width/2] 0]
-#
-#create_keepout_margin -type hard -outer $keepout_margins $int_regfile_mems
+set int_regfile_mems [get_cells -design bp_tile_node -hier -filter "ref_name=~gf14_* && full_name=~*/int_regfile/*"]
+set int_regfile_ma [create_macro_array \
+  -num_rows 1 \
+  -num_cols 2 \
+  -align left \
+  -horizontal_channel_height [expr 2*$keepout_margin_y] \
+  -vertical_channel_width [expr 2*$keepout_margin_x] \
+  -orientation FN \
+  $int_regfile_mems]
+
+set_macro_relative_location \
+  -target_object $int_regfile_ma \
+  -target_corner tl \
+  -target_orientation R0 \
+  -anchor_object $directory_ma \
+  -anchor_corner tr \
+  -offset [list 0 0]
+
+create_keepout_margin -type hard -outer $keepout_margins $int_regfile_mems
 
 current_design bsg_chip

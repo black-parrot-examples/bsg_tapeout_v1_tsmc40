@@ -80,8 +80,9 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
   set load_lib_pin     "SC7P5T_INVX8_SSC14SL/A"
 
   # Reg2Reg
-  create_clock -period ${core_clk_period_ps} -name ${core_clk_name} [get_ports core_clk_i]
-  create_clock -period ${coh_clk_period_ps} -name ${coh_clk_name} [get_ports coh_clk_i]
+  #create_clock -period ${core_clk_period_ps} -name ${core_clk_name} [get_ports core_clk_i]
+  #create_clock -period ${coh_clk_period_ps} -name ${coh_clk_name} [get_ports coh_clk_i]
+  create_clock -period ${core_clk_period_ps} -name ${core_clk_name} [get_ports "core_clk_i coh_clk_i"]
   create_clock -period ${mem_clk_period_ps} -name ${mem_clk_name} [get_ports mem_clk_i]
   set_clock_uncertainty ${core_clk_uncertainty_ps} [get_clocks ${core_clk_name}]
   set_clock_uncertainty ${coh_clk_uncertainty_ps} [get_clocks ${coh_clk_name}]
@@ -92,14 +93,14 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
   set mem_input_pins [filter_collection [all_inputs] "name=~mem*"]
   set core_input_pins [remove_from_collection [all_inputs] [concat $coh_input_pins $mem_input_pins]]
 
-  set coh_input_pins [filter_collection [$coh_input_pins] "name!~*clk*"]
-  set mem_input_pins [filter_collection [$mem_input_pins] "name!~*clk*"]
-  set core_input_pins [filter_collection [$core_input_pins] "name!~*clk*"]
+  set coh_input_pins [filter_collection $coh_input_pins "name!~*clk*"]
+  set mem_input_pins [filter_collection $mem_input_pins "name!~*clk*"]
+  set core_input_pins [filter_collection $core_input_pins "name!~*clk*"]
 
-  set_driving_cell -no_design_rule -lib_cell ${driving_lib_cell} ${}
-  set_input_delay ${core_input_delay_ps} -clock ${core_clk_name} ${core_input_pins}
-  set_input_delay ${coh_input_delay_ps} -clock ${coh_clk_name} ${coh_input_pins}
-  set_input_delay ${mem_input_delay_ps} -clock ${mem_clk_name} ${mem_input_pins}
+  set_driving_cell -no_design_rule -lib_cell ${driving_lib_cell} [remove_from_collection [all_inputs] [get_ports *clk*]]
+  if { [sizeof $core_input_pins] > 0 } { set_input_delay ${core_input_delay_ps} -clock ${core_clk_name} ${core_input_pins} }
+  if { [sizeof $coh_input_pins] > 0 }  { set_input_delay ${coh_input_delay_ps} -clock ${coh_clk_name} ${coh_input_pins} }
+  if { [sizeof $mem_input_pins] > 0 }  { set_input_delay ${mem_input_delay_ps} -clock ${mem_clk_name} ${mem_input_pins} }
 
   # Reg2Out
   set coh_output_pins [filter_collection [all_outputs] "name=~coh*"]
@@ -107,9 +108,9 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
   set core_output_pins [remove_from_collection [all_outputs] [concat ${coh_output_pins} ${mem_output_pins}]]
 
   set_load [load_of [get_lib_pin */${load_lib_pin}]] [all_outputs]
-  set_output_delay ${core_output_delay_ps} -clock ${core_clk_name} ${core_output_pins}
-  set_output_delay ${coh_output_delay_ps} -clock ${coh_clk_name} ${coh_output_pins}
-  set_output_delay ${mem_output_delay_ps} -clock ${mem_clk_name} ${mem_output_pins}
+  if { [sizeof $core_output_pins] > 0 } { set_output_delay ${core_output_delay_ps} -clock ${core_clk_name} ${core_output_pins} }
+  if { [sizeof $coh_output_pins] > 0 }  { set_output_delay ${coh_output_delay_ps} -clock ${coh_clk_name} ${coh_output_pins} }
+  if { [sizeof $mem_output_pins] > 0 }  { set_output_delay ${mem_output_delay_ps} -clock ${mem_clk_name} ${mem_output_pins} }
 
   #  Do not constrain unused regfile write-read same address behavior
   #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem0"] -filter "name=~CLKA"] \
@@ -135,6 +136,28 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
     }
   }
   #report_timing_derate
+
+  # CDC Paths
+  #=================
+  update_timing
+  set clocks [all_clocks]
+  foreach_in_collection launch_clk $clocks {
+    if { [get_attribute $launch_clk is_generated] } {
+      set launch_group [get_generated_clocks -filter "master_clock_name==[get_attribute $launch_clk master_clock_name]"]
+      append_to_collection launch_group [get_attribute $launch_clk master_clock]
+    } else {
+      set launch_group [get_generated_clocks -filter "master_clock_name==[get_attribute $launch_clk name]"]
+      append_to_collection launch_group $launch_clk
+    }
+    foreach_in_collection latch_clk [remove_from_collection $clocks $launch_group] {
+      set launch_period [get_attribute $launch_clk period]
+      set latch_period [get_attribute $latch_clk period]
+      set max_delay_ps [expr min($launch_period,$latch_period)/2]
+      set_max_delay $max_delay_ps -from $launch_clk -to $latch_clk -ignore_clock_latency
+      set_min_delay 0             -from $launch_clk -to $latch_clk -ignore_clock_latency
+    }
+  }
+
 
 
 ########################################

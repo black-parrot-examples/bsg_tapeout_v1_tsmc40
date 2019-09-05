@@ -11,6 +11,7 @@ source -echo -verbose $::env(BSG_DESIGNS_DIR)/toplevels/common/bsg_clk_gen.const
 set router_clk_name    "router_clk"     ;# core clock (everything that isn't a part of another clock is on this domain)
 set io_master_clk_name "io_master_clk"  ;# 2x clock for DDR IO paths (1x clock generated from this clock)
 set bp_clk_name        "bp_clk"         ;# main clock running block parrot
+set coh_clk_name       "coh_clk"        ;# clock running coherence network
 set tag_clk_name       "tag_clk"
 
 set router_clk_period_ps       1666.0 ;# 600 MHz
@@ -30,6 +31,11 @@ set bp_clk_period_ps       1200
 set bp_clk_uncertainty_per 3.0
 #set bp_clk_uncertainty_ps  [expr min([expr ${bp_clk_period_ps}*(${bp_clk_uncertainty_per}/100.0)], 50)]
 set bp_clk_uncertainty_ps 20
+
+set coh_clk_period_ps       1200
+set coh_clk_uncertainty_per 3.0
+#set coh_clk_uncertainty_ps  [expr min([expr ${coh_clk_period_ps}*(${coh_clk_uncertainty_per}/100.0)], 50)]
+set coh_clk_uncertainty_ps 20
 
 set oscillator_period_ps       250.0 ;# Raw oscillator frequency
 set oscillator_uncertainty_per 3.0
@@ -56,9 +62,9 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
   set core_clk_uncertainty_ps ${bp_clk_uncertainty_ps}
 
   # TODO: tied to core clock at the moment
-  set coh_clk_name           ${bp_clk_name}
-  set coh_clk_period_ps      ${bp_clk_period_ps}
-  set coh_clk_uncertainty_ps ${bp_clk_uncertainty_ps}
+  set coh_clk_name           ${coh_clk_name}
+  set coh_clk_period_ps      ${coh_clk_period_ps}
+  set coh_clk_uncertainty_ps ${coh_clk_uncertainty_ps}
 
   set mem_clk_name           ${router_clk_name}
   set mem_clk_period_ps      ${router_clk_period_ps}
@@ -85,7 +91,7 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
   create_clock -period ${core_clk_period_ps} -name ${core_clk_name} [get_ports "core_clk_i coh_clk_i"]
   create_clock -period ${mem_clk_period_ps} -name ${mem_clk_name} [get_ports mem_clk_i]
   set_clock_uncertainty ${core_clk_uncertainty_ps} [get_clocks ${core_clk_name}]
-  set_clock_uncertainty ${coh_clk_uncertainty_ps} [get_clocks ${coh_clk_name}]
+  #set_clock_uncertainty ${coh_clk_uncertainty_ps} [get_clocks ${coh_clk_name}]
   set_clock_uncertainty ${mem_clk_uncertainty_ps} [get_clocks ${mem_clk_name}]
 
   # In2Reg
@@ -99,7 +105,8 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
 
   set_driving_cell -no_design_rule -lib_cell ${driving_lib_cell} [remove_from_collection [all_inputs] [get_ports *clk*]]
   if { [sizeof $core_input_pins] > 0 } { set_input_delay ${core_input_delay_ps} -clock ${core_clk_name} ${core_input_pins} }
-  if { [sizeof $coh_input_pins] > 0 }  { set_input_delay ${coh_input_delay_ps} -clock ${coh_clk_name} ${coh_input_pins} }
+  #if { [sizeof $coh_input_pins] > 0 }  { set_input_delay ${coh_input_delay_ps} -clock ${coh_clk_name} ${coh_input_pins} }
+  if { [sizeof $coh_input_pins] > 0 }  { set_input_delay ${core_input_delay_ps} -clock ${core_clk_name} ${coh_input_pins} }
   if { [sizeof $mem_input_pins] > 0 }  { set_input_delay ${mem_input_delay_ps} -clock ${mem_clk_name} ${mem_input_pins} }
 
   # Reg2Out
@@ -109,18 +116,15 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
 
   set_load [load_of [get_lib_pin */${load_lib_pin}]] [all_outputs]
   if { [sizeof $core_output_pins] > 0 } { set_output_delay ${core_output_delay_ps} -clock ${core_clk_name} ${core_output_pins} }
-  if { [sizeof $coh_output_pins] > 0 }  { set_output_delay ${coh_output_delay_ps} -clock ${coh_clk_name} ${coh_output_pins} }
+  #if { [sizeof $coh_output_pins] > 0 }  { set_output_delay ${coh_output_delay_ps} -clock ${coh_clk_name} ${coh_output_pins} }
+  if { [sizeof $coh_output_pins] > 0 } { set_output_delay ${core_output_delay_ps} -clock ${core_clk_name} ${coh_output_pins} }
   if { [sizeof $mem_output_pins] > 0 }  { set_output_delay ${mem_output_delay_ps} -clock ${mem_clk_name} ${mem_output_pins} }
 
   #  Do not constrain unused regfile write-read same address behavior
-  #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem0"] -filter "name=~CLKA"] \
-  #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem0"] -filter "name=~CLKB"]
-  #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem0"] -filter "name=~CLKB"] \
-  #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem0"] -filter "name=~CLKA"]
-  #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem1"] -filter "name=~CLKA"] \
-  #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem1"] -filter "name=~CLKB"]
-  #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem1"] -filter "name=~CLKB"] \
-  #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*mem1"] -filter "name=~CLKA"]
+  #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*int_rf*"] -filter "name=~CLKA"] \
+  #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*int_rf*"] -filter "name=~CLKB"]
+  #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*int_rf*"] -filter "name=~CLKB"] \
+  #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*int_rf*"] -filter "name=~CLKA"]
   set_false_path -from [get_ports *cord*]
 
   # Derate

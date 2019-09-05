@@ -120,12 +120,9 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
   if { [sizeof $coh_output_pins] > 0 } { set_output_delay ${core_output_delay_ps} -clock ${core_clk_name} ${coh_output_pins} }
   if { [sizeof $mem_output_pins] > 0 }  { set_output_delay ${mem_output_delay_ps} -clock ${mem_clk_name} ${mem_output_pins} }
 
-  #  Do not constrain unused regfile write-read same address behavior
-  #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*int_rf*"] -filter "name=~CLKA"] \
-  #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*int_rf*"] -filter "name=~CLKB"]
-  #set_false_path -from [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*int_rf*"] -filter "name=~CLKB"] \
-  #               -to   [get_pins -of_objects [get_cells -hier -filter "ref_name=~gf14_*1r1w* && full_name=~*int_rf*"] -filter "name=~CLKA"]
-  foreach_in_collection cell [filter_collection [all_macro_cells] "full_name=~*rf*"] {
+  # This timing assertion for the RF is only valid in designs that do not do simultaneous read and write, or do not use the read value when it writes
+  # Check your ram generator to see what it permits
+  foreach_in_collection cell [filter_collection [all_macro_cells] "full_name=~*int_regfile*rf*"] {
     set_disable_timing $cell -from CLKA -to CLKB
     set_disable_timing $cell -from CLKB -to CLKA
   }

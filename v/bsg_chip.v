@@ -16,7 +16,7 @@ module bsg_chip
  import bp_common_aviary_pkg::*;
  import bsg_tag_pkg::*;
  import bsg_chip_pkg::*;
- #(localparam bp_cfg_e cfg_p = e_bp_dual_core_cfg `declare_bp_proc_params(cfg_p))
+ #(localparam bp_cfg_e cfg_p = e_bp_quad_core_cfg `declare_bp_proc_params(cfg_p))
 `include "bsg_pinout.v"
 `include "bsg_iopads.v"
 

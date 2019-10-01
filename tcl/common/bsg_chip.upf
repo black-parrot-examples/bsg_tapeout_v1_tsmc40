@@ -1,0 +1,35 @@
+create_supply_port vdd
+create_supply_port vdd_pll
+create_supply_port vss
+create_supply_port vddpst
+create_supply_port vsspst
+
+create_power_domain PD
+create_power_domain PD_PLL -elements {clk_gen_pd}
+
+create_supply_net VDD -domain PD
+create_supply_net VDD_PLL -domain PD_PLL
+create_supply_net VSS -domain PD
+create_supply_net VSS -domain PD_PLL -reuse
+create_supply_net VDDPST
+create_supply_net VSSPST
+
+connect_supply_net VDD -ports {vdd \
+bp_chip/cc/y_0__x_0__tile_node/vdd \
+bp_chip/cc/y_0__x_1__tile_node/vdd \
+bp_chip/cc/y_1__x_0__tile_node/vdd \
+bp_chip/cc/y_1__x_1__tile_node/vdd}
+
+connect_supply_net VDD_PLL -ports {vdd_pll}
+
+connect_supply_net VSS -ports {vss \
+bp_chip/cc/y_0__x_0__tile_node/vss \
+bp_chip/cc/y_0__x_1__tile_node/vss \
+bp_chip/cc/y_1__x_0__tile_node/vss \
+bp_chip/cc/y_1__x_1__tile_node/vss}
+
+connect_supply_net VDDPST -ports {vddpst}
+connect_supply_net VSSPST -ports {vsspst}
+
+set_domain_supply_net PD -primary_power_net VDD -primary_ground_net VSS
+set_domain_supply_net PD_PLL -primary_power_net VDD_PLL -primary_ground_net VSS

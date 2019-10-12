@@ -1,0 +1,10 @@
+
+# This line needs to be included
+# in order to generate the trace file from the
+# text format automatically in the chips/testing infrastructure 
+#
+
+GENERATE_ME_FILES=bsg_fsb_master_rom.v
+
+
+

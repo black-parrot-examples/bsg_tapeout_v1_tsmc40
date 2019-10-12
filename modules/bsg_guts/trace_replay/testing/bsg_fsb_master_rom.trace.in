@@ -1,0 +1,47 @@
+#######################################################################################################
+#
+#
+# trace (for bsg_fsb_node_trace_replay) deassert reset and assert enable on first port on ASIC fsb
+#
+#
+# format:   <4 bit op> <fsb packet>
+#   op = 0000: wait one cycle
+#   op = 0001: send
+#   op = 0010: receive & check
+#   op = 0011: done; disable but do not stop
+#
+# fsb packet (client)
+#
+# 4 bits   1 bit    75 bits
+# destid    0     bsg_fsb_pkt_client_data_t
+#
+# fsb packet (switch)
+# 4 bits  1 bit  7 bits              4 bits   64 bits
+# destid   1      bsg_fsb_opcode_s   srcid     data
+#
+# opcode (0000_001 = disable, 0000_010=enable, 0000_101=reset_enable, 0000_110=reset_disable)
+#
+
+# send  dest  s  reset   src   data
+#               disable
+0001____0000__1_0000110_0000__00000000_00000000_00000000_00000000__00000000_00000000_00000000_00000000
+
+# send  dest  s  enable        data
+#               0000010
+0001____0000__1_0000010_0000__00000000_00000000_00000000_00000000__00000000_00000000_00000000_00000000
+
+#                    7           6          5          4            3          2          1          0
+# LD    dst  s 432 10987654__32109876_54321098_76543210_98765432__10987654_32109876_54321098_76543210
+# load cycle counter with 256+128
+
+0110____0000__0_000_00000000__00000000_00000000_00000000_00000000__00000000_00000000_00000001_10000000
+
+#
+# decrement & wait on cycle counter
+#
+
+0101____0000__0_000_00000000__00000000_00000000_00000000_00000000__00000000_00000000_00000000_00000000
+
+# stop; return control to above.
+0011____0000__0_000_00000000__00000000_00000000_00000000_00000000__00000000_00000000_00000000_00000000
+

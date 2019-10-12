@@ -1,0 +1,74 @@
+mbt 8/4/2016
+
+bsg_frame is a generic template for ASICs that use the bjump.org infrastructure.
+The idea is that you can reuse these files unmodified to create a series
+of chips for which most of the I/O and clock gen related components are the same.
+
+Logically, your asic looks like this:
+
+        _________________________________________
+        |                       ___________
+        |                       |         |
+        |   bsg_frame           | clk gen |
+        |                       |_________|
+        |   __________________________________
+        |  |                                 |
+        |  | bsg_frame_core                  |
+        |  |   __________________            |
+        |  |  |                  |           |
+        |  |  |  bsg_frame_asic  |           |
+        |  |  |__________________|           |
+        |  |         /|\  |                  |
+        |  |          |   | bsg_fsb_in_s[i]  |
+        |  |          |   |  bsg_fsb_out_s[i]|
+        |  |   _______|__\|/______           |
+        |  |  |                  |           |
+        |  |  |  bsg_frame_io    |           |
+        |  |  |   ______________ |           |
+        |  |  |  |              ||           |
+        |  |  |  | bsg_comm_link||           |
+        |  |  |  |______________||           |
+        |  |  |_______|___/|\____|           |
+        |  |__________|____|_________________|
+        |             |    |
+        |           _\|/___|___
+        |          |   I/O Pads|
+        |          |___________|
+        |__________________________________________
+
+
+You customize the bsg_frame_asic file. Logically
+that module instantiates 1 or more "nodes",
+each of which has drops off of a pipelined
+front side bus network, bsg_fsb. This network
+is very lightweight, and flow controlled.
+
+The front side bus is connected to the comm_link,
+which handles off-chip communication at high speed.
+
+In a simple version of this, communication over bond wires
+or bumps through a package like UCSD BGA, over the UCSD basejump
+motherboard to a Gateway FPGA, that can run test code.
+(More advanced versions use the Gateway FPGA as a transceiver
+to forward data to an FMC connector, and then to a ML-605 board or Zedboard
+where your test code runs.)
+
+For testing, it is helpful to enivision that
+your chip is connected to the Gateway FPGA, which is a mirrored
+version of the above design, except that "bsg_frame_asic"
+is replaced with "bsg_frame_gateway", and that chip
+is responsible for synchronizing the communication channel of
+the ASIC and enabling fsb nodes inside the ASIC.
+
+Practically speaking, you will write test code inside bsg_frame_gateway that will
+send packets over fsb/comm link to your asic. We have
+provided a module, bsg_frame_trace_replay, which allows you
+to write an ASCII text file with a sequence of packets to
+transmit and expected reply packets.  This packet is compiled into
+a ROM that can be used to drive a synthesizeable test bench.
+
+In the bsg_frame_loopback toplevel, we show an example of bsg_frame_asic
+and bsg_frame_gateway implementations.
+
+
+

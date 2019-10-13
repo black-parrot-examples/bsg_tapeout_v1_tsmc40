@@ -16,7 +16,7 @@ module bsg_chip
  import bp_common_aviary_pkg::*;
  import bsg_tag_pkg::*;
  import bsg_chip_pkg::*;
- #(localparam bp_cfg_e cfg_p = e_bp_quad_core_cfg `declare_bp_proc_params(cfg_p))
+ #(localparam bp_params_e cfg_p = e_bp_quad_core_cfg `declare_bp_proc_params(cfg_p))
 `include "bsg_pinout.v"
 `include "bsg_iopads.v"
 
@@ -313,8 +313,8 @@ module bsg_chip
 
   bsg_ready_and_link_sif_s bp_next_cmd_link_li, bp_next_cmd_link_lo;
   bsg_ready_and_link_sif_s bp_next_resp_link_li, bp_next_resp_link_lo;
-  bp_chip #(.cfg_p(bp_cfg_gp))
-    bp_chip
+  bp_processor #(.bp_params_p(bp_cfg_gp))
+    bp_processor
       (.core_clk_i  ( bp_clk_lo )
       ,.core_reset_i( bp_tag_data_lo.reset )
 
@@ -327,7 +327,7 @@ module bsg_chip
 
       ,.mem_cord_i ( mem_router_cord_lo )
       ,.tile_cord_i( tile_router_cord_lo )
-      ,.mmio_cord_i( mem_router_cord_lo[mmio_x_pos_p] )
+      ,.clint_cord_i( mem_router_cord_lo[clint_x_pos_p] )
       ,.dram_cord_i( bp_tag_data_lo.cord )
       ,.host_cord_i( bp_tag_data_lo.cord )
 

@@ -18,7 +18,7 @@ basejump_stl_url     :=$(GITHUB)bespoke-silicon-group/basejump_stl
 basejump_stl_commit  :=tapeout_bp_rc2
 
 bsg_40_dir           :=$(THIS_DIR)/bsg_40
-bsg_40_url           :=$(GITHUB)hema0730/bsg_40
+bsg_40_url           :=$(GITHUB)bespoke-silicon-group/bsg_40
 bsg_40_commit        :=master
 
 bsg_cadenv_dir       :=$(THIS_DIR)/bsg_cadenv

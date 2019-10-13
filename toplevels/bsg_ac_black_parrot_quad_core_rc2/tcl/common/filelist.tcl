@@ -48,15 +48,14 @@ set SVERILOG_PACKAGE_FILES [join "
   $basejump_stl_dir/bsg_noc/bsg_wormhole_router_pkg.v
   $bp_common_dir/src/include/bp_common_pkg.vh
   $bp_common_dir/src/include/bp_common_aviary_pkg.vh
+  $bp_common_dir/src/include/bp_common_cfg_link_pkg.vh
+  $bp_common_dir/src/include/bp_common_rv64_pkg.vh
   $bp_fe_dir/src/include/bp_fe_icache_pkg.vh
-  $bp_fe_dir/src/include/bp_fe_itlb_pkg.vh
   $bp_fe_dir/src/include/bp_fe_pkg.vh
-  $bp_be_dir/src/include/bp_be_rv64_pkg.vh
   $bp_be_dir/src/include/bp_be_pkg.vh
   $bp_be_dir/src/include/bp_be_dcache/bp_be_dcache_pkg.vh
   $bp_me_dir/src/include/v/bp_cce_pkg.v
   $bp_me_dir/src/include/v/bp_me_pkg.vh
-  $bp_top_dir/src/include/bp_cfg_link_pkg.vh
   $bsg_designs_target_dir/v/bsg_chip_pkg.v
 "]
 
@@ -193,20 +192,18 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_be_dir/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache_lce_req.v
   $bp_be_dir/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache_wbuf.v
   $bp_be_dir/src/v/bp_be_mem/bp_be_dcache/bp_be_dcache_wbuf_queue.v
-  $bp_be_dir/src/v/bp_be_mem/bp_be_dtlb.v
-  $bp_be_dir/src/v/bp_be_mem/bp_be_dtlb_replacement.v
   $bp_be_dir/src/v/bp_be_mem/bp_be_mem_top.v
   $bp_be_dir/src/v/bp_be_mem/bp_be_ptw.v
   $bp_be_dir/src/v/bp_be_top.v
   $bp_common_dir/src/v/bp_addr_map.v
   $bp_common_dir/src/v/bsg_fifo_1r1w_fence.v
   $bp_common_dir/src/v/bsg_fifo_1r1w_rolly.v
+  $bp_common_dir/src/v/bp_tlb.v
+  $bp_common_dir/src/v/bp_tlb_replacement.v
   $bp_fe_dir/src/v/bp_fe_bht.v
   $bp_fe_dir/src/v/bp_fe_btb.v
   $bp_fe_dir/src/v/bp_fe_icache.v
   $bp_fe_dir/src/v/bp_fe_instr_scan.v
-  $bp_fe_dir/src/v/bp_fe_itlb.v
-  $bp_fe_dir/src/v/bp_fe_itlb_replacement.v
   $bp_fe_dir/src/v/bp_fe_lce.v
   $bp_fe_dir/src/v/bp_fe_lce_cmd.v
   $bp_fe_dir/src/v/bp_fe_lce_req.v
@@ -223,8 +220,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/cce/bp_cce_pc.v
   $bp_me_dir/src/v/cce/bp_cce_pending.v
   $bp_me_dir/src/v/cce/bp_cce_reg.v
-  $bp_me_dir/src/v/cce/bp_cce_top.v
-  $bp_me_dir/src/v/cce/bp_cce_uncached.v
+  $bp_me_dir/src/v/cce/bp_cce_msg_uncached.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_id_to_cord.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_wormhole_link_client.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_wormhole_link_master.v
@@ -234,12 +230,12 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_lce_resp.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_mem_cmd.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_mem_resp.v
-  $bp_top_dir/src/v/bp_chip.v
+  $bp_top_dir/src/v/bp_processor.v
   $bp_top_dir/src/v/bp_core.v
   $bp_top_dir/src/v/bp_core_complex.v
   $bp_top_dir/src/v/bp_mem_complex.v
-  $bp_top_dir/src/v/bp_mmio_enclave.v
-  $bp_top_dir/src/v/bp_mmio_node.v
+  $bp_top_dir/src/v/bp_clint.v
+  $bp_top_dir/src/v/bp_clint_node.v
   $bp_top_dir/src/v/bp_tile.v
   $bp_top_dir/src/v/bp_tile_node.v
   $bsg_designs_dir/modules/bsg_chip_io_complex/bsg_chip_io_complex.v

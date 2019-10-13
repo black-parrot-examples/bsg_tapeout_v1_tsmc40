@@ -17,11 +17,11 @@ export TOP_HIER_BLOCK  := bsg_chip
 export MID_HIER_BLOCKS :=
 export BOT_HIER_BLOCKS := bp_tile_node
 
-export BP_HIER_CELLS := bp_chip_cc_y_0__x_0__tile_node \
-                        bp_chip_cc_y_0__x_1__tile_node \
-                        bp_chip_cc_y_1__x_0__tile_node \
-                        bp_chip_cc_y_1__x_1__tile_node
+export BP_HIER_CELLS := bp_processor_cc_y_0__x_0__tile_node \
+                        bp_processor_cc_y_0__x_1__tile_node \
+                        bp_processor_cc_y_1__x_0__tile_node \
+                        bp_processor_cc_y_1__x_1__tile_node
 
 export HIERARCHICAL_CELLS := $(BP_HIER_CELLS)
 
-export MIM_MASTER_LIST := bp_chip_cc_y_0__x_0__tile_node
+export MIM_MASTER_LIST := bp_processor_cc_y_0__x_0__tile_node

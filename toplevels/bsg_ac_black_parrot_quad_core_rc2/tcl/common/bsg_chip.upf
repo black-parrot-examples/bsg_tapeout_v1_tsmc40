@@ -15,18 +15,18 @@ create_supply_net VDDPST
 create_supply_net VSSPST
 
 connect_supply_net VDD -ports {vdd \
-bp_chip/cc/y_0__x_0__tile_node/vdd \
-bp_chip/cc/y_0__x_1__tile_node/vdd \
-bp_chip/cc/y_1__x_0__tile_node/vdd \
-bp_chip/cc/y_1__x_1__tile_node/vdd}
+bp_processor/cc/y_0__x_0__tile_node/vdd \
+bp_processor/cc/y_0__x_1__tile_node/vdd \
+bp_processor/cc/y_1__x_0__tile_node/vdd \
+bp_processor/cc/y_1__x_1__tile_node/vdd}
 
 connect_supply_net VDD_PLL -ports {vdd_pll}
 
 connect_supply_net VSS -ports {vss \
-bp_chip/cc/y_0__x_0__tile_node/vss \
-bp_chip/cc/y_0__x_1__tile_node/vss \
-bp_chip/cc/y_1__x_0__tile_node/vss \
-bp_chip/cc/y_1__x_1__tile_node/vss}
+bp_processor/cc/y_0__x_0__tile_node/vss \
+bp_processor/cc/y_0__x_1__tile_node/vss \
+bp_processor/cc/y_1__x_0__tile_node/vss \
+bp_processor/cc/y_1__x_1__tile_node/vss}
 
 connect_supply_net VDDPST -ports {vddpst}
 connect_supply_net VSSPST -ports {vsspst}

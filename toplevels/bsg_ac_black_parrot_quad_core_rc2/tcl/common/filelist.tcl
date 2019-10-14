@@ -207,6 +207,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_fe_dir/src/v/bp_fe_lce.v
   $bp_fe_dir/src/v/bp_fe_lce_cmd.v
   $bp_fe_dir/src/v/bp_fe_lce_req.v
+  $bp_fe_dir/src/v/bp_fe_mem.v
   $bp_fe_dir/src/v/bp_fe_pc_gen.v
   $bp_fe_dir/src/v/bp_fe_top.v
   $bp_me_dir/src/v/cce/bp_cce.v
@@ -220,10 +221,13 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/cce/bp_cce_pc.v
   $bp_me_dir/src/v/cce/bp_cce_pending.v
   $bp_me_dir/src/v/cce/bp_cce_reg.v
+  $bp_me_dir/src/v/cce/bp_cce_msg_cached.v
   $bp_me_dir/src/v/cce/bp_cce_msg_uncached.v
+  $bp_me_dir/src/v/cce/bp_cce_spec.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_id_to_cord.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_wormhole_link_client.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_wormhole_link_master.v
+  $bp_me_dir/src/v/wormhole/bp_me_cce_to_wormhole_link_bidir.v
   $bp_me_dir/src/v/wormhole/bp_me_lce_id_to_cord.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_lce_cmd.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_lce_req.v
@@ -231,6 +235,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_mem_cmd.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_mem_resp.v
   $bp_top_dir/src/v/bp_processor.v
+  $bp_top_dir/src/v/bp_cfg.v
   $bp_top_dir/src/v/bp_core.v
   $bp_top_dir/src/v/bp_core_complex.v
   $bp_top_dir/src/v/bp_mem_complex.v

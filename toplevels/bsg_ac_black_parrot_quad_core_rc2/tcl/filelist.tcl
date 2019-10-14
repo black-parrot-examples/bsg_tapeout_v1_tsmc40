@@ -161,6 +161,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/cce/bp_cce_reg.v
   $bp_me_dir/src/v/cce/bp_cce_msg_cached.v
   $bp_me_dir/src/v/cce/bp_cce_msg_uncached.v
+  $bp_me_dir/src/v/cce/bp_cce_spec.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_id_to_cord.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_wormhole_link_client.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_wormhole_link_master.v

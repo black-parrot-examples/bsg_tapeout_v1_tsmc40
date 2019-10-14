@@ -1,6 +1,6 @@
 puts "Info: Start script [info script]\n"
 
-proc bsg_clk_gen_clock_create { osc_path clk_name clk_gen_period_int clk_gen_period_ext osc_uncertainty ds_uncertainty clk_uncertainty} {
+proc bsg_clk_gen_clock_create { osc_path clk_name clk_gen_period_int clk_gen_period_ext } {
   # very little is actually timed with this domain; just the receive
   # side of the bsg_tag_client and the downsampler.
   #
@@ -14,7 +14,6 @@ proc bsg_clk_gen_clock_create { osc_path clk_name clk_gen_period_int clk_gen_per
 
   # this is for the output of the oscillator, which goes to the downsampler
   create_clock -period $clk_gen_period_int -name ${clk_name}_osc [get_pins -leaf -of_objects [get_nets ${osc_path}osc_clk_out] -filter "pin_direction==out"]
-  set_clock_uncertainty $osc_uncertainty [get_clocks ${clk_name}_osc]
 
   echo "Detecting Version 1/2 of bsg_clk_gen"
   set buf_btc_o_search [sizeof_collection [get_pins ${osc_path}clk_gen_osc_inst/fdt/buf_btc_o]]
@@ -37,11 +36,9 @@ proc bsg_clk_gen_clock_create { osc_path clk_name clk_gen_period_int clk_gen_per
   # these are generated clocks; we call them clocks to get preferred shielding and routing
   # nothing is actually timed with these
   create_clock -period $clk_gen_period_ds -name ${clk_name}_osc_ds [get_pins -leaf -of_objects [get_nets ${osc_path}ds_clk_out] -filter "pin_direction==out"]
-  set_clock_uncertainty $ds_uncertainty [get_clocks ${clk_name}_osc_ds]
 
   # the output of the mux is the externally visible bonafide clock
   create_clock -period $clk_gen_period_ext -name ${clk_name} [get_pins -leaf -of_objects [get_nets ${osc_path}clk_o] -filter "pin_direction==out"]
-  set_clock_uncertainty $clk_uncertainty [get_clocks ${clk_name}]
 }
 
 puts "Info: Completed script [info script]\n"

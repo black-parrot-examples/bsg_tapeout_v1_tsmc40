@@ -1,0 +1,10 @@
+# External Repos
+basejump_stl/
+board/
+pre-alpha-release/
+bsg_packaging/
+bsg_cadenv/
+bsg_14/
+bsg_40/
+pdk_prep/
+current_build/

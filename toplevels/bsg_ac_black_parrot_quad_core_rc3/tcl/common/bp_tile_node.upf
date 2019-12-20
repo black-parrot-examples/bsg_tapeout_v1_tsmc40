@@ -1,0 +1,8 @@
+create_power_domain PD
+create_supply_net VDD -domain PD
+create_supply_net VSS -domain PD
+set_domain_supply_net PD -primary_power_net VDD -primary_ground_net VSS
+create_supply_port vdd
+create_supply_port vss
+connect_supply_net VDD -ports {vdd}
+connect_supply_net VSS -ports {vss}

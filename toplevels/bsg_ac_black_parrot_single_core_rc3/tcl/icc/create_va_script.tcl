@@ -24,8 +24,9 @@ set bp_array_x_offset 150
 set bp_array_y_offset [expr ($pll_va_height + 2 * $pll_va_guard) / $tile_height]
 
 # the shape of bp tile
+#  Die area: 2835 x 2835 
 set bp_tile_pg_width  950
-set bp_tile_pg_height 450
+set bp_tile_pg_height 950
 set bp_tile_pg_space  50
 
 # define plan groups for manycore

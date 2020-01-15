@@ -27,12 +27,12 @@ set io_master_clk_uncertainty_ps  20
 #set io_clk_uncertainty_ps         [expr min([expr 2*${io_master_clk_period_ps}*(${io_master_clk_uncertainty_per}/100.0)], 50)]
 set io_clk_uncertainty_ps         20
 
-set bp_clk_period_ps       1200
+set bp_clk_period_ps       1400
 set bp_clk_uncertainty_per 3.0
 #set bp_clk_uncertainty_ps  [expr min([expr ${bp_clk_period_ps}*(${bp_clk_uncertainty_per}/100.0)], 50)]
 set bp_clk_uncertainty_ps 20
 
-set coh_clk_period_ps       1200
+set coh_clk_period_ps       1400
 set coh_clk_uncertainty_per 3.0
 #set coh_clk_uncertainty_ps  [expr min([expr ${coh_clk_period_ps}*(${coh_clk_uncertainty_per}/100.0)], 50)]
 set coh_clk_uncertainty_ps 20
@@ -128,6 +128,7 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
   }
 
   set_false_path -from [get_ports *cord*]
+  set_false_path -from [get_ports *did*]
 
   # Derate
   set cells_to_derate [list]

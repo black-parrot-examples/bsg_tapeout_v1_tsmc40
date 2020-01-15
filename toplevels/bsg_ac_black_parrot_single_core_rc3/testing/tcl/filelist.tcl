@@ -20,19 +20,22 @@ set bp_fe_dir     ${blackparrot_dir}/bp_fe
 set bp_be_dir     ${blackparrot_dir}/bp_be
 set bp_me_dir     ${blackparrot_dir}/bp_me
 
- # $bp_common_dir/src/include/bp_common_pkg.vh
- # $bp_common_dir/src/include/bp_common_aviary_pkg.vh
  # $bp_be_dir/src/include/bp_be_rv64_pkg.vh
- # $bp_be_dir/src/include/bp_be_pkg.vh
- # $bp_be_dir/src/include/bp_be_dcache/bp_be_dcache_pkg.vh
- # $basejump_stl_dir/bsg_noc/bsg_wormhole_router_pkg.v
- # $bp_me_dir/src/include/v/bp_cce_pkg.v
  # $bp_top_dir/src/include/bp_cfg_link_pkg.vh
 set TESTING_PACKAGE_FILES [join "
+  $bp_common_dir/src/include/bp_common_pkg.vh
+  $bp_common_dir/src/include/bp_common_aviary_pkg.vh
+  $bp_common_dir/src/include/bp_common_cfg_link_pkg.vh
+  $bp_common_dir/src/include/bp_common_rv64_pkg.vh
+  $bp_be_dir/src/include/bp_be_dcache/bp_be_dcache_pkg.vh
+  $bp_be_dir/src/include/bp_be_pkg.vh
+  $bp_me_dir/src/include/v/bp_cce_pkg.v
+  $bp_me_dir/src/include/v/bp_me_pkg.vh
   $basejump_stl_dir/bsg_misc/bsg_defines.v
   $basejump_stl_dir/bsg_cache/bsg_cache_pkg.v
   $basejump_stl_dir/bsg_noc/bsg_noc_pkg.v
   $basejump_stl_dir/bsg_tag/bsg_tag_pkg.v
+  $basejump_stl_dir/bsg_noc/bsg_wormhole_router_pkg.v
 "]
 
 set TESTING_SOURCE_FILES [join "

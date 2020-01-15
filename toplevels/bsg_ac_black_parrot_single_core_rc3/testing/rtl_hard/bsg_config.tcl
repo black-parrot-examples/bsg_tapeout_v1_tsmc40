@@ -63,28 +63,30 @@ proc bsg_create_library {library_name library_file source_files {include_paths "
 
 # scripts for creating filelist and library
 #source $::env(BSG_TESTING_COMMON_DIR)/bsg_vcs_create_filelist_library.tcl
-
-source $::env(BSG_CHIP_DIR)/cad/setup/common_setup.tcl
+#
+source $::env(BSG_CHIP_DIR)/cad/pdk_setup/pdk_setup.tcl
 
 # chip source (rtl) files and include paths list
-source $::env(BSG_CHIP_DIR)/cad/flow/dc/bsg_dc_scripts/target_design.filelist.tcl
-source $::env(BSG_CHIP_DIR)/cad/flow/dc/bsg_dc_scripts/target_design.include.tcl
+source $::env(BSG_DESIGNS_TARGET_DIR)/tcl/common/filelist.tcl
+#source $::env(BSG_DESIGNS_TARGET_DIR)/tcl/common/.include.tcl
 
-foreach lib [array name VERILOG_FILES] {
-  if { $VERILOG_FILES($lib) != "" } {
-    set all_final_source_files [concat $all_final_source_files [join $VERILOG_FILES($lib)]]
-  }
-}
+#set all_final_source_files ""
+#set final_sverilog_include_paths ""
+#foreach lib [array name VERILOG_FILES] {
+#  if { $VERILOG_FILES($lib) != "" } {
+#    set all_final_source_files [concat $all_final_source_files [join $SVERILOG_SOURCE_FILES($lib)]]
+#  }
+#}
 
 # chip filelist
 bsg_create_filelist $::env(BSG_CHIP_FILELIST) \
-                    $all_final_source_files
+                    $SVERILOG_SOURCE_FILES
 
 # chip library
 bsg_create_library $::env(BSG_CHIP_LIBRARY_NAME) \
                    $::env(BSG_CHIP_LIBRARY)      \
-                   $all_final_source_files       \
-                   $final_sverilog_include_paths
+                   $SVERILOG_SOURCE_FILES \
+                   $SVERILOG_INCLUDE_PATHS
 
 # testing source (rtl) files and include paths list
 source $::env(BSG_DESIGNS_TARGET_DIR)/testing/tcl/filelist.tcl

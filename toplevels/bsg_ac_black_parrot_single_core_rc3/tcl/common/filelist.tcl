@@ -131,6 +131,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_misc/bsg_round_robin_arb.v
   $basejump_stl_dir/bsg_misc/bsg_scan.v
   $basejump_stl_dir/bsg_misc/bsg_swap.v
+  $basejump_stl_dir/bsg_misc/bsg_tielo.v
   $basejump_stl_dir/bsg_misc/bsg_thermometer_count.v
   $basejump_stl_dir/bsg_misc/bsg_transpose.v
   $basejump_stl_dir/bsg_misc/bsg_unconcentrate_static.v

@@ -161,6 +161,8 @@ if { $::env(BSG_BLOCK_HIER_LEVEL) == "top" } {
   #current_design [get_designs -filter "hdl_template==bsg_clk_gen_power_domain"]
   #set_ungroup [remove_from_collection [all_designs] [current_design]]
   #current_design $DESIGN_NAME
+  set_ungroup [get_designs -filter "hdl_template==bp_processor"] true
+  set_ungroup [get_designs -filter "hdl_template==bp_core_complex"] true
 } else {
   set_ungroup [remove_from_collection [all_designs] [current_design]]
 }

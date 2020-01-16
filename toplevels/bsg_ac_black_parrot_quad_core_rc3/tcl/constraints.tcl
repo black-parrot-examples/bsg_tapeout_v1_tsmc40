@@ -14,25 +14,25 @@ set bp_clk_name        "bp_clk"         ;# main clock running block parrot
 set coh_clk_name       "coh_clk"        ;# clock running coherence network
 set tag_clk_name       "tag_clk"
 
-set router_clk_period_ps       1666.0 ;# 600 MHz
+set router_clk_period_ps       2000 ;# 500 MHz
 set router_clk_uncertainty_per 3.0
 ## For clock uncertainty, we set it as the minimum of 3% of the clock period and 50 ps in 14nm
 #set router_clk_uncertainty_ps  [expr min([expr ${router_clk_period_ps}*(${router_clk_uncertainty_per}/100.0)], 50)]
 set router_clk_uncertainty_ps 20
 
-set io_master_clk_period_ps       1666.0 ;# 600MHz
+set io_master_clk_period_ps       2000 ;# 500MHz
 set io_master_clk_uncertainty_per 3.0
 set io_master_clk_uncertainty_ps  [expr min([expr ${io_master_clk_period_ps}*(${io_master_clk_uncertainty_per}/100.0)], 50)]
 set io_master_clk_uncertainty_ps  20
 #set io_clk_uncertainty_ps         [expr min([expr 2*${io_master_clk_period_ps}*(${io_master_clk_uncertainty_per}/100.0)], 50)]
 set io_clk_uncertainty_ps         20
 
-set bp_clk_period_ps       1200
+set bp_clk_period_ps       2000
 set bp_clk_uncertainty_per 3.0
 #set bp_clk_uncertainty_ps  [expr min([expr ${bp_clk_period_ps}*(${bp_clk_uncertainty_per}/100.0)], 50)]
 set bp_clk_uncertainty_ps 20
 
-set coh_clk_period_ps       1200
+set coh_clk_period_ps       2000
 set coh_clk_uncertainty_per 3.0
 #set coh_clk_uncertainty_ps  [expr min([expr ${coh_clk_period_ps}*(${coh_clk_uncertainty_per}/100.0)], 50)]
 set coh_clk_uncertainty_ps 20
@@ -127,11 +127,12 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
     set_disable_timing $cell -from CLKB -to CLKA
   }
 
-  set_false_path -from [get_ports *cord*]
+  set_false_path -through [get_ports *cord*]
+  set_false_path -through [get_ports *did*]
 
   # Derate
   set cells_to_derate [list]
-  append_to_collection cells_to_derate [get_cells -quiet -hier -filter "ref_name=~gf14_*"]
+  append_to_collection cells_to_derate [get_cells -quiet -hier -filter "ref_name=~tsmc40_*"]
   append_to_collection cells_to_derate [get_cells -quiet -hier -filter "ref_name=~IN12LP_*"]
   if { [sizeof $cells_to_derate] > 0 } {
     foreach_in_collection cell $cells_to_derate {
@@ -263,7 +264,7 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
   set_ungroup [get_cells swizzle]
 
   set cells_to_derate [list]
-  append_to_collection cells_to_derate [get_cells -quiet -hier -filter "ref_name=~gf14_*"]
+  append_to_collection cells_to_derate [get_cells -quiet -hier -filter "ref_name=~tsmc40_*"]
   #append_to_collection cells_to_derate [get_cells -quiet -hier -filter "ref_name=~IN12LP_*"]
   if { [sizeof $cells_to_derate] > 0 } {
     foreach_in_collection cell $cells_to_derate {

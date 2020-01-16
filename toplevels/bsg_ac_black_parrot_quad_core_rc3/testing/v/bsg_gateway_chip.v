@@ -23,11 +23,14 @@ import bsg_chip_pkg::*;
 
 import bp_common_pkg::*;
 import bp_common_aviary_pkg::*;
+import bp_common_rv64_pkg::*;
 import bp_be_pkg::*;
-import bp_be_rv64_pkg::*;
 import bp_cce_pkg::*;
-import bp_cfg_link_pkg::*;
+import bp_me_pkg::*;
+import bsg_noc_pkg::*;
+import bsg_wormhole_router_pkg::*;
 
+#(localparam bp_params_e bp_params_p = e_bp_single_core_cfg `declare_bp_proc_params(bp_params_p))
 `include "bsg_pinout_inverted.v"
 
   `declare_bsg_ready_and_link_sif_s(ct_width_gp, bsg_ready_and_link_sif_s);
@@ -149,8 +152,6 @@ import bp_cfg_link_pkg::*;
   // bsg_tag_s [2:0] ds_tag_lines_lo;
   // bsg_tag_s [2:0] sel_tag_lines_lo;
   
-  bsg_tag_s [bp_num_router_gp-1:0] router_core_tag_lines_lo;
-
   // assign async_reset_tag_lines_lo = tag_lines_lo[0];
   // assign osc_tag_lines_lo         = tag_lines_lo[3:1];
   // assign osc_trigger_tag_lines_lo = tag_lines_lo[6:4];
@@ -164,9 +165,9 @@ import bp_cfg_link_pkg::*;
   wire bsg_tag_s next_link_io_tag_lines_lo   = tag_lines_lo[16];
   wire bsg_tag_s next_link_core_tag_lines_lo = tag_lines_lo[17];
   wire bsg_tag_s next_ct_core_tag_lines_lo   = tag_lines_lo[18];
-  assign router_core_tag_lines_lo            = tag_lines_lo[19+:bp_num_router_gp];
-  wire bsg_tag_s cfg_tag_line_lo             = tag_lines_lo[tag_num_clients_gp-2];
-  wire bsg_tag_s bp_core_tag_line_lo         = tag_lines_lo[tag_num_clients_gp-1];
+  wire bsg_tag_s bp_core_tag_lines_lo        = tag_lines_lo[19];
+  wire bsg_tag_s host_core_tag_lines_lo      = tag_lines_lo[20];
+  wire bsg_tag_s router_tag_lines_lo         = tag_lines_lo[21];
 
   // BSG tag master instance
   bsg_tag_master #(.els_p( tag_num_clients_gp )
@@ -187,34 +188,52 @@ import bp_cfg_link_pkg::*;
   // Tag payload for blackparrot control signals
   typedef struct packed { 
       logic reset;
-      logic [wh_cord_width_gp-1:0] cord;
+      logic [wh_did_width_gp-1:0] did;
   } bp_tag_payload_s;
 
   // Tag payload for blackparrot control signals
-  bp_tag_payload_s bp_tag_data_lo;
-  logic            bp_tag_new_data_lo;
+  bp_tag_payload_s core_tag_data_lo;
+  logic            core_tag_new_data_lo;
 
   bsg_tag_client #(.width_p( $bits(bp_tag_payload_s) ), .default_p( 0 ))
     btc_blackparrot
-      (.bsg_tag_i     ( bp_core_tag_line_lo )
+      (.bsg_tag_i     ( bp_core_tag_lines_lo )
       ,.recv_clk_i    ( blackparrot_clk )
       ,.recv_reset_i  ( 1'b0 )
-      ,.recv_new_r_o  ( bp_tag_new_data_lo )
-      ,.recv_data_r_o ( bp_tag_data_lo )
+      ,.recv_new_r_o  ( core_tag_new_data_lo )
+      ,.recv_data_r_o ( core_tag_data_lo )
       );
+  wire core_reset_lo = core_tag_data_lo.reset;
+  wire [wh_did_width_gp-1:0] core_did_lo = core_tag_data_lo.did;
 
   // Tag payload for blackparrot config loader control signals
-  bp_tag_payload_s cfg_tag_data_lo;
-  logic            cfg_tag_new_data_lo;
+  bp_tag_payload_s host_tag_data_lo;
+  logic            host_tag_new_data_lo;
 
   bsg_tag_client #(.width_p( $bits(bp_tag_payload_s) ), .default_p( 0 ))
-    btc_cfg
-      (.bsg_tag_i     ( cfg_tag_line_lo )
+    btc_host
+      (.bsg_tag_i     ( host_core_tag_lines_lo )
       ,.recv_clk_i    ( blackparrot_clk )
       ,.recv_reset_i  ( 1'b0 )
-      ,.recv_new_r_o  ( cfg_tag_new_data_lo )
-      ,.recv_data_r_o ( cfg_tag_data_lo )
+      ,.recv_new_r_o  ( host_tag_new_data_lo )
+      ,.recv_data_r_o ( host_tag_data_lo )
       );
+  wire host_reset_lo = host_tag_data_lo.reset;
+  wire [wh_did_width_gp-1:0] host_did_lo = host_tag_data_lo.did;
+
+  bp_tag_payload_s router_tag_data_lo;
+  logic            router_tag_new_data_lo;
+
+  bsg_tag_client #(.width_p( $bits(bp_tag_payload_s) ), .default_p( 0 ))
+    btc_router
+      (.bsg_tag_i     ( router_tag_lines_lo )
+      ,.recv_clk_i    ( router_clk )
+      ,.recv_reset_i  ( 1'b0 )
+      ,.recv_new_r_o  ( router_tag_new_data_lo )
+      ,.recv_data_r_o ( router_tag_data_lo )
+      );
+  wire router_reset_lo = router_tag_data_lo.reset;
+  wire [wh_did_width_gp-1:0] router_did_lo = router_tag_data_lo.did;
 
   //////////////////////////////////////////////////
   //
@@ -365,196 +384,218 @@ import bp_cfg_link_pkg::*;
   //
   // BP Config Loader
   //
+  `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p)
+  `declare_bp_io_if(paddr_width_p, dword_width_p, lce_id_width_p)
   bsg_ready_and_link_sif_s gw_cmd_link_li, gw_cmd_link_lo;
   bsg_ready_and_link_sif_s gw_resp_link_li, gw_resp_link_lo;
+  bsg_ready_and_link_sif_s [E:W] gw_dram_link_li, gw_dram_link_lo;
 
-  bsg_ready_and_link_sif_s mem_cmd_link_li, mem_cmd_link_lo;
-  bsg_ready_and_link_sif_s mem_resp_link_li, mem_resp_link_lo;
-
-  bsg_ready_and_link_sif_s cfg_cmd_link_li, cfg_cmd_link_lo;
-  bsg_ready_and_link_sif_s cfg_resp_link_li, cfg_resp_link_lo;
-
-  assign mem_cmd_link_li = gw_cmd_link_li;
-  assign cfg_cmd_link_li = '{ready_and_rev: gw_cmd_link_li.ready_and_rev, default: '0};
-  assign gw_cmd_link_lo = '{data: cfg_cmd_link_lo.data
-                            ,v  : cfg_cmd_link_lo.v
-                            ,ready_and_rev: mem_cmd_link_lo.ready_and_rev
-                            };
-
-  assign mem_resp_link_li = '{ready_and_rev: gw_resp_link_li.ready_and_rev, default: '0};
-  assign cfg_resp_link_li = gw_resp_link_li;
-  assign gw_resp_link_lo = '{data: mem_resp_link_lo.data
-                             ,v  : mem_resp_link_lo.v
-                             ,ready_and_rev: cfg_resp_link_lo.ready_and_rev
-                             };
-
-  localparam bp_proc_param_s proc_param_lp = all_cfgs_gp[bp_cfg_gp];
-  `declare_bp_me_if(proc_param_lp.paddr_width, proc_param_lp.cce_block_width, proc_param_lp.num_lce, proc_param_lp.lce_assoc);
-  bp_cce_mem_cmd_s      cfg_cmd_lo;
+  bp_cce_io_msg_s       cfg_cmd_lo;
   logic                 cfg_cmd_v_lo, cfg_cmd_ready_li;
-  bp_mem_cce_resp_s     cfg_resp_li;
+  bp_cce_io_msg_s       cfg_resp_li;
   logic                 cfg_resp_v_li, cfg_resp_ready_lo;
-  bp_cce_mmio_cfg_loader
-   #(.cfg_p(bp_cfg_gp)
-     ,.inst_width_p(`bp_cce_inst_width)
-     ,.inst_ram_addr_width_p(`BSG_SAFE_CLOG2(256))
-     ,.inst_ram_els_p(256)
-     ,.skip_ram_init_p(0)
-     )
-   cfg_loader
+
+  bp_cce_io_msg_s       host_cmd_li;
+  logic                 host_cmd_v_li, host_cmd_yumi_lo;
+  bp_cce_io_msg_s       host_resp_lo;
+  logic                 host_resp_v_lo, host_resp_ready_li;
+
+  bp_cce_io_msg_s       nbf_cmd_lo;
+  logic                 nbf_cmd_v_lo, nbf_cmd_ready_li;
+  bp_cce_io_msg_s       nbf_resp_li;
+  logic                 nbf_resp_v_li, nbf_resp_ready_lo;
+
+  bp_cce_io_msg_s       load_cmd_lo;
+  logic                 load_cmd_v_lo, load_cmd_ready_li;
+  bp_cce_io_msg_s       load_resp_li;
+  logic                 load_resp_v_li, load_resp_ready_lo;
+  
+  bp_cce_mem_msg_s      dram_cmd_lo;
+  logic                 dram_cmd_v_lo, dram_cmd_ready_li;
+  bp_cce_mem_msg_s      dram_resp_li;
+  logic                 dram_resp_v_li, dram_resp_ready_lo;
+
+  bp_me_cce_to_io_link_bidir
+   #(.bp_params_p(bp_params_p))
+   host_io_link
     (.clk_i(blackparrot_clk)
-     ,.reset_i(bp_tag_data_lo.reset | ~tag_trace_done_lo )
+     ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
 
-     ,.mem_cmd_o(cfg_cmd_lo)
-     ,.mem_cmd_v_o(cfg_cmd_v_lo)
-     ,.mem_cmd_yumi_i(cfg_cmd_ready_li & cfg_cmd_v_lo)
+     ,.io_cmd_i(load_cmd_lo)
+     ,.io_cmd_v_i(load_cmd_v_lo)
+     ,.io_cmd_ready_o(load_cmd_ready_li)
 
-     ,.mem_resp_i(cfg_resp_li)
-     ,.mem_resp_v_i(cfg_resp_v_li)
-     ,.mem_resp_ready_o(cfg_resp_ready_lo)
+     ,.io_resp_o(load_resp_li)
+     ,.io_resp_v_o(load_resp_v_li)
+     ,.io_resp_yumi_i(load_resp_ready_lo & load_resp_v_li)
+
+     ,.io_cmd_o(host_cmd_li)
+     ,.io_cmd_v_o(host_cmd_v_li)
+     ,.io_cmd_yumi_i(host_cmd_yumi_lo)
+
+     ,.io_resp_i(host_resp_lo)
+     ,.io_resp_v_i(host_resp_v_lo)
+     ,.io_resp_ready_o(host_resp_ready_li)
+
+     ,.my_cord_i(host_did_lo[0+:io_noc_did_width_p])
+     ,.dst_cord_i(core_did_lo[0+:io_noc_did_width_p])
+
+     ,.cmd_link_i(gw_cmd_link_li)
+     ,.cmd_link_o(gw_cmd_link_lo)
+
+     ,.resp_link_i(gw_resp_link_li)
+     ,.resp_link_o(gw_resp_link_lo)
      );
 
-  bp_me_cce_to_wormhole_link_master
-   #(.cfg_p(bp_cfg_gp))
-   master_link
+  bsg_ready_and_link_sif_s dram_link_li, dram_link_lo;
+  bsg_wormhole_router #(.flit_width_p(mem_noc_flit_width_p)
+                        ,.dims_p(mem_noc_dims_p)
+                        ,.cord_dims_p(mem_noc_cord_dims_p)
+                        ,.cord_markers_pos_p(mem_noc_cord_markers_pos_p)
+                        ,.len_width_p(mem_noc_len_width_p)
+                        ,.reverse_order_p(1)
+                        ,.routing_matrix_p(StrictX)
+                        ) bypass_router
+    (.clk_i(router_clk)
+    ,.reset_i(router_reset_lo | ~tag_trace_done_lo)
+
+    ,.my_cord_i(router_did_lo[0+:io_noc_did_width_p])
+
+    ,.link_i({gw_dram_link_li, dram_link_li})
+    ,.link_o({gw_dram_link_lo, dram_link_lo})
+    );
+
+  bp_me_cce_to_mem_link_client
+   #(.bp_params_p(bp_params_p))
+   dram_link
     (.clk_i(blackparrot_clk)
-     ,.reset_i(bp_tag_data_lo.reset | ~tag_trace_done_lo )
+     ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
 
+     ,.mem_cmd_o(dram_cmd_lo)
+     ,.mem_cmd_v_o(dram_cmd_v_lo)
+     ,.mem_cmd_yumi_i(dram_cmd_ready_li & dram_cmd_v_lo)
 
-     ,.mem_cmd_i(cfg_cmd_lo)
-     ,.mem_cmd_v_i(cfg_cmd_v_lo)
-     ,.mem_cmd_ready_o(cfg_cmd_ready_li)
+     ,.mem_resp_i(dram_resp_li)
+     ,.mem_resp_v_i(dram_resp_v_li)
+     ,.mem_resp_ready_o(dram_resp_ready_lo)
 
-     ,.mem_resp_o(cfg_resp_li)
-     ,.mem_resp_v_o(cfg_resp_v_li)
-     ,.mem_resp_yumi_i(cfg_resp_ready_lo & cfg_resp_v_li)
-
-     ,.my_cord_i(bp_tag_data_lo.cord)
-     ,.my_cid_i('0)
-     ,.dram_cord_i(bp_tag_data_lo.cord)
-     ,.mmio_cord_i(cfg_tag_data_lo.cord)
-     ,.host_cord_i(bp_tag_data_lo.cord)
-
-     ,.cmd_link_i(cfg_cmd_link_li)
-     ,.cmd_link_o(cfg_cmd_link_lo)
-
-     ,.resp_link_i(cfg_resp_link_li)
-     ,.resp_link_o(cfg_resp_link_lo)
+     ,.cmd_link_i(dram_link_lo)
+     ,.resp_link_o(dram_link_li)
      );
 
-  bp_cce_mem_cmd_s           host_cmd_li;
-  logic                      host_cmd_v_li, host_cmd_yumi_lo;
-  bp_mem_cce_resp_s          host_resp_lo;
-  logic                      host_resp_v_lo, host_resp_ready_li;
-  logic [bp_num_core_gp-1:0] program_finish_lo;
-  bp_nonsynth_host
-   #(.cfg_p(bp_cfg_gp))
-   host_mmio
-    (.clk_i(blackparrot_clk)
-     ,.reset_i(bp_tag_data_lo.reset | ~tag_trace_done_lo)
-     
-     ,.mem_cmd_i(host_cmd_li)
-     ,.mem_cmd_v_i(host_cmd_v_li)
-     ,.mem_cmd_yumi_o(host_cmd_yumi_lo)
-
-     ,.mem_resp_o(host_resp_lo)
-     ,.mem_resp_v_o(host_resp_v_lo)
-     ,.mem_resp_ready_i(host_resp_ready_li)
-
-     ,.program_finish_o(program_finish_lo)
-     );
-
-  bp_cce_mem_cmd_s       dram_cmd_li;
-  logic                  dram_cmd_v_li, dram_cmd_yumi_lo;
-  bp_mem_cce_resp_s      dram_resp_lo;
-  logic                  dram_resp_v_lo, dram_resp_ready_li;
   bp_mem
-   #(.cfg_p(bp_cfg_gp)
-     ,.mem_cap_in_bytes_p(16384)
+   #(.bp_params_p(bp_params_p)
+     ,.mem_cap_in_bytes_p(32'h10000)
      ,.mem_load_p(1)
      ,.mem_file_p("prog.mem")
      ,.mem_offset_p(32'h80000000)
 
      ,.use_max_latency_p(1)
-
      ,.max_latency_p(5)
      )
    mem
     (.clk_i(blackparrot_clk)
-     ,.reset_i(bp_tag_data_lo.reset | ~tag_trace_done_lo)
+     ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
 
-     ,.mem_cmd_i(dram_cmd_li)
-     ,.mem_cmd_v_i(dram_cmd_v_li)
-     ,.mem_cmd_yumi_o(dram_cmd_yumi_lo)
+     ,.mem_cmd_i(dram_cmd_lo)
+     ,.mem_cmd_v_i(dram_cmd_v_lo)
+     ,.mem_cmd_ready_o(dram_cmd_ready_li)
 
-     ,.mem_resp_o(dram_resp_lo)
-     ,.mem_resp_v_o(dram_resp_v_lo)
-     ,.mem_resp_ready_i(dram_resp_ready_li)
+     ,.mem_resp_o(dram_resp_li)
+     ,.mem_resp_v_o(dram_resp_v_li)
+     ,.mem_resp_yumi_i(dram_resp_ready_lo & dram_resp_v_li)
      );
 
-  bp_cce_mem_cmd_s       mem_cmd_lo;
-  logic                  mem_cmd_v_lo, mem_cmd_yumi_li;
-  bp_mem_cce_resp_s      mem_resp_li;
-  logic                  mem_resp_v_li, mem_resp_ready_lo;
-  bp_me_cce_to_wormhole_link_client
-   #(.cfg_p(bp_cfg_gp))
-   client_link
+  localparam cce_instr_ram_addr_width_lp = `BSG_SAFE_CLOG2(num_cce_instr_ram_els_p);
+  bp_cce_mmio_cfg_loader
+    #(.bp_params_p(bp_params_p)
+      ,.inst_width_p(`bp_cce_inst_width)
+      ,.inst_ram_addr_width_p(cce_instr_ram_addr_width_lp)
+      ,.inst_ram_els_p(num_cce_instr_ram_els_p)
+      ,.skip_ram_init_p('0)
+      )
+    cfg_loader
     (.clk_i(blackparrot_clk)
-     ,.reset_i(bp_tag_data_lo.reset | ~tag_trace_done_lo)
+     ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
+  
+     ,.io_cmd_o(cfg_cmd_lo)
+     ,.io_cmd_v_o(cfg_cmd_v_lo)
+     ,.io_cmd_yumi_i(cfg_cmd_ready_li & cfg_cmd_v_lo)
+  
+     ,.io_resp_i(cfg_resp_li)
+     ,.io_resp_v_i(cfg_resp_v_li)
+     ,.io_resp_ready_o(cfg_resp_ready_lo)
+    );
 
-     ,.mem_cmd_o(mem_cmd_lo)
-     ,.mem_cmd_v_o(mem_cmd_v_lo)
-     ,.mem_cmd_yumi_i(mem_cmd_yumi_li)
-
-     ,.mem_resp_i(mem_resp_li)
-     ,.mem_resp_v_i(mem_resp_v_li)
-     ,.mem_resp_ready_o(mem_resp_ready_lo)
-
-     ,.my_cord_i(bp_tag_data_lo.cord)
-     ,.my_cid_i('0)
-
-     ,.cmd_link_i(mem_cmd_link_li)
-     ,.cmd_link_o(mem_cmd_link_lo)
-
-     ,.resp_link_i(mem_resp_link_li)
-     ,.resp_link_o(mem_resp_link_lo)
-     );
-
-  logic req_outstanding_r;
-  bsg_dff_reset_en
-   #(.width_p(1))
-   req_outstanding_reg
+  logic [num_core_p-1:0] program_finish;
+  bp_nonsynth_host
+   #(.bp_params_p(bp_params_p))
+   host_mmio
     (.clk_i(blackparrot_clk)
-     ,.reset_i(bp_tag_data_lo.reset | ~tag_trace_done_lo)
-     ,.en_i(mem_cmd_yumi_li | mem_resp_v_li)
+     ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
   
-     ,.data_i(mem_cmd_yumi_li)
-     ,.data_o(req_outstanding_r)
+     ,.io_cmd_i(host_cmd_li)
+     ,.io_cmd_v_i(host_cmd_v_li)
+     ,.io_cmd_yumi_o(host_cmd_yumi_lo)
+  
+     ,.io_resp_o(host_resp_lo)
+     ,.io_resp_v_o(host_resp_v_lo)
+     ,.io_resp_ready_i(host_resp_ready_li)
+  
+     ,.program_finish_o(program_finish)
      );
+
+  //synopsys translate_off
+if (0) begin
+  bind bp_be_top
+    bp_nonsynth_commit_tracer
+     #(.bp_params_p(bp_params_p))
+     commit_tracer
+      (.clk_i(clk_i)
+       ,.reset_i(reset_i)
+       ,.freeze_i(be_checker.scheduler.int_regfile.cfg_bus.freeze)
+
+       ,.mhartid_i(be_checker.scheduler.int_regfile.cfg_bus.core_id)
+
+       ,.commit_v_i(be_calculator.commit_pkt.instret)
+       ,.commit_pc_i(be_calculator.commit_pkt.pc)
+       ,.commit_instr_i(be_calculator.commit_pkt.instr)
+
+       ,.rd_w_v_i(be_calculator.wb_pkt.rd_w_v)
+       ,.rd_addr_i(be_calculator.wb_pkt.rd_addr)
+       ,.rd_data_i(be_calculator.wb_pkt.rd_data)
+       );
+end
+  //synopsys translate_on
+
+  always_comb
+    begin
+      load_cmd_lo = cfg_cmd_lo;
+      load_cmd_v_lo = load_cmd_ready_li & cfg_cmd_v_lo;
   
-  wire host_cmd_not_dram      = mem_cmd_v_lo & (mem_cmd_lo.addr < dram_base_addr_gp);
+      nbf_cmd_ready_li = 1'b0;
+      cfg_cmd_ready_li = load_cmd_ready_li;
   
-  assign host_cmd_li          = mem_cmd_lo;
-  assign host_cmd_v_li        = mem_cmd_v_lo & host_cmd_not_dram & ~req_outstanding_r;
-  assign dram_cmd_li          = mem_cmd_lo;
-  assign dram_cmd_v_li        = mem_cmd_v_lo & ~host_cmd_not_dram & ~req_outstanding_r;
-  assign mem_cmd_yumi_li      = host_cmd_not_dram 
-                                ? host_cmd_yumi_lo 
-                                : dram_cmd_yumi_lo;
+      nbf_resp_li = '0;
+      nbf_resp_v_li = 1'b0;
   
-  assign mem_resp_li = host_resp_v_lo ? host_resp_lo : dram_resp_lo;
-  assign mem_resp_v_li = host_resp_v_lo | dram_resp_v_lo;
-  assign host_resp_ready_li = mem_resp_ready_lo;
-  assign dram_resp_ready_li = mem_resp_ready_lo;
- 
+      cfg_resp_li = load_resp_li;
+      cfg_resp_v_li = load_resp_v_li & load_resp_ready_lo & cfg_resp_ready_lo;
+  
+      load_resp_ready_lo = cfg_resp_ready_lo;
+    end
+
   assign prev_router_links_li[0] = '0;
   assign prev_router_links_li[1] = '0;
+  assign prev_router_links_li[2] = '0;
 
   assign next_router_links_li[0] = gw_cmd_link_lo;
   assign next_router_links_li[1] = gw_resp_link_lo;
+  assign next_router_links_li[2] = gw_dram_link_lo[E];
 
   assign gw_cmd_link_li  = next_router_links_lo[0];
   assign gw_resp_link_li = next_router_links_lo[1];
- 
+  assign gw_dram_link_li[E] = next_router_links_lo[2];
+  assign gw_dram_link_li[W] = '0;
 endmodule
 

@@ -4,44 +4,41 @@
 # overriden by the chip repo if this makefile is called from the chip
 # infrastructure.
 
-TOP_DIR            ?= $(shell git rev-parse --show-toplevel)
-ROOT_DIR           ?= $(abspath $(TOP_DIR)/../)
-BSG_DESIGNS_TARGET ?= $(notdir $(abspath ../../))
+export BSG_DESIGNS_DIR        ?= $(abspath ../../../../)
+export BSG_DESIGNS_TARGET_DIR ?= $(abspath ../../)
 
 BSG_WORK_DIR := $(abspath ./)
 BSG_OUT_DIR  := $(BSG_WORK_DIR)/out
 BSG_OUT_SIM  := $(BSG_OUT_DIR)/simv
 
-include $(ROOT_DIR)/bsg_cadenv/cadenv.mk
+include $(BSG_DESIGNS_TARGET_DIR)/bsg_cadenv/cadenv.mk
 
 # Repository setup
-export BSG_DESIGNS_DIR        ?= $(ROOT_DIR)/bsg_designs
-export BSG_DESIGNS_TARGET_DIR ?= $(BSG_DESIGNS_DIR)/toplevels/$(BSG_DESIGNS_TARGET)
-export BASEJUMP_STL_DIR       ?= $(ROOT_DIR)/basejump_stl
-export BSG_PACKAGING_DIR      ?= $(ROOT_DIR)/bsg_packaging
-export BLACK_PARROT_DIR       ?= $(ROOT_DIR)/pre-alpha-release
-export BOARD_DIR              ?= $(ROOT_DIR)/board
+export BASEJUMP_STL_DIR       ?= $(BSG_DESIGNS_TARGET_DIR)/basejump_stl
+export BSG_PACKAGING_DIR      ?= $(BSG_DESIGNS_TARGET_DIR)/bsg_packaging
+export BLACKPARROT_DIR        ?= $(BSG_DESIGNS_TARGET_DIR)/pre-alpha-release
+export BOARD_DIR              ?= $(BSG_DESIGNS_TARGET_DIR)/board
 
-export TESTING_BSG_DESIGNS_DIR        ?= $(BSG_OUT_DIR)/root/bsg_designs
+export TESTING_BSG_DESIGNS_DIR        ?= $(BSG_OUT_DIR)/root
 export TESTING_BASEJUMP_STL_DIR       ?= $(BSG_OUT_DIR)/root/basejump_stl
 export TESTING_BSG_PACKAGING_DIR      ?= $(BSG_OUT_DIR)/root/bsg_packaging
-export TESTING_BLACK_PARROT_DIR       ?= $(BSG_OUT_DIR)/root/pre-alpha-release
+export TESTING_BLACKPARROT_DIR        ?= $(BSG_OUT_DIR)/root/pre-alpha-release
 export TESTING_BOARD_DIR              ?= $(BSG_OUT_DIR)/root/board
-export TESTING_BSG_DESIGNS_TARGET_DIR ?= $(TESTING_BSG_DESIGNS_DIR)/toplevels/$(BSG_DESIGNS_TARGET)
+export TESTING_BSG_DESIGNS_TARGET_DIR ?= $(BSG_DESIGNS_TARGET_DIR)
 
 export BSG_PACKAGE           ?=uw_bga
 export BSG_PINOUT            ?=bsg_asic_cloud
 export BSG_PACKAGING_FOUNDRY ?=gf_14_invecas_1p8v
 export BSG_PADMAPPING        ?=default
 
-export BLACK_PARROT_COMMON_DIR ?= $(BLACK_PARROT_DIR)/bp_common
-export BLACK_PARROT_TOP_DIR    ?= $(BLACK_PARROT_DIR)/bp_top
-export BLACK_PARROT_FE_DIR     ?= $(BLACK_PARROT_DIR)/bp_fe
-export BLACK_PARROT_BE_DIR     ?= $(BLACK_PARROT_DIR)/bp_be
-export BLACK_PARROT_ME_DIR     ?= $(BLACK_PARROT_DIR)/bp_me
+export BLACKPARROT_COMMON_DIR ?= $(BLACKPARROT_DIR)/bp_common
+export BLACKPARROT_TOP_DIR    ?= $(BLACKPARROT_DIR)/bp_top
+export BLACKPARROT_FE_DIR     ?= $(BLACKPARROT_DIR)/bp_fe
+export BLACKPARROT_BE_DIR     ?= $(BLACKPARROT_DIR)/bp_be
+export BLACKPARROT_ME_DIR     ?= $(BLACKPARROT_DIR)/bp_me
 
 # Additional setup for RTL-Hard
-export BSG_CHIP_DIR             ?= $(ROOT_DIR)/bsg_14
+export BSG_CHIP_DIR             ?= $(BSG_DESIGNS_TARGET_DIR)/bsg_14
 export MEMGEN_RUN_DIR           ?= $(BSG_CHIP_DIR)/sources/memgen
 export BSG_TOPLEVEL_DESIGN_TYPE ?=chip_3x3
 export BSG_TARGET_PROCESS       ?=gf_14
@@ -68,27 +65,28 @@ VCS_OPTIONS += -top bsg_config bsg_config.v
 VCS_OPTIONS += +warn_all,noOPD,noTMR,noTFIPC
 
 # DRAMSim2
-VCS_OPTIONS += -CFLAGS "-I$(BLACK_PARROT_DIR)/external/include -std=c++11"
-VCS_OPTIONS += -LDFLAGS "-L$(BLACK_PARROT_DIR)/external/lib -ldramsim -Wl,-rpath=$(BLACK_PARROT_DIR)/external/lib"
+VCS_OPTIONS += -CFLAGS "-I$(BLACKPARROT_DIR)/external/include -std=c++11"
+VCS_OPTIONS += -LDFLAGS "-L$(BLACKPARROT_DIR)/external/lib -ldramsim -Wl,-rpath=$(BLACKPARROT_DIR)/external/lib"
 
 # Add extra packages that get dropped by the build system
 VCS_OPTIONS += +incdir+$(BASEJUMP_STL_DIR)/bsg_misc/
 VCS_OPTIONS += +incdir+$(BASEJUMP_STL_DIR)/bsg_noc/
-VCS_OPTIONS += +incdir+$(BLACK_PARROT_COMMON_DIR)/src/include
-VCS_OPTIONS += +incdir+$(BLACK_PARROT_TOP_DIR)/src/include
-VCS_OPTIONS += +incdir+$(BLACK_PARROT_FE_DIR)/bp_fe/src/include
-VCS_OPTIONS += +incdir+$(BLACK_PARROT_BE_DIR)/src/include
-VCS_OPTIONS += +incdir+$(BLACK_PARROT_BE_DIR)/src/include/bp_be_dcache/
-VCS_OPTIONS += +incdir+$(BLACK_PARROT_ME_DIR)/src/include/v
-VCS_OPTIONS += $(BLACK_PARROT_COMMON_DIR)/src/include/bp_common_pkg.vh 
-VCS_OPTIONS += $(BLACK_PARROT_COMMON_DIR)/src/include/bp_common_aviary_pkg.vh
-VCS_OPTIONS += $(BLACK_PARROT_BE_DIR)/src/include/bp_be_rv64_pkg.vh
-VCS_OPTIONS += $(BLACK_PARROT_BE_DIR)/src/include/bp_be_pkg.vh
-VCS_OPTIONS += $(BLACK_PARROT_ME_DIR)/src/include/v/bp_cce_pkg.v
-VCS_OPTIONS += $(BLACK_PARROT_ME_DIR)/src/include/v/bp_me_pkg.vh
-VCS_OPTIONS += $(BLACK_PARROT_BE_DIR)/src/include/bp_be_dcache/bp_be_dcache_pkg.vh
+VCS_OPTIONS += +incdir+$(BLACKPARROT_COMMON_DIR)/src/include
+VCS_OPTIONS += +incdir+$(BLACKPARROT_TOP_DIR)/src/include
+VCS_OPTIONS += +incdir+$(BLACKPARROT_FE_DIR)/bp_fe/src/include
+VCS_OPTIONS += +incdir+$(BLACKPARROT_BE_DIR)/src/include
+VCS_OPTIONS += +incdir+$(BLACKPARROT_BE_DIR)/src/include/bp_be_dcache/
+VCS_OPTIONS += +incdir+$(BLACKPARROT_ME_DIR)/src/include/v
+VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_pkg.vh 
+VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_aviary_pkg.vh
+VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_rv64_pkg.vh
+VCS_OPTIONS += $(BLACKPARROT_BE_DIR)/src/include/bp_be_pkg.vh
+VCS_OPTIONS += $(BLACKPARROT_ME_DIR)/src/include/v/bp_cce_pkg.v
+VCS_OPTIONS += $(BLACKPARROT_ME_DIR)/src/include/v/bp_me_pkg.vh
+VCS_OPTIONS += $(BLACKPARROT_BE_DIR)/src/include/bp_be_dcache/bp_be_dcache_pkg.vh
 VCS_OPTIONS += $(BASEJUMP_STL_DIR)/bsg_noc/bsg_wormhole_router_pkg.v
-VCS_OPTIONS += $(BLACK_PARROT_TOP_DIR)/src/include/bp_cfg_link_pkg.vh
+VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_cfg_link_pkg.vh
+VCS_OPTIONS += $(BSG_DESIGNS_TARGET_DIR)/v/bsg_chip_pkg.v
 
 # Additional options for RTL-Hard
 VCS_OPTIONS += +notimingcheck
@@ -147,17 +145,20 @@ PROG     :=hello_world
 DRAM_CH  :=DDR2_micron_16M_8b_x8_sg3E.ini
 DRAM_SYS :=system.ini
 
+prog.nbf:
+	@cp $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).nbf $(BSG_OUT_DIR)/$@
+
 prog.mem:
-	@cp $(BLACK_PARROT_DIR)/bp_common/test/mem/$(PROG).mem $(BSG_OUT_DIR)/$@
+	@cp $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).mem $(BSG_OUT_DIR)/$@
 
 dram_ch.ini:
-	@cp $(BLACK_PARROT_DIR)/bp_common/test/cfg/$(DRAM_CH) $(BSG_OUT_DIR)/$@
+	@cp $(BLACKPARROT_DIR)/bp_common/test/cfg/$(DRAM_CH) $(BSG_OUT_DIR)/$@
 
 dram_sys.ini:
-	@cp $(BLACK_PARROT_DIR)/bp_common/test/cfg/$(DRAM_SYS) $(BSG_OUT_DIR)/$@
+	@cp $(BLACKPARROT_DIR)/bp_common/test/cfg/$(DRAM_SYS) $(BSG_OUT_DIR)/$@
 
 cce_ucode.mem:
-	@cp $(BLACK_PARROT_DIR)/bp_me/src/asm/roms/mesi/bp_cce_inst_rom_mesi_lce4_wg32_assoc8.mem $(BSG_OUT_DIR)/$@
+	@cp $(BLACKPARROT_DIR)/bp_me/src/asm/roms/mesi/bp_cce_inst_rom_mesi.mem $(BSG_OUT_DIR)/$@
 
 ########################################
 ## Run Targets
@@ -179,11 +180,11 @@ view:
 	cd $(BSG_OUT_DIR); $(VCS_BIN)/dve -full64 -vpd vcdplus.vpd
 
 build: $(BSG_OUT_SIM)
-$(BSG_OUT_SIM): $(BSG_CHIP_FILELIST) $(BSG_CHIP_LIBRARY) $(BSG_DESIGNS_TESTING_FILELIST) $(BSG_DESIGNS_TESTING_LIBRARY) $(BSG_TRACE_ROMS) prog.mem dram_ch.ini dram_sys.ini cce_ucode.mem
+$(BSG_OUT_SIM): $(BSG_CHIP_FILELIST) $(BSG_CHIP_LIBRARY) $(BSG_DESIGNS_TESTING_FILELIST) $(BSG_DESIGNS_TESTING_LIBRARY) $(BSG_TRACE_ROMS) prog.nbf prog.mem dram_ch.ini dram_sys.ini cce_ucode.mem
 	$(VCS) $(VCS_OPTIONS) | tee -i $(BSG_OUT_DIR)/build.log
 
 $(BSG_OUT_DIR)/root: | $(BSG_OUT_DIR)
-	ln -nsf $(ROOT_DIR) $@
+	ln -nsf $(BSG_DESIGNS_TARGET_DIR) $@
 
 $(BSG_OUT_DIR):
 	mkdir -p $@

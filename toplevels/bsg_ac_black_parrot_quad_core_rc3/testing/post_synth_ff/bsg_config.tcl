@@ -64,7 +64,7 @@ proc bsg_create_library {library_name library_file source_files {include_paths "
 # scripts for creating filelist and library
 #source $::env(BSG_TESTING_COMMON_DIR)/bsg_vcs_create_filelist_library.tcl
 
-source $::env(BSG_CHIP_DIR)/cad/pdk_setup/pdk_setup.tcl
+source $::env(BSG_CHIP_DIR)/cad/setup/common_setup.tcl
 
 # chip source (rtl) files and include paths list
 set all_final_source_files [glob $::env(BSG_CHIP_DIR)/current_build/synth/*/results/*.mapped.v]

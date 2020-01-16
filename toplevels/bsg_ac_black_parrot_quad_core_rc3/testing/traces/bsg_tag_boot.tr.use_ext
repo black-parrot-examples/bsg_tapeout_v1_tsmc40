@@ -16,12 +16,26 @@
 #    16  | Next Link IO Control   | 3-bits
 #    17  | Next Link CORE Control | 2-bits
 #    18  | Next CT CORE Control   | 2-bits
-# 35-19  | Router Control         | 9-bits
-#    36  | CFG  Control           | 9-bits
-#    37  | Core Control           | 9-bits
+#    19  | Core Control           | 4-bits
+#    20  | Host Control           | 4-bits
+#    21  | Router Control         | 4-bits
+#    22  | DMC Control            | 2-bits
+#    23  | DMC trefi 0            | 8-bits
+#    24  | DMC trefi 1            | 8-bits
+#    25  | DMC tmrd trfc          | 8-bits
+#    26  | DMC trc trp            | 8-bits
+#    27  | DMC tras trrd          | 8-bits
+#    28  | DMC trcd twr           | 8-bits
+#    29  | DMC twtr trtp          | 8-bits
+#    30  | DMC tcas               | 4-bits
+#    31  | DMC col \ row width    | 8-bits
+#    32  | DMC bank width         |
+#        |     dqs_sel_cal        | 8-bits
+#        |     init_cmd_cnt       |
+#
 #
 # Number of masters = 2
-# Number of clients = 38
+# Number of clients = 32
 # Max data width = 9
 #
 # Packet lengths
@@ -216,44 +230,12 @@
 0001___11___010001_0_0010___000000011
 #SEND  en   id=18  r l=2
 0001___11___010010_0_0010___000000011
-#SEND  en   id=19  r l=9
-0001___11___010011_0_1001___111111111
-#SEND  en   id=20  r l=9
-0001___11___010100_0_1001___111111111
-#SEND  en   id=21  r l=9
-0001___11___010101_0_1001___111111111
-#SEND  en   id=22  r l=9
-0001___11___010110_0_1001___111111111
-#SEND  en   id=23  r l=9
-0001___11___010111_0_1001___111111111
-#SEND  en   id=24  r l=9
-0001___11___011000_0_1001___111111111
-#SEND  en   id=25  r l=9
-0001___11___011001_0_1001___111111111
-#SEND  en   id=26  r l=9
-0001___11___011010_0_1001___111111111
-#SEND  en   id=27  r l=9
-0001___11___011011_0_1001___111111111
-#SEND  en   id=28  r l=9
-0001___11___011100_0_1001___111111111
-#SEND  en   id=29  r l=9
-0001___11___011101_0_1001___111111111
-#SEND  en   id=30  r l=9
-0001___11___011110_0_1001___111111111
-#SEND  en   id=31  r l=9
-0001___11___011111_0_1001___111111111
-#SEND  en   id=32  r l=9
-0001___11___100000_0_1001___111111111
-#SEND  en   id=33  r l=9
-0001___11___100001_0_1001___111111111
-#SEND  en   id=34  r l=9
-0001___11___100010_0_1001___111111111
-#SEND  en   id=35  r l=9
-0001___11___100011_0_1001___111111111
-#SEND  en   id=36  r l=9
-0001___11___100100_0_1001___111111111
-#SEND  en   id=37  r l=9
-0001___11___100101_0_1001___111111111
+#SEND  en   id=19  r l=4
+0001___11___010011_0_1001___000001111
+#SEND  en   id=20  r l=4
+0001___11___010100_0_1001___000001111
+#SEND  en   id=21  r l=4
+0001___11___010101_0_1001___000001111
 
 ################################################################################
 #
@@ -287,39 +269,21 @@
 #SEND  en   id=18  d l=2   {reset, fifo_reset}
 0001___11___010010_1_0010___000000011
 
-# Reset ASIC Routers and set cord to y,x
-#SEND  en   id=19  d l=9   {reset, cord=(0,1)}
+# Reset ASIC configs and set dids
+#SEND  en   id=19  d l=9   {reset, did=1}
 0001___01___010011_1_1001___100000001
-#SEND  en   id=20  d l=9   {reset, cord=(0,2)}
-0001___01___010100_1_1001___100000010
-#SEND  en   id=21  d l=9   {reset, cord=(0,3)}
-0001___01___010101_1_1001___100000011
-#SEND  en   id=22  d l=9   {reset, cord=(0,4)}
-0001___01___010110_1_1001___100000100
-#SEND  en   id=23  d l=9   {reset, cord=(1,2)}
-0001___01___010111_1_1001___101000010
-#SEND  en   id=24  d l=9   {reset, cord=(1,3)}
-0001___01___011000_1_1001___101000011
-#SEND  en   id=25  d l=9   {reset, cord=(2,2)}
-0001___01___011001_1_1001___110000010
-#SEND  en   id=26  d l=9   {reset, cord=(2,3)}
-0001___01___011010_1_1001___110000011
+#SEND  en   id=20  d l=9   {reset, did=0}
+0001___01___010100_1_1001___100000000
+#SEND  en   id=21  d l=9   {reset, did=1}
+0001___01___010101_1_1001___100000001
 
-# Reset GW Router Control and set cord to 0
-#SEND  en   id=19  d l=9   {reset, cord=0}
-0001___10___010011_1_1001___100000000
-
-# Reset GW BlackParrot CFG and set dest cord to 2 (CLINT)
-#SEND  en   id=36  d l=9   {reset, cord=2}
-0001___10___100100_1_1001___100000010
-
-# Reset ASIC BackParrot Control and set dest cord to 0 (DRAM)
-#SEND  en   id=37 d l=9   {reset, cord=0}
-0001___01___100101_1_1001___100000000
-
-# Reset GW BlackParrot Control and set dest cord to 0 (DRAM)
-#SEND  en   id=37 d l=9   {reset, cord=0}
-0001___10___100101_1_1001___100000000
+# Reset GW configs and set dids
+#SEND  en   id=19  d l=9   {reset, did=1}
+0001___10___010011_1_1001___100000001
+#SEND  en   id=20  d l=9   {reset, did=0}
+0001___10___010100_1_1001___100000000
+#SEND  en   id=21  d l=9   {reset, did=0}
+0001___10___010101_1_1001___100000000
 
 ### STEP 2: Perform async token resets
 
@@ -375,39 +339,21 @@
 
 ### STEP 8: De-assert Router reset
 
-# Deassert reset ASIC Routers and set cord to (y,x)
-#SEND  en   id=19  d l=9   {reset, cord=(0,1)}
+# Deassert reset ASIC Routers and set did
+#SEND  en   id=19  d l=9   {reset, did=1}
 0001___01___010011_1_1001___000000001
-#SEND  en   id=20  d l=9   {reset, cord=(0,2)}
-0001___01___010100_1_1001___000000010
-#SEND  en   id=21  d l=9   {reset, cord=(0,3)}
-0001___01___010101_1_1001___000000011
-#SEND  en   id=22  d l=9   {reset, cord=(0,4)}
-0001___01___010110_1_1001___000000100
-#SEND  en   id=23  d l=9   {reset, cord=(1,2)}
-0001___01___010111_1_1001___001000010
-#SEND  en   id=24  d l=9   {reset, cord=(1,3)}
-0001___01___011000_1_1001___001000011
-#SEND  en   id=25  d l=9   {reset, cord=(2,2)}
-0001___01___011001_1_1001___010000010
-#SEND  en   id=26  d l=9   {reset, cord=(2,3)}
-0001___01___011010_1_1001___010000011
+#SEND  en   id=20  d l=9   {reset, did=0}
+0001___01___010100_1_1001___000000000
+#SEND  en   id=21  d l=9   {reset, did=1}
+0001___01___010101_1_1001___000000001
 
-# Deassert reset GW Router Control and set cord to 0
-#SEND  en   id=19  d l=9   {reset, cord=0}
-0001___10___010011_1_1001___000000000
-
-# Deassert reset GW BlackParrot CFG and set dest cord to 2 (CLINT)
-#SEND  en   id=36  d l=9   {reset, cord=2}
-0001___10___100100_1_1001___000000010
-
-# Deassert reset ASIC BackParrot Control and set dest cord to 0 (DRAM)
-#SEND  en   id=37 d l=9   {reset, cord=0}
-0001___01___100101_1_1001___000000000
-
-# Deassert reset GW BlackParrot Control and set dest cord to 0 (DRAM)
-#SEND  en   id=37 d l=9   {reset, cord=0}
-0001___10___100101_1_1001___000000000
+# Deassert reset GW Routers and set did
+#SEND  en   id=19  d l=9   {reset, did=1}
+0001___10___010011_1_1001___000000001
+#SEND  en   id=20  d l=9   {reset, did=0}
+0001___10___010100_1_1001___000000000
+#SEND  en   id=21  d l=9   {reset, did=0}
+0001___10___010101_1_1001___000000000
 
 ################################################################################
 #

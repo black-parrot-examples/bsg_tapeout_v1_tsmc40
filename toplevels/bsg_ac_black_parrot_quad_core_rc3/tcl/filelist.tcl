@@ -6,18 +6,18 @@
 set basejump_stl_dir       $::env(BASEJUMP_STL_DIR)
 set bsg_designs_dir        $::env(BSG_DESIGNS_DIR)
 set bsg_designs_target_dir $::env(BSG_DESIGNS_TARGET_DIR)
-set black_parrot_dir       $::env(BLACK_PARROT_DIR)
+set blackparrot_dir        $::env(BLACKPARROT_DIR)
 
 set bsg_packaging_dir $::env(BSG_PACKAGING_DIR)
 set bsg_package       $::env(BSG_PACKAGE)
 set bsg_pinout        $::env(BSG_PINOUT)
 set bsg_padmapping    $::env(BSG_PADMAPPING)
 
-set bp_common_dir ${black_parrot_dir}/bp_common
-set bp_top_dir    ${black_parrot_dir}/bp_top
-set bp_fe_dir     ${black_parrot_dir}/bp_fe
-set bp_be_dir     ${black_parrot_dir}/bp_be
-set bp_me_dir     ${black_parrot_dir}/bp_me
+set bp_common_dir ${blackparrot_dir}/bp_common
+set bp_top_dir    ${blackparrot_dir}/bp_top
+set bp_fe_dir     ${blackparrot_dir}/bp_fe
+set bp_be_dir     ${blackparrot_dir}/bp_be
+set bp_me_dir     ${blackparrot_dir}/bp_me
 
 set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_cache/bsg_cache_pkg.v
@@ -32,6 +32,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_be_dir/src/include/bp_be_dcache/bp_be_dcache_pkg.vh
   $bp_me_dir/src/include/v/bp_cce_pkg.v
   $bp_me_dir/src/include/v/bp_me_pkg.vh
+  $bp_be_dir/test/tb/bp_be_dcache/v/bp_dcache_axe_trace_gen.v
   $bp_common_dir/src/include/bp_common_cfg_link_pkg.vh
   $basejump_stl_dir/bsg_cache/bsg_cache.v
   $basejump_stl_dir/bsg_cache/bsg_cache_dma.v
@@ -66,8 +67,10 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_mem/bsg_mem_1r1w_synth.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1rw_sync.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1rw_sync_mask_write_bit.v
+  $basejump_stl_dir/bsg_mem/bsg_mem_1rw_sync_mask_write_bit_banked.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1rw_sync_mask_write_bit_synth.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1rw_sync_mask_write_byte.v
+  $basejump_stl_dir/bsg_mem/bsg_mem_1rw_sync_mask_write_byte_banked.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1rw_sync_mask_write_byte_synth.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1rw_sync_synth.v
   $basejump_stl_dir/bsg_mem/bsg_mem_2r1w_sync.v
@@ -108,6 +111,8 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_misc/bsg_scan.v
   $basejump_stl_dir/bsg_misc/bsg_swap.v
   $basejump_stl_dir/bsg_misc/bsg_thermometer_count.v
+  $basejump_stl_dir/bsg_misc/bsg_tiehi.v
+  $basejump_stl_dir/bsg_misc/bsg_tielo.v
   $basejump_stl_dir/bsg_misc/bsg_transpose.v
   $basejump_stl_dir/bsg_misc/bsg_unconcentrate_static.v
   $basejump_stl_dir/bsg_noc/bsg_mesh_stitch.v
@@ -178,6 +183,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/cce/bp_cce_reg.v
   $bp_me_dir/src/v/cce/bp_cce_msg_cached.v
   $bp_me_dir/src/v/cce/bp_cce_msg_uncached.v
+  $bp_me_dir/src/v/cce/bp_io_cce.v
   $bp_me_dir/src/v/wormhole/bp_me_addr_to_cce_id.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_id_to_cord.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_io_link_bidir.v
@@ -203,6 +209,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_top_dir/src/v/bp_core.v
   $bp_top_dir/src/v/bp_core_complex.v
   $bp_top_dir/src/v/bp_io_complex.v
+  $bp_top_dir/src/v/bp_io_link_to_lce.v
   $bp_top_dir/src/v/bp_io_tile.v
   $bp_top_dir/src/v/bp_io_tile_node.v
   $bp_top_dir/src/v/bp_mem_complex.v
@@ -240,6 +247,13 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_tag/bsg_tag_master.v
   $basejump_stl_dir/bsg_tag/bsg_tag_client.v
   $basejump_stl_dir/bsg_tag/bsg_tag_client_unsync.v
+
+  $basejump_stl_dir/bsg_dmc/bsg_dmc_pkg.v
+  $basejump_stl_dir/bsg_dmc/bsg_dmc.v
+  $basejump_stl_dir/bsg_dmc/bsg_dmc_controller.v
+  $basejump_stl_dir/bsg_dmc/bsg_dmc_phy.v
+  $basejump_stl_dir/bsg_dataflow/bsg_make_2D_array.v
+  $basejump_stl_dir/bsg_dataflow/bsg_flatten_2D_array.v
   
   $bsg_designs_dir/modules/bsg_chip_io_complex/bsg_chip_io_complex.v
 

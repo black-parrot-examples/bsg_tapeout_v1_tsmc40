@@ -30,7 +30,7 @@ import bp_me_pkg::*;
 import bsg_noc_pkg::*;
 import bsg_wormhole_router_pkg::*;
 
-#(localparam bp_params_e bp_params_p = e_bp_single_core_cfg `declare_bp_proc_params(bp_params_p))
+#(localparam bp_params_e bp_params_p = bp_cfg_gp `declare_bp_proc_params(bp_params_p))
 `include "bsg_pinout_inverted.v"
 
   `declare_bsg_ready_and_link_sif_s(ct_width_gp, bsg_ready_and_link_sif_s);

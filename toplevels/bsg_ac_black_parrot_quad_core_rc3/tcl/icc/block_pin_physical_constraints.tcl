@@ -9,8 +9,8 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
     set lce_req_width  [expr [sizeof [get_pins -of_objects $mim_cell -filter "name=~coh_lce_req_*"]] / 8]
     set lce_resp_width [expr [sizeof [get_pins -of_objects $mim_cell -filter "name=~coh_lce_resp_*"]] / 8]
     set lce_cmd_width  [expr [sizeof [get_pins -of_objects $mim_cell -filter "name=~coh_lce_cmd_*"]] / 8]
-    set mem_cmd_width  [expr [sizeof [get_pins -of_objects $mim_cell -filter "name=~mem_cmd_*"]] / 8]
-    set mem_resp_width [expr [sizeof [get_pins -of_objects $mim_cell -filter "name=~mem_resp_*"]] / 8]
+    set mem_cmd_width  [expr [sizeof [get_pins -of_objects $mim_cell -filter "name=~mem_cmd_*"]] / 2]
+    set mem_resp_width [expr [sizeof [get_pins -of_objects $mim_cell -filter "name=~mem_resp_*"]] / 2]
     foreach_in_collection pin [get_pins -of_objects $mim_cell] {
       set pin_name [get_attribute [get_pins $pin] name]
       set pin_direction [get_attribute [get_pins $pin] direction]
@@ -118,7 +118,7 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
           }
         }
       } elseif { [regexp "^mem_cmd_.*" $pin_name match] } {
-        set direction [expr $index / $mem_cmd_width]
+        set direction [expr $index / $mem_cmd_width + 2]
         set keepout_tracks 50
         if { $direction == 0 } {
           set side 1
@@ -154,7 +154,7 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
           }
         }
       } elseif { [regexp "^mem_resp_.*" $pin_name match] } {
-        set direction [expr $index / $mem_cmd_width]
+        set direction [expr $index / $mem_cmd_width + 2]
         set keepout_tracks 50
         if { $direction == 0 } {
           set side 1

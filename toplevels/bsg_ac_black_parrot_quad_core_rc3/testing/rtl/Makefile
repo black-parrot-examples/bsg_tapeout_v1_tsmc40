@@ -57,11 +57,6 @@ VCS_OPTIONS += -o $(BSG_OUT_SIM)
 VCS_OPTIONS += -Mdir=$(BSG_OUT_DIR)
 VCS_OPTIONS += -top bsg_config bsg_config.v
 
-#VCS_OPTIONS += +incdir+$(BLACKPARROT_COMMON_DIR)/src/include/v
-#VCS_OPTIONS += +incdir+$(BASEJUMP_STL_DIR)/bsg_misc/
-#VCS_OPTIONS += $(BASEJUMP_STL_DIR)/bsg_misc/bsg_defines.v
-#VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_aviary_defines.vh
-
 # DRAMSim2
 VCS_OPTIONS += -CFLAGS "-I$(BLACKPARROT_DIR)/external/include -std=c++11"
 VCS_OPTIONS += -LDFLAGS "-L$(BLACKPARROT_DIR)/external/lib -ldramsim -Wl,-rpath=$(BLACKPARROT_DIR)/external/lib"

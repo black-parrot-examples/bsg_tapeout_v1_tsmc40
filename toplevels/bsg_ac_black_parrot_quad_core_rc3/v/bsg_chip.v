@@ -21,7 +21,7 @@ module bsg_chip
  import bsg_tag_pkg::*;
  import bsg_chip_pkg::*;
  import bsg_dmc_pkg::*;
- #(localparam bp_params_e bp_params_p = e_bp_single_core_cfg `declare_bp_proc_params(bp_params_p))
+ #(localparam bp_params_e bp_params_p = bp_cfg_gp `declare_bp_proc_params(bp_params_p))
 `include "bsg_pinout.v"
 `include "bsg_iopads.v"
 

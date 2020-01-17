@@ -127,8 +127,8 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
     set_disable_timing $cell -from CLKB -to CLKA
   }
 
-  set_false_path -through [get_ports *cord*]
-  set_false_path -through [get_ports *did*]
+  set_false_path -from [get_ports *cord*]
+  set_false_path -from [get_ports *did*]
 
   # Derate
   set cells_to_derate [list]

@@ -18,7 +18,7 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
       if { [regexp "^coh_lce_req_.*" $pin_name match] } {
         set order [expr $index % $lce_req_width]
         set direction [expr $index / $lce_req_width]
-        set keepout_tracks 50
+        set keepout_tracks 500
         if { $direction == 0 } {
           set side 1
           if { $pin_direction == "in" } {
@@ -51,7 +51,7 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
       } elseif { [regexp "^coh_lce_resp_.*" $pin_name match] } {
         set order [expr $lce_req_width + $index % $lce_resp_width]
         set direction [expr $index / $lce_resp_width]
-        set keepout_tracks 50
+        set keepout_tracks 500
         if { $direction == 0 } {
           set side 1
           if { $pin_direction == "in" } {
@@ -83,7 +83,7 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
         }
       } elseif { [regexp "^coh_lce_cmd_.*" $pin_name match] } {
         set direction [expr $index / $lce_cmd_width]
-        set keepout_tracks 50
+        set keepout_tracks 500
         if { $direction == 0 } {
           set side 1
           set order [expr $index % $lce_cmd_width]
@@ -118,25 +118,9 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
           }
         }
       } elseif { [regexp "^mem_cmd_.*" $pin_name match] } {
-        set direction [expr $index / $mem_cmd_width + 2]
-        set keepout_tracks 50
+        set direction [expr $index / $mem_cmd_width]
+        set keepout_tracks 500
         if { $direction == 0 } {
-          set side 1
-          set order [expr $lce_cmd_width + $index % $mem_cmd_width]
-          if { $pin_direction == "in" } {
-            set layer M6
-          } elseif { $pin_direction == "out"} {
-            set layer M8
-          }
-        } elseif { $direction == 1 } {
-          set side 3
-          set order [expr $lce_cmd_width + $index % $mem_cmd_width]
-          if { $pin_direction == "in" } {
-            set layer M8
-          } elseif { $pin_direction == "out"} {
-            set layer M6
-          }
-        } elseif { $direction == 2 } {
           set side 2
           set layer M7
           if { $pin_direction == "in" } {
@@ -144,7 +128,7 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
           } elseif { $pin_direction == "out"} {
             set order [expr $mem_cmd_width + $index % $mem_cmd_width]
           }
-        } elseif { $direction ==  3} {
+        } elseif { $direction ==  1} {
           set side 4
           set layer M7
           if { $pin_direction == "in" } {
@@ -154,34 +138,18 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
           }
         }
       } elseif { [regexp "^mem_resp_.*" $pin_name match] } {
-        set direction [expr $index / $mem_cmd_width + 2]
-        set keepout_tracks 50
+        set direction [expr $index / $mem_cmd_width]
+        set keepout_tracks 500
         if { $direction == 0 } {
-          set side 1
-          set order [expr $lce_cmd_width + $mem_cmd_width + $index % $mem_resp_width]
-          if { $pin_direction == "in" } {
-            set layer M6
-          } elseif { $pin_direction == "out"} {
-            set layer M8
-          }
-        } elseif { $direction == 1 } {
-          set side 3
-          set order [expr $lce_cmd_width + $mem_cmd_width + $index % $mem_resp_width]
-          if { $pin_direction == "in" } {
-            set layer M8
-          } elseif { $pin_direction == "out"} {
-            set layer M6
-          }
-        } elseif { $direction == 2 } {
-          set side 2
+          set side 4
           set layer M7
           if { $pin_direction == "in" } {
             set order [expr $mem_cmd_width * 2 + $index % $mem_resp_width]
           } elseif { $pin_direction == "out"} {
             set order [expr $mem_cmd_width * 2 + $mem_resp_width + $index % $mem_resp_width]
           }
-        } elseif { $direction ==  3} {
-          set side 4
+        } elseif { $direction ==  1 } {
+          set side 2
           set layer M7
           if { $pin_direction == "in" } {
             set order [expr $mem_cmd_width * 2 + $mem_resp_width + $index % $mem_resp_width]

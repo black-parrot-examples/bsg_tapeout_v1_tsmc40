@@ -28,7 +28,7 @@ export TESTING_BSG_DESIGNS_TARGET_DIR ?= $(BSG_DESIGNS_TARGET_DIR)
 
 export BSG_PACKAGE           ?=uw_bga
 export BSG_PINOUT            ?=bsg_asic_cloud
-export BSG_PACKAGING_FOUNDRY ?=gf_14_invecas_1p8v
+export BSG_PACKAGING_FOUNDRY ?=tsmc40
 export BSG_PADMAPPING        ?=default
 
 export BLACKPARROT_COMMON_DIR ?= $(BLACKPARROT_DIR)/bp_common
@@ -38,10 +38,10 @@ export BLACKPARROT_BE_DIR     ?= $(BLACKPARROT_DIR)/bp_be
 export BLACKPARROT_ME_DIR     ?= $(BLACKPARROT_DIR)/bp_me
 
 # Additional setup for RTL-Hard
-export BSG_CHIP_DIR             ?= $(BSG_DESIGNS_TARGET_DIR)/bsg_14
-export MEMGEN_RUN_DIR           ?= $(BSG_CHIP_DIR)/sources/memgen
+export BSG_CHIP_DIR             ?= $(BSG_DESIGNS_TARGET_DIR)/bsg_40
+export MEMGEN_RUN_DIR           ?= $(BSG_CHIP_DIR)/pdk_prep/memgen
 export BSG_TOPLEVEL_DESIGN_TYPE ?=chip_3x3
-export BSG_TARGET_PROCESS       ?=gf_14
+export BSG_TARGET_PROCESS       ?=tsmc40
 
 ########################################
 ## VCS OPTIONS
@@ -118,6 +118,9 @@ VCS_OPTIONS += +define+BSG_DESIGNS_TESTING_LIBRARY_NAME=$(BSG_DESIGNS_TESTING_LI
 VCS_OPTIONS += -f $(BSG_DESIGNS_TESTING_FILELIST)
 VCS_OPTIONS += -libmap $(BSG_DESIGNS_TESTING_LIBRARY)
 VCS_OPTIONS += +define+den2048Mb+sg5+x16+FULL_MEM
+
+include $(BSG_DESIGNS_TARGET_DIR)/mk/bsg_40.config.mk
+include $(BSG_CHIP_DIR)/cad/pdk_setup/pdk_setup_dir.mk
 
 $(BSG_CHIP_FILELIST): $(BSG_DESIGNS_TESTING_LIBRARY)
 $(BSG_CHIP_LIBRARY): $(BSG_DESIGNS_TESTING_LIBRARY)

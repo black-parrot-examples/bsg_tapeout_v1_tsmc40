@@ -263,6 +263,14 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
   #=================
   set_ungroup [get_cells swizzle]
 
+  # Ungroup meshes so that buffers do not get inserted automatically between adjacent pins
+  set_ungroup [get_cells -hier coh_req_mesh]
+  set_ungroup [get_cells -hier coh_cmd_mesh]
+  set_ungroup [get_cells -hier coh_resp_mesh]
+  set_ungroup [get_cells -hier mem_mesh]
+  set_ungroup [get_cells -hier cmd_mesh]
+  set_ungroup [get_cells -hier resp_mesh]
+
   set cells_to_derate [list]
   append_to_collection cells_to_derate [get_cells -quiet -hier -filter "ref_name=~tsmc40_*"]
   #append_to_collection cells_to_derate [get_cells -quiet -hier -filter "ref_name=~IN12LP_*"]

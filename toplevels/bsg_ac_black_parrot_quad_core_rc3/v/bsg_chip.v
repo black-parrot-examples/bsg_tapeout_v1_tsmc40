@@ -680,7 +680,7 @@ module bsg_chip
     begin : repeater
       bsg_noc_repeater_node
        #(.width_p(ct_width_gp))
-       prev_repeater
+       prev_bypass_repeater
         (.clk_i(router_clk_lo)
          ,.reset_i(router_reset_lo)
 
@@ -693,7 +693,7 @@ module bsg_chip
 
       bsg_noc_repeater_node
        #(.width_p(ct_width_gp))
-       next_repeater
+       next_bypass_repeater
         (.clk_i(router_clk_lo)
          ,.reset_i(router_reset_lo)
 

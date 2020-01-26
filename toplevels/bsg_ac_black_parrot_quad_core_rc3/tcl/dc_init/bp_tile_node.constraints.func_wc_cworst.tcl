@@ -15,6 +15,7 @@ bsg_set_general_timing_constraints bp_clk [get_ports "core_clk_i coh_clk_i"] 2.0
 bsg_set_general_timing_constraints mem_clk [get_ports mem_clk_i] 2.0 0.1 $mem_input_ports $mem_output_ports 0.4 16 INVD1BWP INVD8BWP
 
 set_false_path -from [get_ports *cord_i*]
+set_false_path -from [get_ports *did_i*]
 #set_disable_timing   [get_ports *cord_i*]
 #set_false_path -from [get_ports my_cid_i*]
 #set_disable_timing   [get_ports my_cid_i*]

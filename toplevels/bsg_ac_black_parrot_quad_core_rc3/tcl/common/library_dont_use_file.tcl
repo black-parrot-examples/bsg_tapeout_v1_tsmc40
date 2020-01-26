@@ -12,6 +12,8 @@ foreach_in_collection lib [get_libs tcbn*] {
   if { [sizeof $dont_use_lib_cells] > 0 } { set_dont_use $dont_use_lib_cells }
   set dont_use_lib_cells [get_lib_cells $lib_name/BHD*]
   if { [sizeof $dont_use_lib_cells] > 0 } { set_dont_use $dont_use_lib_cells }
+  set dont_use_lib_cells [get_lib_cells $lib_name/DFKCSND*]
+  if { [sizeof $dont_use_lib_cells] > 0 } { set_dont_use $dont_use_lib_cells }
 }    
 
 puts "BSG-info: Completed script [info script]\n"

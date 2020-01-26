@@ -107,6 +107,9 @@ if { $final_sverilog_source_files != "" } {
 ## Elaborate the design
 ########################################
 
+set_app_var hdlin_ff_always_sync_set_reset  true
+set_app_var hdlin_ff_always_async_set_reset false
+
 # Performa elaboration on the top block
 if { ![elaborate $::env(TOP_HIER_BLOCK)] } {
   exit -1

@@ -58,7 +58,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_cache/bsg_cache.v
   $basejump_stl_dir/bsg_cache/bsg_cache_dma.v
   $basejump_stl_dir/bsg_cache/bsg_cache_miss.v
-  $basejump_stl_dir/bsg_cache/bsg_cache_pkt_decode.v
+  $basejump_stl_dir/bsg_cache/bsg_cache_decode.v
   $basejump_stl_dir/bsg_cache/bsg_cache_sbuf.v
   $basejump_stl_dir/bsg_cache/bsg_cache_sbuf_queue.v
   $basejump_stl_dir/bsg_dataflow/bsg_channel_tunnel.v
@@ -206,15 +206,11 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/cce/bp_io_cce.v
   $bp_me_dir/src/v/wormhole/bp_me_addr_to_cce_id.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_id_to_cord.v
-  $bp_me_dir/src/v/wormhole/bp_me_cce_to_io_link_bidir.v
-  $bp_me_dir/src/v/wormhole/bp_me_cce_to_io_link_client.v
-  $bp_me_dir/src/v/wormhole/bp_me_cce_to_io_link_master.v
+  $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_bidir.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_client.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_master.v
   $bp_me_dir/src/v/wormhole/bp_me_cord_to_id.v
   $bp_me_dir/src/v/wormhole/bp_me_lce_id_to_cord.v
-  $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_io_cmd.v
-  $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_io_resp.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_lce_cmd.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_lce_req.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_lce_resp.v

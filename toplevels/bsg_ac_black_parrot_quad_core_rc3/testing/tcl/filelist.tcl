@@ -38,19 +38,16 @@ set TESTING_PACKAGE_FILES [join "
 
 set TESTING_SOURCE_FILES [join "
   $TESTING_PACKAGE_FILES
+  $bp_top_dir/test/common/bp_monitor.cpp
   $bp_me_dir/test/common/bp_mem.v
   $bp_me_dir/test/common/bp_mem_transducer.v
   $bp_me_dir/test/common/bp_mem_delay_model.v
   $bp_me_dir/test/common/bp_mem_storage_sync.v
   $bp_me_dir/test/common/bp_mem_utils.cpp
   $bp_me_dir/test/common/bp_cce_mmio_cfg_loader.v
-  $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_io_cmd.v
-  $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_io_resp.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_mem_cmd.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_mem_resp.v
-  $bp_me_dir/src/v/wormhole/bp_me_cce_to_io_link_bidir.v
-  $bp_me_dir/src/v/wormhole/bp_me_cce_to_io_link_master.v
-  $bp_me_dir/src/v/wormhole/bp_me_cce_to_io_link_client.v
+  $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_bidir.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_master.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_client.v
   $bp_top_dir/test/common/bp_nonsynth_host.v

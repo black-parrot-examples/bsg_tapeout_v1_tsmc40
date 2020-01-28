@@ -20,8 +20,7 @@ module bsg_chip
  import bsg_wormhole_router_pkg::*;
  import bsg_tag_pkg::*;
  import bsg_chip_pkg::*;
- import bsg_dmc_pkg::*;
- #(localparam bp_params_e bp_params_p = bp_cfg_gp `declare_bp_proc_params(bp_params_p))
+ #(localparam bp_params_e bp_params_p = e_bp_quad_core_cfg `declare_bp_proc_params(bp_params_p))
 `include "bsg_pinout.v"
 `include "bsg_iopads.v"
 
@@ -48,7 +47,6 @@ module bsg_chip
   assign ds_tag_lines_lo          = tag_lines_lo[9:7];
   assign sel_tag_lines_lo         = tag_lines_lo[12:10];
 
-  bsg_tag_s [9:0] dmc_param_tag_lines_lo;
   // Tag lines for io complex
   wire bsg_tag_s prev_link_io_tag_lines_lo   = tag_lines_lo[13];
   wire bsg_tag_s prev_link_core_tag_lines_lo = tag_lines_lo[14];
@@ -59,8 +57,6 @@ module bsg_chip
   wire bsg_tag_s bp_core_tag_lines_lo        = tag_lines_lo[19];
   wire bsg_tag_s host_core_tag_lines_lo      = tag_lines_lo[20];
   wire bsg_tag_s router_tag_lines_lo         = tag_lines_lo[21];
-  wire bsg_tag_s dmc_control_tag_lines_lo    = tag_lines_lo[22];
-  assign dmc_param_tag_lines_lo              = tag_lines_lo[23+:10];
 
   // BSG tag master instance
   bsg_tag_master #(.els_p( tag_num_clients_gp )
@@ -81,7 +77,6 @@ module bsg_chip
   logic bp_clk_lo;
   logic io_master_clk_lo;
   logic router_clk_lo;
-  logic dfi_2x_clk_lo;
 
   bsg_clk_gen_power_domain #(.num_clk_endpoint_p( clk_gen_num_endpoints_gp )
                             ,.ds_width_p( clk_gen_ds_width_gp )
@@ -94,7 +89,6 @@ module bsg_chip
       ,.ds_tag_lines_i          ( ds_tag_lines_lo )
       ,.sel_tag_lines_i         ( sel_tag_lines_lo )
 
-      // DRAM is io_master_clk_lo
       ,.ext_clk_i({ clk_C_i_int, clk_B_i_int, clk_A_i_int })
 
       ,.clk_o({ router_clk_lo, io_master_clk_lo, bp_clk_lo })
@@ -114,7 +108,7 @@ module bsg_chip
            ,.harden_p  ( 1 )
            )
     clk_out_mux
-      (.data_i( {dfi_2x_clk_lo, bp_clk_lo, io_master_clk_lo, router_clk_lo} )
+      (.data_i( {1'b0, bp_clk_lo, io_master_clk_lo, router_clk_lo} )
       ,.sel_i ( clk_out_sel )
       ,.data_o( clk_out )
       );
@@ -173,64 +167,6 @@ module bsg_chip
       );
   wire router_reset_lo = router_tag_data_lo.reset;
   wire [wh_did_width_gp-1:0] router_did_lo = router_tag_data_lo.did;
-
-  typedef struct packed {
-    logic reset;
-    logic [5:0] pad;
-    logic bypass;
-  } dmc_control_tag_payload_s;
-
-  dmc_control_tag_payload_s dmc_control_tag_data_lo;
-  logic                     dmc_control_tag_new_data_lo;
-
-  bsg_tag_client #(.width_p( $bits(dmc_control_tag_payload_s) ), .default_p( 0 ))
-    btc_dmc_control
-      (.bsg_tag_i     ( dmc_control_tag_lines_lo )
-      ,.recv_clk_i    ( dfi_2x_clk_lo )
-      ,.recv_reset_i  ( 1'b0 )
-      ,.recv_new_r_o  ( dmc_control_tag_new_data_lo )
-      ,.recv_data_r_o ( dmc_control_tag_data_lo )
-      );
-  wire dmc_reset_lo = dmc_control_tag_data_lo.reset;
-  wire dmc_bypass_lo = dmc_control_tag_data_lo.bypass;
-
-  typedef struct packed {
-    logic [7:0] param;
-  } dmc_param_tag_payload_s;
-
-  dmc_param_tag_payload_s [9:0] dmc_param_tag_data_lo;
-  logic [9:0] dmc_param_tag_new_data_lo;
-
-  for (i = 0; i < 10; i++)
-    begin : dmc_btc
-      bsg_tag_client #(.width_p( $bits(dmc_param_tag_payload_s) ), .default_p( 0 ))
-        btc_dmc_param
-          (.bsg_tag_i     ( dmc_param_tag_lines_lo[i] )
-          ,.recv_clk_i    ( dfi_2x_clk_lo )
-          ,.recv_reset_i  ( 1'b0 )
-          ,.recv_new_r_o  ( dmc_param_tag_new_data_lo[i] )
-          ,.recv_data_r_o ( dmc_param_tag_data_lo[i] )
-          );
-    end
-
-    bsg_dmc_s dmc_p_lo;
-    assign dmc_p_lo.trefi        = {dmc_param_tag_data_lo[1].param, dmc_param_tag_data_lo[0].param};
-    assign dmc_p_lo.tmrd         = {dmc_param_tag_data_lo[2].param[0+:4]};
-    assign dmc_p_lo.trfc         = {dmc_param_tag_data_lo[2].param[4+:4]};
-    assign dmc_p_lo.trc          = {dmc_param_tag_data_lo[3].param[0+:4]};
-    assign dmc_p_lo.trp          = {dmc_param_tag_data_lo[3].param[4+:4]};
-    assign dmc_p_lo.tras         = {dmc_param_tag_data_lo[4].param[0+:4]};
-    assign dmc_p_lo.trrd         = {dmc_param_tag_data_lo[4].param[4+:4]};
-    assign dmc_p_lo.trcd         = {dmc_param_tag_data_lo[5].param[0+:4]};
-    assign dmc_p_lo.twr          = {dmc_param_tag_data_lo[5].param[4+:4]};
-    assign dmc_p_lo.twtr         = {dmc_param_tag_data_lo[6].param[0+:4]};
-    assign dmc_p_lo.trtp         = {dmc_param_tag_data_lo[6].param[4+:4]};
-    assign dmc_p_lo.tcas         = {dmc_param_tag_data_lo[7].param[0+:4]};
-    assign dmc_p_lo.col_width    = {dmc_param_tag_data_lo[7].param[0+:4]};
-    assign dmc_p_lo.row_width    = {dmc_param_tag_data_lo[8].param[4+:4]};
-    assign dmc_p_lo.bank_width   = {dmc_param_tag_data_lo[9].param[0+:2]};
-    assign dmc_p_lo.dqs_sel_cal  = {dmc_param_tag_data_lo[9].param[0+:2]};
-    assign dmc_p_lo.init_cmd_cnt = {dmc_param_tag_data_lo[9].param[4+:4]};
 
   //////////////////////////////////////////////////
   //
@@ -428,7 +364,13 @@ module bsg_chip
   bp_cce_mem_msg_s dram_resp_lo;
   logic            dram_resp_v_lo, dram_resp_ready_li;
   bp_me_cce_to_mem_link_client
-   #(.bp_params_p(bp_params_p))
+   #(.bp_params_p(bp_params_p)
+     ,.num_outstanding_req_p(mem_noc_max_credits_p)
+     ,.flit_width_p(mem_noc_flit_width_p)
+     ,.cord_width_p(mem_noc_cord_width_p)
+     ,.cid_width_p(mem_noc_cid_width_p)
+     ,.len_width_p(mem_noc_len_width_p)
+     )
    dram_link
     (.clk_i(router_clk_lo)
      ,.reset_i(router_reset_lo)
@@ -445,199 +387,14 @@ module bsg_chip
      ,.resp_link_o(dram_resp_link_li)
      );
 
-    // DMC
-/*
-    localparam ui_addr_width_p = paddr_width_p; // word address (1 TB)
-    localparam ui_data_width_p = dword_width_p;
-    localparam burst_data_width_p = cce_block_width_p;
-    localparam dq_data_width_p = 32;
-    localparam dq_group_lp = dq_data_width_p >> 3;
-
-    logic                            app_en;
-    logic                            app_rdy;
-    logic                      [2:0] app_cmd;
-    logic      [ui_addr_width_p-1:0] app_addr;
-  
-    logic                            app_wdf_wren;
-    logic                            app_wdf_rdy;
-    logic      [ui_data_width_p-1:0] app_wdf_data;
-    logic [(ui_data_width_p>>3)-1:0] app_wdf_mask;
-    logic                            app_wdf_end;
-  
-    logic                            app_rd_data_valid;
-    logic      [ui_data_width_p-1:0] app_rd_data;
-    logic                            app_rd_data_end;
-
-    wire                      [2:0] ddr_ba_lo;
-    wire                     [15:0] ddr_addr_lo;
-  
-    wire [(dq_data_width_p>>3)-1:0] ddr_dm_lo;
-    wire [(dq_data_width_p>>3)-1:0] ddr_dm_oen_lo;
-  
-    wire [(dq_data_width_p>>3)-1:0] ddr_dqs_p_oen_lo;
-    wire [(dq_data_width_p>>3)-1:0] ddr_dqs_p_ien_lo;
-    wire [(dq_data_width_p>>3)-1:0] ddr_dqs_p_lo;
-    wire [(dq_data_width_p>>3)-1:0] ddr_dqs_p_li;
-  
-    wire [(dq_data_width_p>>3)-1:0] ddr_dqs_n_oen_lo;
-    wire [(dq_data_width_p>>3)-1:0] ddr_dqs_n_ien_lo;
-    wire [(dq_data_width_p>>3)-1:0] ddr_dqs_n_lo;
-    wire [(dq_data_width_p>>3)-1:0] ddr_dqs_n_li;
-  
-    wire      [dq_data_width_p-1:0] ddr_dq_li;
-    wire      [dq_data_width_p-1:0] ddr_dq_lo;
-    wire      [dq_data_width_p-1:0] ddr_dq_oen_lo;
-    
-    bsg_dmc #(
-      .ui_addr_width_p(ui_addr_width_p)
-      ,.ui_data_width_p(ui_data_width_p)
-      ,.burst_data_width_p(burst_data_width_p)
-      ,.dq_data_width_p(dq_data_width_p)
-    ) dmc (
-      .dmc_p_i(dmc_p_lo)
-      ,.sys_rst_i(router_reset_lo)
-
-      // Application interface
-      ,.app_addr_i(app_addr)
-      ,.app_cmd_i(app_cmd)
-      ,.app_en_i(app_en)
-      ,.app_rdy_o(app_rdy)
-
-      ,.app_wdf_wren_i(app_wdf_wren)
-      ,.app_wdf_data_i(app_wdf_data)
-      ,.app_wdf_mask_i(app_wdf_mask)
-      ,.app_wdf_end_i(app_wdf_end)
-      ,.app_wdf_rdy_o(app_wdf_rdy)
-
-      ,.app_rd_data_valid_o(app_rd_data_valid)
-      ,.app_rd_data_o(app_rd_data)
-      ,.app_rd_data_end_o(app_rd_data_end)
-
-      // Stubbed compatibility ports
-      ,.app_ref_req_i(1'b0)
-      ,.app_ref_ack_o()
-      ,.app_zq_req_i(1'b0)
-      ,.app_zq_ack_o()
-      ,.app_sr_req_i(1'b0)
-      ,.app_sr_active_o()
-
-      ,.init_calib_complete_o()
-
-      ,.ddr_ck_p_o            ( ddr_ck_p_o_int                 )
-      ,.ddr_ck_n_o            ( ddr_ck_n_o_int                 )
-      ,.ddr_cke_o             ( ddr_cke_o_int                  )
-      ,.ddr_ba_o              ( ddr_ba_lo                      )
-      ,.ddr_addr_o            ( ddr_addr_lo                    )
-      ,.ddr_cs_n_o            ( ddr_cs_n_o_int                 )
-      ,.ddr_ras_n_o           ( ddr_ras_n_o_int                )
-      ,.ddr_cas_n_o           ( ddr_cas_n_o_int                )
-      ,.ddr_we_n_o            ( ddr_we_n_o_int                 )
-      ,.ddr_reset_n_o         ( ddr_reset_n_o_int              )
-      ,.ddr_odt_o             ( ddr_odt_o_int                  )
-
-      ,.ddr_dm_oen_o          ( ddr_dm_oen_lo                  )
-      ,.ddr_dm_o              ( ddr_dm_lo                      )
-      ,.ddr_dqs_p_oen_o       ( ddr_dqs_p_oen_lo               )
-      ,.ddr_dqs_p_ien_o       ( ddr_dqs_p_ien_lo               )
-      ,.ddr_dqs_p_o           ( ddr_dqs_p_lo                   )
-      ,.ddr_dqs_p_i           ( ddr_dqs_p_li                   )
-      ,.ddr_dqs_n_oen_o       ( ddr_dqs_n_oen_lo               )
-      ,.ddr_dqs_n_ien_o       ( ddr_dqs_n_ien_lo               )
-      ,.ddr_dqs_n_o           ( ddr_dqs_n_lo                   )
-      ,.ddr_dqs_n_i           ( ddr_dqs_n_li                   )
-      ,.ddr_dq_oen_o          ( ddr_dq_oen_lo                  )
-      ,.ddr_dq_o              ( ddr_dq_lo                      )
-      ,.ddr_dq_i              ( ddr_dq_li                      )
-
-      ,.ui_clk_i              ( router_clk_lo                  )
-      ,.dfi_clk_2x_i          ( dfi_2x_clk_lo                  )
-      ,.dfi_clk_i             (                                )
-
-      ,.ui_clk_sync_rst_o     (                                )
-      ,.device_temp_o         (                                )
-      );
-
-  assign ddr_ba_0_o_int = ddr_ba_lo[0];
-  assign ddr_ba_1_o_int = ddr_ba_lo[1];
-  assign ddr_ba_2_o_int = ddr_ba_lo[2];
-
-  assign ddr_addr_0_o_int  = ddr_addr_lo[0];
-  assign ddr_addr_1_o_int  = ddr_addr_lo[1];
-  assign ddr_addr_2_o_int  = ddr_addr_lo[2];
-  assign ddr_addr_3_o_int  = ddr_addr_lo[3];
-  assign ddr_addr_4_o_int  = ddr_addr_lo[4];
-  assign ddr_addr_5_o_int  = ddr_addr_lo[5];
-  assign ddr_addr_6_o_int  = ddr_addr_lo[6];
-  assign ddr_addr_7_o_int  = ddr_addr_lo[7];
-  assign ddr_addr_8_o_int  = ddr_addr_lo[8];
-  assign ddr_addr_9_o_int  = ddr_addr_lo[9];
-  assign ddr_addr_10_o_int = ddr_addr_lo[10];
-  assign ddr_addr_11_o_int = ddr_addr_lo[11];
-  assign ddr_addr_12_o_int = ddr_addr_lo[12];
-  assign ddr_addr_13_o_int = ddr_addr_lo[13];
-  assign ddr_addr_14_o_int = ddr_addr_lo[14];
-  assign ddr_addr_15_o_int = ddr_addr_lo[15];
-
-  assign ddr_dm_0_o_int = ddr_dm_lo[0]; assign ddr_dm_0_oen_int = ddr_dm_oen_lo[0];
-  assign ddr_dm_1_o_int = ddr_dm_lo[1]; assign ddr_dm_1_oen_int = ddr_dm_oen_lo[1];
-  assign ddr_dm_2_o_int = ddr_dm_lo[2]; assign ddr_dm_2_oen_int = ddr_dm_oen_lo[2];
-  assign ddr_dm_3_o_int = ddr_dm_lo[3]; assign ddr_dm_3_oen_int = ddr_dm_oen_lo[3];
-
-  assign ddr_dqs_p_0_o_int = ddr_dqs_p_lo[0]; assign ddr_dqs_p_0_oen_int = ddr_dqs_p_oen_lo[0];
-  assign ddr_dqs_p_1_o_int = ddr_dqs_p_lo[1]; assign ddr_dqs_p_1_oen_int = ddr_dqs_p_oen_lo[1];
-  assign ddr_dqs_p_2_o_int = ddr_dqs_p_lo[2]; assign ddr_dqs_p_2_oen_int = ddr_dqs_p_oen_lo[2];
-  assign ddr_dqs_p_3_o_int = ddr_dqs_p_lo[3]; assign ddr_dqs_p_3_oen_int = ddr_dqs_p_oen_lo[3];
-  assign ddr_dqs_n_0_o_int = ddr_dqs_n_lo[0]; assign ddr_dqs_n_0_oen_int = ddr_dqs_n_oen_lo[0];
-  assign ddr_dqs_n_1_o_int = ddr_dqs_n_lo[1]; assign ddr_dqs_n_1_oen_int = ddr_dqs_n_oen_lo[1];
-  assign ddr_dqs_n_2_o_int = ddr_dqs_n_lo[2]; assign ddr_dqs_n_2_oen_int = ddr_dqs_n_oen_lo[2];
-  assign ddr_dqs_n_3_o_int = ddr_dqs_n_lo[3]; assign ddr_dqs_n_3_oen_int = ddr_dqs_n_oen_lo[3];
-
-  assign ddr_dqs_p_li[0] = ddr_dqs_p_0_i_int;
-  assign ddr_dqs_p_li[1] = ddr_dqs_p_1_i_int;
-  assign ddr_dqs_p_li[2] = ddr_dqs_p_2_i_int;
-  assign ddr_dqs_p_li[3] = ddr_dqs_p_3_i_int;
-  assign ddr_dqs_n_li[0] = ddr_dqs_n_0_i_int;
-  assign ddr_dqs_n_li[1] = ddr_dqs_n_1_i_int;
-  assign ddr_dqs_n_li[2] = ddr_dqs_n_2_i_int;
-  assign ddr_dqs_n_li[3] = ddr_dqs_n_3_i_int;
-
-  assign ddr_dq_li[0]  = ddr_dq_0_i_int;  assign ddr_dq_0_o_int  = ddr_dq_lo[0];  assign ddr_dq_0_oen_int  = ddr_dq_oen_lo[0];
-  assign ddr_dq_li[1]  = ddr_dq_1_i_int;  assign ddr_dq_1_o_int  = ddr_dq_lo[1];  assign ddr_dq_1_oen_int  = ddr_dq_oen_lo[1];
-  assign ddr_dq_li[2]  = ddr_dq_2_i_int;  assign ddr_dq_2_o_int  = ddr_dq_lo[2];  assign ddr_dq_2_oen_int  = ddr_dq_oen_lo[2];
-  assign ddr_dq_li[3]  = ddr_dq_3_i_int;  assign ddr_dq_3_o_int  = ddr_dq_lo[3];  assign ddr_dq_3_oen_int  = ddr_dq_oen_lo[3];
-  assign ddr_dq_li[4]  = ddr_dq_4_i_int;  assign ddr_dq_4_o_int  = ddr_dq_lo[4];  assign ddr_dq_4_oen_int  = ddr_dq_oen_lo[4];
-  assign ddr_dq_li[5]  = ddr_dq_5_i_int;  assign ddr_dq_5_o_int  = ddr_dq_lo[5];  assign ddr_dq_5_oen_int  = ddr_dq_oen_lo[5];
-  assign ddr_dq_li[6]  = ddr_dq_6_i_int;  assign ddr_dq_6_o_int  = ddr_dq_lo[6];  assign ddr_dq_6_oen_int  = ddr_dq_oen_lo[6];
-  assign ddr_dq_li[7]  = ddr_dq_7_i_int;  assign ddr_dq_7_o_int  = ddr_dq_lo[7];  assign ddr_dq_7_oen_int  = ddr_dq_oen_lo[7];
-  assign ddr_dq_li[8]  = ddr_dq_8_i_int;  assign ddr_dq_8_o_int  = ddr_dq_lo[8];  assign ddr_dq_8_oen_int  = ddr_dq_oen_lo[8];
-  assign ddr_dq_li[9]  = ddr_dq_9_i_int;  assign ddr_dq_9_o_int  = ddr_dq_lo[9];  assign ddr_dq_9_oen_int  = ddr_dq_oen_lo[9];
-  assign ddr_dq_li[10] = ddr_dq_10_i_int; assign ddr_dq_10_o_int = ddr_dq_lo[10]; assign ddr_dq_10_oen_int = ddr_dq_oen_lo[10];
-  assign ddr_dq_li[11] = ddr_dq_11_i_int; assign ddr_dq_11_o_int = ddr_dq_lo[11]; assign ddr_dq_11_oen_int = ddr_dq_oen_lo[11];
-  assign ddr_dq_li[12] = ddr_dq_12_i_int; assign ddr_dq_12_o_int = ddr_dq_lo[12]; assign ddr_dq_12_oen_int = ddr_dq_oen_lo[12];
-  assign ddr_dq_li[13] = ddr_dq_13_i_int; assign ddr_dq_13_o_int = ddr_dq_lo[13]; assign ddr_dq_13_oen_int = ddr_dq_oen_lo[13];
-  assign ddr_dq_li[14] = ddr_dq_14_i_int; assign ddr_dq_14_o_int = ddr_dq_lo[14]; assign ddr_dq_14_oen_int = ddr_dq_oen_lo[14];
-  assign ddr_dq_li[15] = ddr_dq_15_i_int; assign ddr_dq_15_o_int = ddr_dq_lo[15]; assign ddr_dq_15_oen_int = ddr_dq_oen_lo[15];
-  assign ddr_dq_li[16] = ddr_dq_16_i_int; assign ddr_dq_16_o_int = ddr_dq_lo[16]; assign ddr_dq_16_oen_int = ddr_dq_oen_lo[16];
-  assign ddr_dq_li[17] = ddr_dq_17_i_int; assign ddr_dq_17_o_int = ddr_dq_lo[17]; assign ddr_dq_17_oen_int = ddr_dq_oen_lo[17];
-  assign ddr_dq_li[18] = ddr_dq_18_i_int; assign ddr_dq_18_o_int = ddr_dq_lo[18]; assign ddr_dq_18_oen_int = ddr_dq_oen_lo[18];
-  assign ddr_dq_li[19] = ddr_dq_19_i_int; assign ddr_dq_19_o_int = ddr_dq_lo[19]; assign ddr_dq_19_oen_int = ddr_dq_oen_lo[19];
-  assign ddr_dq_li[20] = ddr_dq_20_i_int; assign ddr_dq_20_o_int = ddr_dq_lo[20]; assign ddr_dq_20_oen_int = ddr_dq_oen_lo[20];
-  assign ddr_dq_li[21] = ddr_dq_21_i_int; assign ddr_dq_21_o_int = ddr_dq_lo[21]; assign ddr_dq_21_oen_int = ddr_dq_oen_lo[21];
-  assign ddr_dq_li[22] = ddr_dq_22_i_int; assign ddr_dq_22_o_int = ddr_dq_lo[22]; assign ddr_dq_22_oen_int = ddr_dq_oen_lo[22];
-  assign ddr_dq_li[23] = ddr_dq_23_i_int; assign ddr_dq_23_o_int = ddr_dq_lo[23]; assign ddr_dq_23_oen_int = ddr_dq_oen_lo[23];
-  assign ddr_dq_li[24] = ddr_dq_24_i_int; assign ddr_dq_24_o_int = ddr_dq_lo[24]; assign ddr_dq_24_oen_int = ddr_dq_oen_lo[24];
-  assign ddr_dq_li[25] = ddr_dq_25_i_int; assign ddr_dq_25_o_int = ddr_dq_lo[25]; assign ddr_dq_25_oen_int = ddr_dq_oen_lo[25];
-  assign ddr_dq_li[26] = ddr_dq_26_i_int; assign ddr_dq_26_o_int = ddr_dq_lo[26]; assign ddr_dq_26_oen_int = ddr_dq_oen_lo[26];
-  assign ddr_dq_li[27] = ddr_dq_27_i_int; assign ddr_dq_27_o_int = ddr_dq_lo[27]; assign ddr_dq_27_oen_int = ddr_dq_oen_lo[27];
-  assign ddr_dq_li[28] = ddr_dq_28_i_int; assign ddr_dq_28_o_int = ddr_dq_lo[28]; assign ddr_dq_28_oen_int = ddr_dq_oen_lo[28];
-  assign ddr_dq_li[29] = ddr_dq_29_i_int; assign ddr_dq_29_o_int = ddr_dq_lo[29]; assign ddr_dq_29_oen_int = ddr_dq_oen_lo[29];
-  assign ddr_dq_li[30] = ddr_dq_30_i_int; assign ddr_dq_30_o_int = ddr_dq_lo[30]; assign ddr_dq_30_oen_int = ddr_dq_oen_lo[30];
-  assign ddr_dq_li[31] = ddr_dq_31_i_int; assign ddr_dq_31_o_int = ddr_dq_lo[31]; assign ddr_dq_31_oen_int = ddr_dq_oen_lo[31];
-*/
-
   bsg_ready_and_link_sif_s [E:P] bypass_link_li, bypass_link_lo;
   bp_me_cce_to_mem_link_master
-   #(.bp_params_p(bp_params_p))
+   #(.bp_params_p(bp_params_p)
+     ,.flit_width_p(mem_noc_flit_width_p)
+     ,.cord_width_p(mem_noc_cord_width_p)
+     ,.cid_width_p(mem_noc_cid_width_p)
+     ,.len_width_p(mem_noc_len_width_p)
+     )
    bypass_link
     (.clk_i(router_clk_lo)
      ,.reset_i(router_reset_lo)

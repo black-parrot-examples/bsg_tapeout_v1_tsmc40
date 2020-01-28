@@ -30,7 +30,7 @@ import bp_me_pkg::*;
 import bsg_noc_pkg::*;
 import bsg_wormhole_router_pkg::*;
 
-#(localparam bp_params_e bp_params_p = bp_cfg_gp `declare_bp_proc_params(bp_params_p))
+#(localparam bp_params_e bp_params_p = e_bp_quad_core_cfg `declare_bp_proc_params(bp_params_p))
 `include "bsg_pinout_inverted.v"
 
   `declare_bsg_ready_and_link_sif_s(ct_width_gp, bsg_ready_and_link_sif_s);
@@ -385,29 +385,28 @@ import bsg_wormhole_router_pkg::*;
   // BP Config Loader
   //
   `declare_bp_me_if(paddr_width_p, cce_block_width_p, lce_id_width_p, lce_assoc_p)
-  `declare_bp_io_if(paddr_width_p, dword_width_p, lce_id_width_p)
   bsg_ready_and_link_sif_s gw_cmd_link_li, gw_cmd_link_lo;
   bsg_ready_and_link_sif_s gw_resp_link_li, gw_resp_link_lo;
   bsg_ready_and_link_sif_s [E:W] gw_dram_link_li, gw_dram_link_lo;
 
-  bp_cce_io_msg_s       cfg_cmd_lo;
+  bp_cce_mem_msg_s      cfg_cmd_lo;
   logic                 cfg_cmd_v_lo, cfg_cmd_ready_li;
-  bp_cce_io_msg_s       cfg_resp_li;
+  bp_cce_mem_msg_s      cfg_resp_li;
   logic                 cfg_resp_v_li, cfg_resp_ready_lo;
 
-  bp_cce_io_msg_s       host_cmd_li;
+  bp_cce_mem_msg_s      host_cmd_li;
   logic                 host_cmd_v_li, host_cmd_yumi_lo;
-  bp_cce_io_msg_s       host_resp_lo;
+  bp_cce_mem_msg_s      host_resp_lo;
   logic                 host_resp_v_lo, host_resp_ready_li;
 
-  bp_cce_io_msg_s       nbf_cmd_lo;
+  bp_cce_mem_msg_s      nbf_cmd_lo;
   logic                 nbf_cmd_v_lo, nbf_cmd_ready_li;
-  bp_cce_io_msg_s       nbf_resp_li;
+  bp_cce_mem_msg_s      nbf_resp_li;
   logic                 nbf_resp_v_li, nbf_resp_ready_lo;
 
-  bp_cce_io_msg_s       load_cmd_lo;
+  bp_cce_mem_msg_s      load_cmd_lo;
   logic                 load_cmd_v_lo, load_cmd_ready_li;
-  bp_cce_io_msg_s       load_resp_li;
+  bp_cce_mem_msg_s      load_resp_li;
   logic                 load_resp_v_li, load_resp_ready_lo;
   
   bp_cce_mem_msg_s      dram_cmd_lo;
@@ -415,30 +414,38 @@ import bsg_wormhole_router_pkg::*;
   bp_cce_mem_msg_s      dram_resp_li;
   logic                 dram_resp_v_li, dram_resp_ready_lo;
 
-  bp_me_cce_to_io_link_bidir
-   #(.bp_params_p(bp_params_p))
+  bp_me_cce_to_mem_link_bidir
+   #(.bp_params_p(bp_params_p)
+     ,.num_outstanding_req_p(io_noc_max_credits_p)
+     ,.flit_width_p(io_noc_flit_width_p)
+     ,.cord_width_p(io_noc_cord_width_p)
+     ,.cid_width_p(io_noc_cid_width_p)
+     ,.len_width_p(io_noc_len_width_p)
+     )
    host_io_link
     (.clk_i(blackparrot_clk)
      ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
 
-     ,.io_cmd_i(load_cmd_lo)
-     ,.io_cmd_v_i(load_cmd_v_lo)
-     ,.io_cmd_ready_o(load_cmd_ready_li)
+     ,.mem_cmd_i(load_cmd_lo)
+     ,.mem_cmd_v_i(load_cmd_v_lo)
+     ,.mem_cmd_ready_o(load_cmd_ready_li)
 
-     ,.io_resp_o(load_resp_li)
-     ,.io_resp_v_o(load_resp_v_li)
-     ,.io_resp_yumi_i(load_resp_ready_lo & load_resp_v_li)
+     ,.mem_resp_o(load_resp_li)
+     ,.mem_resp_v_o(load_resp_v_li)
+     ,.mem_resp_yumi_i(load_resp_ready_lo & load_resp_v_li)
 
-     ,.io_cmd_o(host_cmd_li)
-     ,.io_cmd_v_o(host_cmd_v_li)
-     ,.io_cmd_yumi_i(host_cmd_yumi_lo)
+     ,.mem_cmd_o(host_cmd_li)
+     ,.mem_cmd_v_o(host_cmd_v_li)
+     ,.mem_cmd_yumi_i(host_cmd_yumi_lo)
 
-     ,.io_resp_i(host_resp_lo)
-     ,.io_resp_v_i(host_resp_v_lo)
-     ,.io_resp_ready_o(host_resp_ready_li)
+     ,.mem_resp_i(host_resp_lo)
+     ,.mem_resp_v_i(host_resp_v_lo)
+     ,.mem_resp_ready_o(host_resp_ready_li)
 
      ,.my_cord_i(host_did_lo[0+:io_noc_did_width_p])
+     ,.my_cid_i('0)
      ,.dst_cord_i(core_did_lo[0+:io_noc_did_width_p])
+     ,.dst_cid_i('0)
 
      ,.cmd_link_i(gw_cmd_link_li)
      ,.cmd_link_o(gw_cmd_link_lo)
@@ -466,7 +473,13 @@ import bsg_wormhole_router_pkg::*;
     );
 
   bp_me_cce_to_mem_link_client
-   #(.bp_params_p(bp_params_p))
+   #(.bp_params_p(bp_params_p)
+     ,.num_outstanding_req_p(mem_noc_max_credits_p)
+     ,.flit_width_p(mem_noc_flit_width_p)
+     ,.cord_width_p(mem_noc_cord_width_p)
+     ,.cid_width_p(mem_noc_cid_width_p)
+     ,.len_width_p(mem_noc_len_width_p)
+     )
    dram_link
     (.clk_i(blackparrot_clk)
      ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
@@ -485,7 +498,7 @@ import bsg_wormhole_router_pkg::*;
 
   bp_mem
    #(.bp_params_p(bp_params_p)
-     ,.mem_cap_in_bytes_p(32'h10000)
+     ,.mem_cap_in_bytes_p(32'h100000)
      ,.mem_load_p(1)
      ,.mem_file_p("prog.mem")
      ,.mem_offset_p(32'h80000000)
@@ -544,29 +557,6 @@ import bsg_wormhole_router_pkg::*;
   
      ,.program_finish_o(program_finish)
      );
-
-  //synopsys translate_off
-if (0) begin
-  bind bp_be_top
-    bp_nonsynth_commit_tracer
-     #(.bp_params_p(bp_params_p))
-     commit_tracer
-      (.clk_i(clk_i)
-       ,.reset_i(reset_i)
-       ,.freeze_i(be_checker.scheduler.int_regfile.cfg_bus.freeze)
-
-       ,.mhartid_i(be_checker.scheduler.int_regfile.cfg_bus.core_id)
-
-       ,.commit_v_i(be_calculator.commit_pkt.instret)
-       ,.commit_pc_i(be_calculator.commit_pkt.pc)
-       ,.commit_instr_i(be_calculator.commit_pkt.instr)
-
-       ,.rd_w_v_i(be_calculator.wb_pkt.rd_w_v)
-       ,.rd_addr_i(be_calculator.wb_pkt.rd_addr)
-       ,.rd_data_i(be_calculator.wb_pkt.rd_data)
-       );
-end
-  //synopsys translate_on
 
   always_comb
     begin

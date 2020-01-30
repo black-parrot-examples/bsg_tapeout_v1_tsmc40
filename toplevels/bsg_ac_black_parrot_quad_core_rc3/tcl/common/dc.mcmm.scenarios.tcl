@@ -94,6 +94,7 @@ if {[file exists [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]]} {
 
 # Set options for worst case setup scenario
 set_scenario_options -setup true -hold false -leakage_power false
+set_scenario_options -cts_mode true
 
 report_scenario_options
 
@@ -146,6 +147,7 @@ if {[file exists [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]]} {
 
 # Set options for worst case leakage scenario
 set_scenario_options -setup false -hold true -leakage_power false
+set_scenario_options -cts_mode true
 
 report_scenario_options
 

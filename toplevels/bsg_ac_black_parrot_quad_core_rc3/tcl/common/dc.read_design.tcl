@@ -164,10 +164,13 @@ if { $::env(BSG_BLOCK_HIER_LEVEL) == "top" } {
   #current_design [get_designs -filter "hdl_template==bsg_clk_gen_power_domain"]
   #set_ungroup [remove_from_collection [all_designs] [current_design]]
   #current_design $DESIGN_NAME
+  set_ungroup [get_designs -filter "hdl_template==bsg_clk_gen_osc"] false
   set_ungroup [get_designs -filter "hdl_template==bp_processor"] true
   set_ungroup [get_designs -filter "hdl_template==bp_core_complex"] true
 } else {
   set_ungroup [remove_from_collection [all_designs] [current_design]]
+  set_isolate_ports [remove_from_collection [all_inputs] [get_ports *_clk_i]]
+  set_isolate_ports [all_outputs]
 }
 
 ########################################

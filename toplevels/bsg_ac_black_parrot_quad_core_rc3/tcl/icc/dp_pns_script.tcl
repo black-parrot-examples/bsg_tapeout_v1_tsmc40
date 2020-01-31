@@ -14,8 +14,8 @@ set pll_power_nets       "VDD_PLL VSS"
 # Expansion beyond power planning regions
 set core_expand_x 0.0
 set core_expand_y 0.0
-set pll_expand_x [get_attribute [get_voltage_area PD_PLL] guardband_x]
-set pll_expand_y [get_attribute [get_voltage_area PD_PLL] guardband_y]
+set pll_expand_x [get_attribute [get_voltage_areas PD_PLL] guardband_x]
+set pll_expand_y [get_attribute [get_voltage_areas PD_PLL] guardband_y]
 
 set m10_min_width   [get_attribute [get_layers M10] minWidth]
 set m10_min_spacing [get_attribute [get_layers M10] minSpacing]
@@ -23,7 +23,14 @@ set m10_pitch       [get_attribute [get_layers M10] pitch]
 set m9_min_width    [get_attribute [get_layers M9]  minWidth]
 set m9_min_spacing  [get_attribute [get_layers M9]  minSpacing]
 set m9_pitch        [get_attribute [get_layers M9]  pitch]
+set m8_min_width    [get_attribute [get_layers M8]  minWidth]
+set m8_min_spacing  [get_attribute [get_layers M8]  minSpacing]
+set m8_pitch        [get_attribute [get_layers M8]  pitch]
+set m7_min_width    [get_attribute [get_layers M7]  minWidth]
+set m7_min_spacing  [get_attribute [get_layers M7]  minSpacing]
+set m7_pitch        [get_attribute [get_layers M7]  pitch]
 
+set m6_pitch        [get_attribute [get_layers M6]  pitch]
 set m5_pitch        [get_attribute [get_layers M5]  pitch]
 
 ################################################################################
@@ -33,70 +40,48 @@ set m5_pitch        [get_attribute [get_layers M5]  pitch]
 
 foreach_in_collection va [get_voltage_areas] {
   set va_name [get_attribute $va name]
-  if { $va_name == "DEFAULT_VA" } {
-    create_power_plan_regions core_ppr -core -expand [list $core_expand_x $core_expand_y]
-  } elseif { $va_name == "PD_PLL" } {
-    create_power_plan_regions pll_ppr           -voltage_area $va 
-    create_power_plan_regions pll_with_ring_ppr -voltage_area $va -expand [list $pll_expand_x $pll_expand_y]
+  if { $va_name == "PD_PLL" } {
+    create_power_plan_regions pll_ppr -voltage_area $va -expand [list $pll_expand_x $pll_expand_y]
+  } elseif { [regexp "dly_line" $va_name] } {
+    set index [regexp -all -inline -- {[0-9]+} [get_attribute $va name]]
+    if { [regexp "clk_gen_pd" $va_name] } {
+      create_power_plan_regions osc_ppr_${index} -voltage_area $va -expand [list [expr 3.0 * $m9_pitch] [expr 16.0 * $m8_pitch]]
+    } elseif { [regexp "dram_ctrl" $va_name] } {
+      create_power_plan_regions dl_ppr_${index} -voltage_area $va -expand [list [expr 3.0 * $m9_pitch] [expr 16.0 * $m8_pitch]]
+    }
   } elseif { [regexp "tile" $va_name] } {
     set index [regexp -all -inline -- {[0-9]+} [get_attribute $va name]]
-    create_power_plan_regions tile_ppr_${index} -voltage_area $va
-    #set coordinate [regexp -all -inline -- {[0-9]+} [get_attribute $va name]]
-    #set x [lindex $coordinate 1]
-    #set y [lindex $coordinate 0]
-    #create_power_plan_regions tile_ppr_${x}_${y} -voltage_area $va
+    create_power_plan_regions tile_ppr_${index} -voltage_area $va -expand [list [expr 20.0 * $m9_pitch] [expr 5.0 * $m10_pitch]]
   } elseif { [regexp "vc" $va_name] } {
     set index [regexp -all -inline -- {[0-9]+} [get_attribute $va name]]
-    create_power_plan_regions vcache_ppr_${index} -voltage_area $va
+    create_power_plan_regions vcache_ppr_${index} -voltage_area $va -expand [list [expr 20.0 * $m9_pitch] [expr 5.0 * $m10_pitch]]
   } else {
     puts "No power plan regions created for voltage area $va_name"
   }
 }
 
-set index 0
-foreach_in_collection pg [get_plan_groups] {
-  set mim_master_name [get_attribute $pg mim_master_name]
-  if { $mim_master_name == "bp_tile_node" } {
-    foreach_in_collection macro [get_cells -of_objects $pg -filter "is_hard_macro"] {
-      create_power_plan_regions macro_ppr_$index -group_of_macros $macro
-      incr index
-    }
-  } elseif { $mim_master_name == "vcache" } {
-    create_power_plan_regions macro_ppr_$index -group_of_macros [get_cells -of_objects $pg -filter "is_hard_macro&&(full_name=~*tag_mem*||full_name=~*stat_mem*)"]
-    incr index
-    create_power_plan_regions macro_ppr_$index -group_of_macros [get_cells -of_objects $pg -filter "is_hard_macro&&full_name=~*data_mem*"]
-    incr index
-  }
-}
-
-set array_ppr_llx [expr [lindex [lsort -real [get_attribute [get_plan_groups] bbox_llx]] 0] - $tile_height]
-set array_ppr_lly [expr [lindex [lsort -real [get_attribute [get_plan_groups] bbox_lly]] 0] - $tile_height]
-set array_ppr_urx [expr [lindex [lsort -real -decreasing [get_attribute [get_plan_groups] bbox_urx]] 0] + $tile_height]
-set array_ppr_ury [expr [lindex [lsort -real -decreasing [get_attribute [get_plan_groups] bbox_ury]] 0] + $tile_height]
-create_power_plan_regions array_ppr -polygon [list $array_ppr_llx $array_ppr_lly $array_ppr_urx $array_ppr_lly $array_ppr_urx $array_ppr_ury $array_ppr_llx $array_ppr_ury]
-
 
 ################################################################################
 #
-# PLL POWER RING
+# POWER RINGS FOR PLL AREA
 #
 
 set m10_max_width 12.0
 set m9_max_width  12.0
 
 set pll_power_ring_h_width   $m10_max_width
-set pll_power_ring_h_offset  [expr $m10_pitch * 0.25]
 set pll_power_ring_h_spacing [expr $m10_pitch * 0.5]
+set pll_power_ring_h_offset  [expr $m10_pitch * 0.25]
 set pll_power_ring_v_width   $m9_max_width
-set pll_power_ring_v_offset  [expr $m9_pitch * 0.75]
 set pll_power_ring_v_spacing [expr $m9_pitch * 2.0]
+set pll_power_ring_v_offset  [expr $m9_pitch * 0.75]
 
-set_power_ring_strategy pll_prs_h10v9  \
+set_power_ring_strategy pll_ring_h10v9  \
   -nets $pll_power_nets \
-  -power_plan_regions pll_ppr \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_ring.tpl:core_h10v9_prt($pll_power_ring_h_width,$pll_power_ring_h_offset,$pll_power_ring_h_spacing,$pll_power_ring_v_width,$pll_power_ring_v_offset,$pll_power_ring_v_spacing)
+  -voltage_areas [get_voltage_areas PD_PLL] \
+  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_ring.tpl:bsg_power_ring(M10,$pll_power_ring_h_width,$pll_power_ring_h_spacing,$pll_power_ring_h_offset,M9,$pll_power_ring_v_width,$pll_power_ring_v_spacing,$pll_power_ring_v_offset)
 
-compile_power_plan -ring -strategy pll_prs_h10v9
+compile_power_plan -ring -strategy pll_ring_h10v9
 
 
 ################################################################################
@@ -111,56 +96,24 @@ preroute_instances -ignore_macros \
                    -cells [get_fp_cells "vdd_t_pll vss_t_pll"]
 
 
-###############################################################################
-#
-# POWER STRAPS FOR PLL
-#
-
-set pll_power_h_strap_width   [expr $m10_pitch * 1.0]
-set pll_power_h_strap_spacing [expr $m10_pitch * 1.0]
-set pll_power_h_strap_pitch   [expr $m10_pitch * 4.0]
-set pll_power_h_strap_offset  [expr $m10_pitch * 1.0]
-
-set_power_plan_strategy pll_m10_pps \
-  -nets $pll_power_nets \
-  -power_plan_regions [get_power_plan_regions "pll_ppr"] \
-  -extension { {{nets:$pll_power_nets}{stop:innermost_ring}} } \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:m10_strap_ppt($pll_power_h_strap_width,$pll_power_h_strap_spacing,$pll_power_h_strap_pitch,$pll_power_h_strap_offset)
-
-compile_power_plan -strategy pll_m10_pps
-
-set pll_power_v_strap_width   [expr $m9_pitch * 4.0]
-set pll_power_v_strap_spacing [expr $m9_pitch * 4.0]
-set pll_power_v_strap_pitch   [expr $m9_pitch * 16.0]
-set pll_power_v_strap_offset  [expr $m9_pitch * 4.0]
-
-set_power_plan_strategy pll_m9_pps \
-  -nets $pll_power_nets \
-  -power_plan_regions [get_power_plan_regions "pll_ppr"] \
-  -extension { {{nets:$pll_power_nets}{stop:innermost_ring}} } \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:m9_strap_ppt($pll_power_v_strap_width,$pll_power_v_strap_spacing,$pll_power_v_strap_pitch,$pll_power_v_strap_offset)
-
-compile_power_plan -strategy pll_m9_pps
-
-
 ################################################################################
 #
-# CORE POWER RING
+# POWER RINGS CORE AREA
 #
 
 set core_power_ring_h_width   [expr $m10_pitch * 2.0]
-set core_power_ring_h_offset  [expr $m10_pitch * 0.25]
 set core_power_ring_h_spacing [expr $m10_pitch * 0.5]
+set core_power_ring_h_offset  [expr $m10_pitch * 0.25]
 set core_power_ring_v_width   [expr $m9_pitch * 7.5]
-set core_power_ring_v_offset  [expr $m9_pitch * 0.75]
 set core_power_ring_v_spacing [expr $m9_pitch * 2.0]
+set core_power_ring_v_offset  [expr $m9_pitch * 0.75]
 
-set_power_ring_strategy core_prs_h10v9 \
+set_power_ring_strategy core_ring_h10v9 \
   -nets "$core_power_nets $core_power_nets" \
-  -power_plan_regions core_ppr \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_ring.tpl:core_h10v9_prt($core_power_ring_h_width,$core_power_ring_h_offset,$core_power_ring_h_spacing,$core_power_ring_v_width,$core_power_ring_v_offset,$core_power_ring_v_spacing)
+  -core \
+  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_ring.tpl:bsg_power_ring(M10,$core_power_ring_h_width,$core_power_ring_h_spacing,$core_power_ring_h_offset,M9,$core_power_ring_v_width,$core_power_ring_v_spacing,$core_power_ring_v_offset)
 
-compile_power_plan -ring -strategy core_prs_h10v9
+compile_power_plan -ring -strategy core_ring_h10v9
 
 
 ################################################################################
@@ -182,76 +135,108 @@ preroute_instances -ignore_macros \
 
 ################################################################################
 #
-# POWER RING FOR MANYCORE ARRAY
+# POWER RINGS FOR DELAY LINES
 #
 
-set array_power_ring_h_width   [expr $m10_pitch * 2.0]
-set array_power_ring_h_offset  [expr $m10_pitch * 0.0]
-set array_power_ring_h_spacing [expr $m10_pitch * 0.5]
-set array_power_ring_v_width   [expr $m9_pitch * 8.0]
-set array_power_ring_v_offset  [expr $m9_pitch * 0.0]
-set array_power_ring_v_spacing [expr $m9_pitch * 2.0]
+#set block_power_ring_h_width   [expr $m8_pitch * 4.0]
+#set block_power_ring_h_spacing [expr $m8_pitch * 4.0]
+#set block_power_ring_h_offset  [expr $m8_pitch * 0.0]
+#set block_power_ring_v_width   [expr $m9_pitch * 1.0]
+#set block_power_ring_v_spacing [expr $m9_pitch * 0.5]
+#set block_power_ring_v_offset  [expr $m9_pitch * 0.0]
+#
+#set_power_ring_strategy osc_ring_h8v9 \
+#  -nets "$pll_power_nets $pll_power_nets" \
+#  -voltage_area [get_voltage_areas clk_gen_pd*dly_line*] \
+#  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_ring.tpl:bsg_power_ring(M8,$block_power_ring_h_width,$block_power_ring_h_spacing,$block_power_ring_h_offset,M9,$block_power_ring_v_width,$block_power_ring_v_spacing,$block_power_ring_v_offset)
+#
+#compile_power_plan -ring -strategy osc_ring_h8v9
+#
+#set_power_ring_strategy dl_ring_h8v9 \
+#  -nets "$core_power_nets $core_power_nets" \
+#  -voltage_area [get_voltage_areas dram_ctrl*dly_line*] \
+#  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_ring.tpl:bsg_power_ring(M8,$block_power_ring_h_width,$block_power_ring_h_spacing,$block_power_ring_h_offset,M9,$block_power_ring_v_width,$block_power_ring_v_spacing,$block_power_ring_v_offset)
+#
+#compile_power_plan -ring -strategy dl_ring_h8v9
 
-set_power_ring_strategy array_prs_h10v9 \
+
+################################################################################
+#
+# POWER RINGS FOR SUB-BLOCKS
+#
+
+set block_power_ring_h_width   [expr $m10_pitch * 2.0]
+set block_power_ring_h_spacing [expr $m10_pitch * 0.5]
+set block_power_ring_h_offset  [expr $m10_pitch * 0.0]
+set block_power_ring_v_width   [expr $m9_pitch * 8.0]
+set block_power_ring_v_spacing [expr $m9_pitch * 2.0]
+set block_power_ring_v_offset  [expr $m9_pitch * 0.0]
+
+set_power_ring_strategy block_ring_h10v9 \
   -nets "$core_power_nets $core_power_nets" \
-  -power_plan_regions [get_power_plan_regions array_ppr] \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_ring.tpl:core_h10v9_prt($array_power_ring_h_width,$array_power_ring_h_offset,$array_power_ring_h_spacing,$array_power_ring_v_width,$array_power_ring_v_offset,$array_power_ring_v_spacing)
+  -voltage_area [get_voltage_areas *tile*] \
+  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_ring.tpl:bsg_power_ring(M10,$block_power_ring_h_width,$block_power_ring_h_spacing,$block_power_ring_h_offset,M9,$block_power_ring_v_width,$block_power_ring_v_spacing,$block_power_ring_v_offset)
 
-compile_power_plan -ring -strategy array_prs_h10v9
-
-
-################################################################################
-#
-# POWER STRAPS FOR MANYCORE ARRAY
-#
-
-set array_power_h_strap_width   [expr $m10_pitch * 1.0]
-set array_power_h_strap_spacing [expr $m10_pitch * 0.5]
-set array_power_h_strap_pitch   [expr $tile_height * 500]
-set array_power_h_strap_offset  [expr $tile_height * 452]
-set array_power_v_strap_width   [expr $m9_pitch * 8.0]
-set array_power_v_strap_spacing [expr $m9_pitch * 2.0]
-set array_power_v_strap_pitch   [expr $tile_height * 1000]
-set array_power_v_strap_offset  [expr $tile_height * 952]
-
-set_power_plan_strategy array_m10_pps \
-  -nets "$core_power_nets $core_power_flip_nets"\
-  -power_plan_regions [get_power_plan_regions array_ppr] \
-  -extension { {{nets:$core_power_nets}{stop:outermost_ring}} } \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:m10_strap_ppt($array_power_h_strap_width,$array_power_h_strap_spacing,$array_power_h_strap_pitch,$array_power_h_strap_offset)
-
-compile_power_plan -strategy array_m10_pps
-
-set_power_plan_strategy array_m9_pps \
-  -nets "$core_power_nets $core_power_flip_nets"\
-  -power_plan_regions [get_power_plan_regions array_ppr] \
-  -extension { {{nets:$core_power_nets}{stop:innermost_ring}} } \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:m9_strap_ppt($array_power_v_strap_width,$array_power_v_strap_spacing,$array_power_v_strap_pitch,$array_power_v_strap_offset)
-
-compile_power_plan -strategy array_m9_pps
-
+compile_power_plan -ring -strategy block_ring_h10v9
 
 
 ################################################################################
 #
-# POWER STRAPS FOR MACRO IN PLAN GROUPS
+# POWER STRAPS FOR OSCILLATORS and DELAY LINES
 #
 
-set macro_power_v_strap_width   [expr $m5_pitch * 8.0]
-set macro_power_v_strap_spacing [expr $m5_pitch * 8.0]
-set macro_power_v_strap_pitch   [expr $m5_pitch * 32.0]
-set macro_power_v_strap_offset  [expr $m5_pitch * 8.0]
+#set block_power_h_strap_width   [expr $m8_pitch * 4.0]
+#set block_power_h_strap_spacing [expr $m8_pitch * 4.0]
+#set block_power_h_strap_pitch   [expr $m8_pitch * 16.0]
+#set block_power_h_strap_offset  [expr $m8_pitch * 4.0]
+#set block_power_v_strap_width   [expr $m7_pitch * 4.0]
+#set block_power_v_strap_spacing [expr $m7_pitch * 4.0]
+#set block_power_v_strap_pitch   [expr $m7_pitch * 16.0]
+#set block_power_v_strap_offset  [expr $m7_pitch * 4.0]
+#
+#set_power_plan_strategy osc_mesh_h8v7 \
+#  -nets "$pll_power_nets" \
+#  -voltage_area [get_voltage_areas clk_gen_pd*dly_line*] \
+#  -extension { {{nets:$pll_power_nets}{stop:innermost_ring}} } \
+#  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_mesh(M8,$block_power_h_strap_width,$block_power_h_strap_spacing,$block_power_h_strap_pitch,$block_power_h_strap_offset,M7,$block_power_v_strap_width,$block_power_v_strap_spacing,$block_power_v_strap_pitch,$block_power_v_strap_offset)
+#
+#compile_power_plan -strategy osc_mesh_h8v7
+#
+#set_power_plan_strategy dl_mesh_h8v7 \
+#  -nets "$core_power_nets" \
+#  -voltage_area [get_voltage_areas dram_ctrl*dly_line*] \
+#  -extension { {{nets:$core_power_nets}{stop:innermost_ring}} } \
+#  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_mesh(M8,$block_power_h_strap_width,$block_power_h_strap_spacing,$block_power_h_strap_pitch,$block_power_h_strap_offset,M7,$block_power_v_strap_width,$block_power_v_strap_spacing,$block_power_v_strap_pitch,$block_power_v_strap_offset)
+#
+#compile_power_plan -strategy dl_mesh_h8v7
 
-set blockage_ppr_groups [get_power_plan_regions macro_ppr_*]
+
+###############################################################################
+#
+# POWER STRAPS FOR PLL
+#
+
+set blockage_ppr_groups [get_power_plan_regions osc_ppr_*]
 set blockage_ppr_names [get_attribute $blockage_ppr_groups name]
-set blockage_value "{power_plan_region:{$blockage_ppr_names}}"
+set blockage_value "{power_plan_regions:{$blockage_ppr_names}}"
 
-set_power_plan_strategy macro_m5_pps \
-  -nets $core_power_nets \
-  -power_plan_regions [get_power_plan_regions macro_ppr_*] \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:m5_strap_ppt($macro_power_v_strap_width,$macro_power_v_strap_spacing,$macro_power_v_strap_pitch,$macro_power_v_strap_offset)
+set pll_power_h_strap_width   [expr $m10_pitch * 1.0]
+set pll_power_h_strap_spacing [expr $m10_pitch * 1.0]
+set pll_power_h_strap_pitch   [expr $m10_pitch * 4.0]
+set pll_power_h_strap_offset  [expr $m10_pitch * 1.0]
+set pll_power_v_strap_width   [expr $m9_pitch * 4.0]
+set pll_power_v_strap_spacing [expr $m9_pitch * 4.0]
+set pll_power_v_strap_pitch   [expr $m9_pitch * 16.0]
+set pll_power_v_strap_offset  [expr $m9_pitch * 4.0]
 
-compile_power_plan -strategy macro_m5_pps
+set_power_plan_strategy pll_mesh_h10v9 \
+  -nets $pll_power_nets \
+  -voltage_areas [get_voltage_areas PD_PLL] \
+  -blockage $blockage_value \
+  -extension { {{nets:$pll_power_nets}{stop:innermost_ring}} } \
+  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_mesh(M10,$pll_power_h_strap_width,$pll_power_h_strap_spacing,$pll_power_h_strap_pitch,$pll_power_h_strap_offset,M9,$pll_power_v_strap_width,$pll_power_v_strap_spacing,$pll_power_v_strap_pitch,$pll_power_v_strap_offset)
+
+compile_power_plan -strategy pll_mesh_h10v9
 
 
 ################################################################################
@@ -261,34 +246,79 @@ compile_power_plan -strategy macro_m5_pps
 
 set block_power_h_strap_width   [expr $m10_pitch * 1.0]
 set block_power_h_strap_spacing [expr $m10_pitch * 1.0]
-set block_power_h_strap_pitch   [expr $m10_pitch * 4.0]
+set block_power_h_strap_pitch   [expr $m10_pitch * 8.0]
 set block_power_h_strap_offset  [expr $m10_pitch * 1.0]
-
-set blockage_ppr_groups [get_power_plan_regions macro_ppr_*]
-set blockage_ppr_names [get_attribute $blockage_ppr_groups name]
-set blockage_value "{power_plan_region:{$blockage_ppr_names}}"
-
-set_power_plan_strategy block_m10_pps \
-  -nets $core_power_nets \
-  -power_plan_regions [get_power_plan_regions "tile_ppr_* vcache_ppr_*"] \
-  -extension { {{nets:$core_power_nets}{stop:first_target}} } \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:m10_strap_ppt($block_power_h_strap_width,$block_power_h_strap_spacing,$block_power_h_strap_pitch,$block_power_h_strap_offset)
-
-compile_power_plan -strategy block_m10_pps
-
 set block_power_v_strap_width   [expr $m9_pitch * 4.0]
-set block_power_v_strap_spacing [expr $m9_pitch * 4.0]
-set block_power_v_strap_pitch   [expr $m9_pitch * 16.0]
+#set block_power_v_strap_spacing [expr $m9_pitch * 4.0]
+#set block_power_v_strap_pitch   [expr $m9_pitch * 16.0]
+set block_power_v_strap_spacing [expr $m9_pitch * 1.0]
+set block_power_v_strap_pitch   [expr $m9_pitch * 32.0]
 set block_power_v_strap_offset  [expr $m9_pitch * 4.0]
 
-set_power_plan_strategy block_m9_pps \
+set_power_plan_strategy block_mesh_h10v9 \
   -nets $core_power_nets \
-  -power_plan_regions [get_power_plan_regions "tile_ppr_* vcache_ppr_*"] \
-  -blockage $blockage_value \
-  -extension { {{nets:$core_power_nets}{stop:first_target}} } \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:m9_strap_ppt($block_power_v_strap_width,$block_power_v_strap_spacing,$block_power_v_strap_pitch,$block_power_v_strap_offset)
+  -voltage_area [get_voltage_areas *tile*] \
+  -extension { {{nets:$core_power_nets}{stop:innermost_ring}} } \
+  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_mesh(M10,$block_power_h_strap_width,$block_power_h_strap_spacing,$block_power_h_strap_pitch,$block_power_h_strap_offset,M9,$block_power_v_strap_width,$block_power_v_strap_spacing,$block_power_v_strap_pitch,$block_power_v_strap_offset)
 
-compile_power_plan -strategy block_m9_pps
+compile_power_plan -strategy block_mesh_h10v9
+
+
+################################################################################
+#
+# POWER STRAPS FOR MACROS IN PLAN GROUPS
+#
+
+set macro_power_v_strap_width   [expr $m5_pitch * 8.0]
+set macro_power_v_strap_spacing [expr $m5_pitch * 8.0]
+set macro_power_v_strap_pitch   [expr $m5_pitch * 32.0]
+set macro_power_v_strap_offset  [expr $m5_pitch * 8.0]
+set macro_power_h_strap_width   [expr $m8_pitch * 8.0]
+set macro_power_h_strap_spacing [expr $m8_pitch * 1.0]
+set macro_power_h_strap_pitch   [expr $m8_pitch * 64.0]
+set macro_power_h_strap_offset  [expr $m8_pitch * 8.0]
+
+#set_power_plan_strategy macro_mesh_h6v5 \
+#  -nets $core_power_nets \
+#  -macros [get_attribute [get_fp_cells -filter "is_hard_macro&&(orientation==E||orientation==FE||orientation==W||orientation==FW)"] full_name] \
+#  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_mesh(M6,$macro_power_h_strap_width,$macro_power_h_strap_spacing,$macro_power_h_strap_pitch,$macro_power_h_strap_offset,M5,$macro_power_v_strap_width,$macro_power_v_strap_spacing,$macro_power_v_strap_pitch,$macro_power_v_strap_offset)
+#
+#compile_power_plan -strategy macro_mesh_h6v5
+
+#set_power_plan_strategy macro_strap_h5 \
+#  -nets $core_power_nets \
+#  -macros [get_attribute [get_fp_cells -filter "is_hard_macro&&(orientation==N||orientation==FN||orientation==S||orientation==FS)"] full_name] \
+#  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:h5_strap_ppt($macro_power_h_strap_width,$macro_power_h_strap_spacing,$macro_power_h_strap_pitch,$macro_power_h_strap_offset)
+#
+#compile_power_plan -strategy macro_strap_h5
+
+#set_power_plan_strategy macro_strap_h8 \
+#  -nets $core_power_nets \
+#  -macros [get_attribute [get_fp_cells -filter "is_hard_macro&&(orientation==E||orientation==FE||orientation==W||orientation==FW)"] full_name] \
+#  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_h8_strap($macro_power_h_strap_width,$macro_power_h_strap_spacing,$macro_power_h_strap_pitch,$macro_power_h_strap_offset)
+#
+#compile_power_plan -strategy macro_strap_h8
+#
+#set_power_plan_strategy macro_strap_v5 \
+#  -nets $core_power_nets \
+#  -macros [get_attribute [get_fp_cells -filter "is_hard_macro&&(orientation==E||orientation==FE||orientation==W||orientation==FW)"] full_name] \
+#  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_v5_strap($macro_power_v_strap_width,$macro_power_v_strap_spacing,$macro_power_v_strap_pitch,$macro_power_v_strap_offset)
+#
+#compile_power_plan -strategy macro_strap_v5
+
+set_power_plan_strategy macro_strap_h8v7 \
+  -nets $core_power_nets \
+  -macros [get_attribute [get_fp_cells -filter "is_hard_macro&&(orientation==N||orientation==FN||orientation==S||orientation==FS)"] full_name] \
+  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_mesh(M8,$macro_power_h_strap_width,$macro_power_h_strap_spacing,$macro_power_h_strap_pitch,$macro_power_h_strap_offset,M7,$macro_power_v_strap_width,$macro_power_v_strap_spacing,$macro_power_v_strap_pitch,$macro_power_v_strap_offset)
+
+compile_power_plan -strategy macro_strap_h8v7
+
+set_power_plan_strategy macro_strap_h5 \
+  -nets $core_power_nets \
+  -macros [get_attribute [get_fp_cells -filter "is_hard_macro&&(orientation==N||orientation==FN||orientation==S||orientation==FS)"] full_name] \
+  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_h5_strap($macro_power_h_strap_width,$macro_power_h_strap_spacing,$macro_power_h_strap_pitch,$macro_power_h_strap_offset)
+
+compile_power_plan -strategy macro_strap_h5
 
 
 ###############################################################################
@@ -296,46 +326,34 @@ compile_power_plan -strategy block_m9_pps
 # POWER STRAPS FOR CORE
 #
 
-set array_with_inner_ring_ppr_llx [expr $array_ppr_llx - $array_power_ring_v_offset - 2.0 * ($array_power_ring_v_width + $array_power_ring_v_spacing)]
-set array_with_inner_ring_ppr_lly [expr $array_ppr_lly - $array_power_ring_h_offset - 2.0 * ($array_power_ring_h_width + $array_power_ring_h_spacing)]
-set array_with_inner_ring_ppr_urx [expr $array_ppr_urx + $array_power_ring_v_offset + 2.0 * ($array_power_ring_v_width + $array_power_ring_v_spacing)]
-set array_with_inner_ring_ppr_ury [expr $array_ppr_ury + $array_power_ring_h_offset + 2.0 * ($array_power_ring_h_width + $array_power_ring_h_spacing)]
-create_power_plan_regions array_with_inner_ring_ppr -polygon [list $array_with_inner_ring_ppr_llx $array_with_inner_ring_ppr_lly $array_with_inner_ring_ppr_urx $array_with_inner_ring_ppr_lly $array_with_inner_ring_ppr_urx $array_with_inner_ring_ppr_ury $array_with_inner_ring_ppr_llx $array_with_inner_ring_ppr_ury]
+set blockage_ppr_groups [get_power_plan_regions]
+set blockage_ppr_names [get_attribute $blockage_ppr_groups name]
+set blockage_value "{power_plan_regions:{$blockage_ppr_names}}"
 
 set core_power_h_strap_width   [expr $m10_pitch * 1.0]
 set core_power_h_strap_spacing [expr $m10_pitch * 1.0]
-set core_power_h_strap_pitch   [expr $m10_pitch * 6.0]
+set core_power_h_strap_pitch   [expr $m10_pitch * 8.0]
 set core_power_h_strap_offset  [expr $m10_pitch * 1.0]
+set core_power_v_strap_width   [expr $m9_pitch * 4.0]
+set core_power_v_strap_spacing [expr $m9_pitch * 1.0]
+set core_power_v_strap_pitch   [expr $m9_pitch * 32.0]
+set core_power_v_strap_offset  [expr $m9_pitch * 4.0]
 
-set blockage_ppr_groups [get_power_plan_regions array_with_inner_ring_ppr]
-append_to_collection blockage_ppr_groups [get_power_plan_regions pll_with_ring_ppr]
-set blockage_ppr_names [get_attribute $blockage_ppr_groups name]
-set blockage_value "{power_plan_region:{$blockage_ppr_names}}"
-
-set_power_plan_strategy core_m10_pps \
+set_power_plan_strategy core_mesh_h10v9 \
   -nets $core_power_nets \
   -core \
   -blockage $blockage_value \
   -extension { {{nets:$core_power_nets}{stop:outermost_ring}} } \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:m10_strap_ppt($core_power_h_strap_width,$core_power_h_strap_spacing,$core_power_h_strap_pitch,$core_power_h_strap_offset)
+  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_mesh(M10,$core_power_h_strap_width,$core_power_h_strap_spacing,$core_power_h_strap_pitch,$core_power_h_strap_offset,M9,$core_power_v_strap_width,$core_power_v_strap_spacing,$core_power_v_strap_pitch,$core_power_v_strap_offset)
 
-compile_power_plan -strategy core_m10_pps
+compile_power_plan -strategy core_mesh_h10v9
 
-set core_power_v_strap_width   [expr $m9_pitch * 4.0]
-set core_power_v_strap_spacing [expr $m9_pitch * 4.0]
-set core_power_v_strap_pitch   [expr $m9_pitch * 16.0]
-set core_power_v_strap_offset  [expr $m9_pitch * 4.0]
 
-set_power_plan_strategy core_m9_pps \
-  -nets $core_power_nets \
-  -core \
-  -blockage $blockage_value \
-  -extension { {{nets:$core_power_nets}{stop:innermost_ring}} } \
-  -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:m9_strap_ppt($core_power_v_strap_width,$core_power_v_strap_spacing,$core_power_v_strap_pitch,$core_power_v_strap_offset)
+###############################################################################
+#
+# CHECK POWER RAILS
+#
 
-compile_power_plan -strategy core_m9_pps
-
-check_fp_rail -nets $core_power_nets -ring
 check_fp_rail -nets $core_power_nets
 
 puts "RM-Info: Completed script [info script]\n"

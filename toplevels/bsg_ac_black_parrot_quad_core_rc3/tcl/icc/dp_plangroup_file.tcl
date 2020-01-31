@@ -20,4 +20,28 @@ foreach_in_collection tile [get_cells $::env(BP_HIER_CELLS)] {
 #  create_plan_groups $cache -cycle_color -coordinate [get_attribute [get_voltage_area $cache_name/PD] bbox]
 #}
 
+set idx 0
+foreach_in_collection plan_group [get_plan_groups] {
+  foreach_in_collection pin [get_pins -of_objects [get_attribute $plan_group logic_cell] -filter "name!~*_clk_i&&net_name!~SYNOPSYS_UNCONNECTED_*"] {
+    set net [get_nets -all -of_objects $pin]
+    #puts "net name is [get_attribute $net name]"
+    if { [sizeof_collection $net] > 0 } {
+      disconnect_net $net $pin
+      create_cell guard_buffer_$idx [get_lib_cells tcbn45gsbwpwc/BUFFD1BWP]
+      #connect_net $net guard_buffer_$idx/I
+      #connect_pin -from guard_buffer_$idx/Z -to $pin
+      set pin_direction [get_attribute $pin pin_direction]
+      if { $pin_direction == "in" } {
+        connect_net $net guard_buffer_$idx/I
+        connect_pin -from guard_buffer_$idx/Z -to $pin
+      } else {
+        connect_net $net guard_buffer_$idx/Z
+        connect_pin -from $pin -to guard_buffer_$idx/I
+      }
+      set_dont_touch [get_cells guard_buffer_$idx]
+      incr idx
+    }
+  }
+}
+
 puts "Flow-Info: Completed script [info script]\n"

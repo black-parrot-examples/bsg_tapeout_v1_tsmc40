@@ -9,7 +9,6 @@ set va_preroute_area_lly [expr [get_attribute $va bbox_lly] - 0.5 * $tile_height
 set va_preroute_area_urx [expr [get_attribute $va bbox_urx] + [get_attribute $va guardband_x]]
 set va_preroute_area_ury [expr [get_attribute $va bbox_ury] + 0.5 * $tile_height]
 
-#preroute_standard_cells -mode rail -connect both -nets "VDD_PLL VSS" -within [list [list $va_preroute_area_llx $va_preroute_area_lly] [list $va_preroute_area_urx $va_preroute_area_ury]] -no_routing_outside_working_area -skip_macro_pins -skip_pad_pins -remove_floating_pieces -do_not_route_over_macros -fill_empty_rows
 preroute_standard_cells -mode rail -connect both -nets "VDD_PLL VSS" -within_voltage_area [get_voltage_area PD_PLL] -no_routing_outside_working_area -skip_macro_pins -skip_pad_pins -remove_floating_pieces -do_not_route_over_macros -fill_empty_rows
 
 foreach_in_collection va [remove_from_collection [get_voltage_areas *] [get_voltage_areas "PD_PLL DEFAULT_VA"]] {
@@ -34,7 +33,6 @@ foreach_in_collection va [remove_from_collection [get_voltage_areas *] [get_volt
   set va_preroute_area_lly [expr [get_attribute $va bbox_lly] + [get_attribute $va guardband_y] - 0.5 * $tile_height]
   set va_preroute_area_urx [expr [get_attribute $va bbox_urx] - [get_attribute $va guardband_x]]
   set va_preroute_area_ury [expr [get_attribute $va bbox_ury] - [get_attribute $va guardband_y] + 0.5 * $tile_height]
-  #preroute_standard_cells -mode rail -connect both -nets "VDD VSS" -within_voltage_area $va -no_routing_outside_working_area -skip_macro_pins -skip_pad_pins -remove_floating_pieces -do_not_route_over_macros -fill_empty_rows
   preroute_standard_cells -mode rail -connect both -nets "VDD VSS" -within [list [list $va_preroute_area_llx $va_preroute_area_lly] [list $va_preroute_area_urx $va_preroute_area_ury]] -no_routing_outside_working_area -skip_macro_pins -skip_pad_pins -remove_floating_pieces -do_not_route_over_macros -fill_empty_rows
   remove_route_guide -all
 }
@@ -49,7 +47,7 @@ foreach_in_collection va [remove_from_collection [get_voltage_areas *] [get_volt
   set va_guardband_y [get_attribute $va guardband_y]
   if { [get_attribute $va name] == "PD_PLL" } {
     set route_guide_llx [expr $va_bbox_llx - $va_guardband_x]
-    set route_guide_lly [expr $va_bbox_lly - $va_guardband_y]
+    set route_guide_lly [expr $va_bbox_lly - $va_guardband_y + 0.5 * $tile_height]
     set route_guide_urx [expr $va_bbox_urx + $va_guardband_x]
     set route_guide_ury [expr $va_bbox_ury + $va_guardband_y]
   } else {

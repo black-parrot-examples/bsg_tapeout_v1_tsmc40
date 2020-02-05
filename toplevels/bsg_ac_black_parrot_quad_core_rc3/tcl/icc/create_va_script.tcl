@@ -20,14 +20,14 @@ set pll_va_ury [expr $core_ury - $pll_va_guard]
 create_voltage_area -power_domain PD_PLL -guard_band_x $pll_va_guard -guard_band_y $pll_va_guard -is_fixed -coordinate "$pll_va_llx $pll_va_lly $pll_va_urx $pll_va_ury"
 
 # distance from core origin to manycore origin
-set bp_array_x_offset 150
+set bp_array_x_offset 80
 set bp_array_y_offset [expr ($pll_va_height + 2 * $pll_va_guard) / $tile_height]
 
 # the shape of bp tile
 #  Die area: 2835 x 2835 
-set bp_tile_pg_width  950
-set bp_tile_pg_height 950
-set bp_tile_pg_space  50
+set bp_tile_pg_width  1000
+set bp_tile_pg_height 850
+set bp_tile_pg_space  90
 
 # define plan groups for manycore
 foreach_in_collection tile [get_cells $::env(BP_HIER_CELLS)] {

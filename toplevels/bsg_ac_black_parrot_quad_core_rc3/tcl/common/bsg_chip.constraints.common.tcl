@@ -118,25 +118,21 @@ set clk_grp(router) [get_clocks router_clk*]
 #append_to_collection clk_grp(dmc) [get_clocks ddr*]
 #set_clock_groups -asynchronous -name dmc_clk_grp -group $clk_grp(dmc)
 
+# timing exceptions
 update_timing
 foreach launch_grp [array name clk_grp] {
   set index [lsearch [array name clk_grp] $launch_grp]
-  #puts "launch group is $launch_grp"
-  #puts "launch clocks are [get_attribute $clk_grp($launch_grp) name]"
   foreach latch_grp [lreplace [array name clk_grp] $index $index] {
-    #puts "  latch group is $latch_grp"
-    #puts "  latch clocks are [get_attribute $clk_grp($latch_grp) name]"
     foreach_in_collection launch_clk $clk_grp($launch_grp) {
       foreach_in_collection latch_clk $clk_grp($latch_grp) {
         set launch_period [get_attribute $launch_clk period]
         set_max_delay $launch_period -from $launch_clk -to $latch_clk -ignore_clock_latency
-        #puts "    launch clock is [get_attribute $launch_clk name], latch clocks is [get_attribute $latch_clk name]"
+        set_min_delay 0 -from $launch_clk -to $latch_clk -ignore_clock_latency
       }
     }
   }
 }
 
-# timing exceptions
 #set_false_path -to [get_pins -of_objects [get_fp_cells -filter "is_hard_macro"] -filter "name==CLKR||name==CLKW"]
 #update_timing
 #bsg_async

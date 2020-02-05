@@ -22,6 +22,9 @@ export BP_HIER_CELLS := bp_processor_cc_y_0__x_0__tile_node \
                         bp_processor_cc_y_1__x_0__tile_node \
                         bp_processor_cc_y_1__x_1__tile_node
 
+export MISC_HIER_CELLS := prev next bp_processor_ic
+
 export HIERARCHICAL_CELLS := $(BP_HIER_CELLS)
 
+export MIM_INSTANCE_LIST := $(BP_HIER_CELLS)
 export MIM_MASTER_LIST := bp_processor_cc_y_0__x_0__tile_node

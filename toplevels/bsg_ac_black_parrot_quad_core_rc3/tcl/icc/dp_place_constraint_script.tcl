@@ -1,61 +1,61 @@
 puts "Flow-Info: Running script [info script]\n"
 
-remove_bounds -all
-remove_edit_groups -all
+#remove_bounds -all
+#remove_edit_groups -all
 
 set tile_height [get_attribute [get_core_area] tile_height]
 
 set macro_keepout $tile_height
 
-set tile0 [lindex [get_attribute [get_plan_groups] bbox] 0]
-set tile1 [lindex [get_attribute [get_plan_groups] bbox] 1]
-set tile2 [lindex [get_attribute [get_plan_groups] bbox] 2]
-set tile3 [lindex [get_attribute [get_plan_groups] bbox] 3]
-
-# Surrounding boxes
-# llx lly urx ury
-set top_box [list [expr [lindex $tile0 0 0]] [expr [lindex $tile0 1 1] + 10] [expr [lindex $tile1 1 0]] [expr [lindex $tile1 1 1] + 50]]
-set bot_box [list [expr [lindex $tile2 0 0] - 100] [expr [lindex $tile2 0 0] - 100] [expr [lindex $tile3 1 0] + 100] [expr [lindex $tile3 0 1] - 10]]
-set left_box [list [expr [lindex $tile0 0 0] - 100] [expr [lindex $tile2 0 1]] [expr [lindex $tile0 0 0] - 10] [expr [lindex $tile0 1 1] + 100]]
-set right_box [list [expr [lindex $tile1 1 0] + 10] [expr [lindex $tile3 0 1]] [expr [lindex $tile1 1 0] + 100] [expr [lindex $tile1 1 1] + 100]]
-
-set bypass_bound [create_bounds -name "bypass_bound" -type soft -coordinate [list $left_box $right_box]]
-update_bounds -name "bypass_bound" -add [get_cells -hier -filter "full_name=~*repeater*"]
-
-# fixme: This has to be low because otherwise it intersects with the PD_PLL -- could make a u-shaped boundary instead
-set io_complex_llx [expr [lindex $tile0 0 0]]
-set io_complex_lly [expr [lindex $tile0 1 1] + 10]
-set io_complex_urx [expr [lindex $tile1 1 0]]
-set io_complex_ury [expr [lindex $tile1 1 1] + 50]
-
-set io_complex_bound [create_bounds -name "io_complex" -type soft -coordinate [list $io_complex_llx $io_complex_lly $io_complex_urx $io_complex_ury]]
-update_bounds -name "io_complex" -add [get_cells -hier -filter "full_name=~*_ic_*"]
-
-set mem_complex_llx [expr [lindex $tile2 0 0]]
-set mem_complex_lly [expr [lindex $tile2 0 0] - 100]
-set mem_complex_urx [expr [lindex $tile3 1 0]]
-set mem_complex_ury [expr [lindex $tile3 0 1] - 10]
-
-set mem_complex_bound [create_bounds -name "mem_complex" -type soft -coordinate [list $mem_complex_llx $mem_complex_lly $mem_complex_urx $mem_complex_ury]]
-update_bounds -name "mem_complex" -add [get_cells -hier -filter "full_name=~*_mc_*"]
-update_bounds -name "mem_complex" -add [get_cells *bypass_link*]
-update_bounds -name "mem_complex" -add [get_cells *bypass_router*]
-
-set next_ct_llx [expr [lindex $tile1 1 0] + 10]
-set next_ct_lly [expr [lindex $tile1 0 1]]
-set next_ct_urx [expr [lindex $tile1 1 0] + 100]
-set next_ct_ury [expr [lindex $tile1 1 1] + 100]
-
-set next_ct_bound [create_bounds -name "next_ct" -type soft -coordinate [list $next_ct_llx $next_ct_lly $next_ct_urx $next_ct_ury]]
-update_bounds -name "next_ct" -add [get_cells -hier -filter "full_name=~*next*"]
-
-set prev_ct_llx [expr [lindex $tile0 0 0] - 100]
-set prev_ct_lly [expr [lindex $tile0 0 1]]
-set prev_ct_urx [expr [lindex $tile0 0 0] - 10]
-set prev_ct_ury [expr [lindex $tile0 1 1] + 100]
-
-set prev_ct_bound [create_bounds -name "prev_ct" -type soft -coordinate [list $prev_ct_llx $prev_ct_lly $prev_ct_urx $prev_ct_ury]]
-update_bounds -name "prev_ct" -add [get_cells -hier -filter "full_name=~*prev*"]
+#set tile0 [lindex [get_attribute [get_plan_groups] bbox] 0]
+#set tile1 [lindex [get_attribute [get_plan_groups] bbox] 1]
+#set tile2 [lindex [get_attribute [get_plan_groups] bbox] 2]
+#set tile3 [lindex [get_attribute [get_plan_groups] bbox] 3]
+#
+## Surrounding boxes
+## llx lly urx ury
+#set top_box [list [expr [lindex $tile0 0 0]] [expr [lindex $tile0 1 1] + 10] [expr [lindex $tile1 1 0]] [expr [lindex $tile1 1 1] + 50]]
+#set bot_box [list [expr [lindex $tile2 0 0] - 100] [expr [lindex $tile2 0 0] - 100] [expr [lindex $tile3 1 0] + 100] [expr [lindex $tile3 0 1] - 10]]
+#set left_box [list [expr [lindex $tile0 0 0] - 100] [expr [lindex $tile2 0 1]] [expr [lindex $tile0 0 0] - 10] [expr [lindex $tile0 1 1] + 100]]
+#set right_box [list [expr [lindex $tile1 1 0] + 10] [expr [lindex $tile3 0 1]] [expr [lindex $tile1 1 0] + 100] [expr [lindex $tile1 1 1] + 100]]
+#
+#set bypass_bound [create_bounds -name "bypass_bound" -type soft -coordinate [list $left_box $right_box]]
+#update_bounds -name "bypass_bound" -add [get_cells -hier -filter "full_name=~*repeater*"]
+#
+## fixme: This has to be low because otherwise it intersects with the PD_PLL -- could make a u-shaped boundary instead
+#set io_complex_llx [expr [lindex $tile0 0 0]]
+#set io_complex_lly [expr [lindex $tile0 1 1] + 10]
+#set io_complex_urx [expr [lindex $tile1 1 0]]
+#set io_complex_ury [expr [lindex $tile1 1 1] + 50]
+#
+#set io_complex_bound [create_bounds -name "io_complex" -type soft -coordinate [list $io_complex_llx $io_complex_lly $io_complex_urx $io_complex_ury]]
+#update_bounds -name "io_complex" -add [get_cells -hier -filter "full_name=~*_ic_*"]
+#
+#set mem_complex_llx [expr [lindex $tile2 0 0]]
+#set mem_complex_lly [expr [lindex $tile2 0 0] - 100]
+#set mem_complex_urx [expr [lindex $tile3 1 0]]
+#set mem_complex_ury [expr [lindex $tile3 0 1] - 10]
+#
+#set mem_complex_bound [create_bounds -name "mem_complex" -type soft -coordinate [list $mem_complex_llx $mem_complex_lly $mem_complex_urx $mem_complex_ury]]
+#update_bounds -name "mem_complex" -add [get_cells -hier -filter "full_name=~*_mc_*"]
+#update_bounds -name "mem_complex" -add [get_cells *bypass_link*]
+#update_bounds -name "mem_complex" -add [get_cells *bypass_router*]
+#
+#set next_ct_llx [expr [lindex $tile1 1 0] + 10]
+#set next_ct_lly [expr [lindex $tile1 0 1]]
+#set next_ct_urx [expr [lindex $tile1 1 0] + 100]
+#set next_ct_ury [expr [lindex $tile1 1 1] + 100]
+#
+#set next_ct_bound [create_bounds -name "next_ct" -type soft -coordinate [list $next_ct_llx $next_ct_lly $next_ct_urx $next_ct_ury]]
+#update_bounds -name "next_ct" -add [get_cells -hier -filter "full_name=~*next*"]
+#
+#set prev_ct_llx [expr [lindex $tile0 0 0] - 100]
+#set prev_ct_lly [expr [lindex $tile0 0 1]]
+#set prev_ct_urx [expr [lindex $tile0 0 0] - 10]
+#set prev_ct_ury [expr [lindex $tile0 1 1] + 100]
+#
+#set prev_ct_bound [create_bounds -name "prev_ct" -type soft -coordinate [list $prev_ct_llx $prev_ct_lly $prev_ct_urx $prev_ct_ury]]
+#update_bounds -name "prev_ct" -add [get_cells -hier -filter "full_name=~*prev*"]
 
 #foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
 #  set mim_master_name [get_attribute $mim mim_master_name]
@@ -371,12 +371,15 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
     create_fp_pins $pins -layer M5 -side 2 -step 4 -offset [expr 550 * $tile_height]
   }
 }
+
+set_fp_pin_constraints -allowed_layers {M3 M4 M5 M6 M7 M8}
+
 set_fp_placement_strategy -plan_group_interface_net_weight 10.0
 set_fp_placement_strategy -IO_net_weight 10.0
 #set_fp_placement_strategy -congestion_effort high
 
 set_fp_placement_strategy -virtual_IPO true
 
-set_app_var placer_max_cell_density_threshold 0.6
+set_app_var placer_max_cell_density_threshold 0.5
 
 puts "Flow-Info: Completed script [info script]\n"

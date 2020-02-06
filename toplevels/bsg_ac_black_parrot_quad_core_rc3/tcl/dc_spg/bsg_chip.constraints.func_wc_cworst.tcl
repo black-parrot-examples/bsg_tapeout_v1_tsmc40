@@ -1,12 +1,6 @@
 puts "BSG-info: Running script [info script]\n"
 
-source bsg_chip.constraints.common.tcl
-
-set_voltage $PDK_CORE_VOLTAGE(min) -object_list VDD
-set_voltage $PDK_CORE_VOLTAGE(min) -object_list VDD_PLL
-set_voltage 0.00 -object_list VSS
-set_voltage $PDK_IO_VOLTAGE(min) -object_list VDDPST
-set_voltage 0.00 -object_list VSSPST
+source $DESIGN_NAME.constraints.common.tcl
 
 puts "BSG-info: Completed script [info script]\n"
 

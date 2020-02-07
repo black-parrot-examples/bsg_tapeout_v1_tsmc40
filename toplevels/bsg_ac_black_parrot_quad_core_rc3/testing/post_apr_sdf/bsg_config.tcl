@@ -68,11 +68,11 @@ source $::env(BSG_CHIP_DIR)/cad/pdk_setup/pdk_setup.tcl
 
 # chip source (rtl) files and include paths list
 #set all_final_source_files [glob $::env(BSG_CHIP_DIR)/current_build/pnr/*/results/*_chip_finish.pt.v.gz]
-set all_final_source_files [glob $::env(BSG_CHIP_DIR)/current_build/pnr/*/results/*_chip_finish.v.gz]
+set all_final_source_files [glob $::env(BSG_CHIP_DIR)/current_build/pnr/*/results/*output.v]
 
-foreach lib [array name VERILOG_FILES] {
-  if { $VERILOG_FILES($lib) != "" } {
-    set all_final_source_files [concat $all_final_source_files [join $VERILOG_FILES($lib)]]
+foreach lib [array name VERILOG_FILE] {
+  if { $VERILOG_FILE($lib) != "" } {
+    set all_final_source_files [concat $all_final_source_files [join $VERILOG_FILE($lib)]]
   }
 }
 

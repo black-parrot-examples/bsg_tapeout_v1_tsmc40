@@ -28,7 +28,7 @@ export TESTING_BSG_DESIGNS_TARGET_DIR ?= $(BSG_DESIGNS_TARGET_DIR)
 
 export BSG_PACKAGE           ?=uw_bga
 export BSG_PINOUT            ?=bsg_asic_cloud
-export BSG_PACKAGING_FOUNDRY ?=gf_14_invecas_1p8v
+export BSG_PACKAGING_FOUNDRY ?=tsmc40
 export BSG_PADMAPPING        ?=default
 
 export BLACKPARROT_COMMON_DIR ?= $(BLACKPARROT_DIR)/bp_common
@@ -43,6 +43,7 @@ export MEMGEN_RUN_DIR           ?= $(BSG_CHIP_DIR)/pdk_prep/memgen
 export BSG_TOPLEVEL_DESIGN_TYPE ?=bsg_chip
 export BSG_TARGET_PROCESS       ?=tsmc40
 
+include $(BSG_DESIGNS_TARGET_DIR)/mk/bsg_40.config.mk
 include $(BSG_CHIP_DIR)/cad/pdk_setup/pdk_setup_dir.mk
 
 ########################################
@@ -96,9 +97,17 @@ VCS_OPTIONS += $(BSG_DESIGNS_TARGET_DIR)/v/bsg_chip_pkg.v
 
 BSG_TOP_SIM_MODULE = bsg_asic_cloud_pcb
 BSG_CHIP_INSTANCE_PATH = bsg_asic_cloud_pcb.IC0.ASIC
+BP_TILE_NODE_INSTANCE_PATH_0_0 = bsg_asic_cloud_pcb.IC0.ASIC.bp_processor_cc_y_0__x_0__tile_node
+BP_TILE_NODE_INSTANCE_PATH_0_1 = bsg_asic_cloud_pcb.IC0.ASIC.bp_processor_cc_y_0__x_1__tile_node
+BP_TILE_NODE_INSTANCE_PATH_1_0 = bsg_asic_cloud_pcb.IC0.ASIC.bp_processor_cc_y_1__x_0__tile_node
+BP_TILE_NODE_INSTANCE_PATH_1_1 = bsg_asic_cloud_pcb.IC0.ASIC.bp_processor_cc_y_1__x_1__tile_node
 
 VCS_OPTIONS += +define+BSG_TOP_SIM_MODULE=$(BSG_TOP_SIM_MODULE)
 VCS_OPTIONS += +define+BSG_CHIP_INSTANCE_PATH=$(BSG_CHIP_INSTANCE_PATH)
+VCS_OPTIONS += +define+BP_TILE_NODE_INSTANCE_PATH_0_0=$(BP_TILE_NODE_INSTANCE_PATH_0_0)
+VCS_OPTIONS += +define+BP_TILE_NODE_INSTANCE_PATH_0_1=$(BP_TILE_NODE_INSTANCE_PATH_0_1)
+VCS_OPTIONS += +define+BP_TILE_NODE_INSTANCE_PATH_1_0=$(BP_TILE_NODE_INSTANCE_PATH_1_0)
+VCS_OPTIONS += +define+BP_TILE_NODE_INSTANCE_PATH_1_1=$(BP_TILE_NODE_INSTANCE_PATH_1_1)
 
 export BSG_CHIP_LIBRARY_NAME = bsg_chip
 export BSG_CHIP_FILELIST = $(BSG_OUT_DIR)/$(BSG_CHIP_LIBRARY_NAME).filelist
@@ -158,9 +167,16 @@ ifndef rc_corner
 endif
 
 VCS_OPTIONS += +sdfverbose +neg_tchk +overlap +multisource_int_delays
+VCS_OPTIONS += +define+NTC +define+NTC2 +define+RECREM
+VCS_OPTIONS += -suppress=SDFCOM_SWC
 VCS_OPTIONS += -negdelay
 #VCS_OPTIONS += +notimingcheck
-VCS_OPTIONS += -sdf $(sdf_corner):$(BSG_CHIP_INSTANCE_PATH):$(BSG_CHIP_DIR)/current_build/ptsi/bsg_chip/results/$(corner)/$(rc_corner)/bsg_chip.sdf
+#VCS_OPTIONS += -sdf $(sdf_corner):$(BSG_CHIP_INSTANCE_PATH):$(BSG_CHIP_DIR)/current_build/pnr/bsg_chip/results/bsg_chip.func_wc_cworst.output.sdf
+#VCS_OPTIONS += -sdf $(sdf_corner):$(BP_TILE_NODE_INSTANCE_PATH_0_0):$(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node.func_wc_cworst.output.sdf
+#VCS_OPTIONS += -sdf $(sdf_corner):$(BP_TILE_NODE_INSTANCE_PATH_0_1):$(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node.func_wc_cworst.output.sdf
+#VCS_OPTIONS += -sdf $(sdf_corner):$(BP_TILE_NODE_INSTANCE_PATH_1_0):$(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node.func_wc_cworst.output.sdf
+#VCS_OPTIONS += -sdf $(sdf_corner):$(BP_TILE_NODE_INSTANCE_PATH_1_1):$(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node.func_wc_cworst.output.sdf
+VCS_OPTIONS += -sdf $(sdf_corner):$(BSG_CHIP_INSTANCE_PATH):$(BSG_CHIP_DIR)/current_build/sta/bsg_chip/work/func_wc_cworst_125/results/bsg_chip.sdf
 
 ifdef CORNER_SS
   VCS_OPTIONS += +define+CORNER_SS=1
@@ -171,12 +187,22 @@ BSG_CDC_PATH_FILE = $(BSG_OUT_DIR)/cdc_instance_list.v
 BSG_CHIP_NETLIST_V = $(BSG_CHIP_DIR)/current_build/pnr/bsg_chip/results/bsg_chip.output.v
 BSG_CHIP_INSTANCE_PATH = bsg_asic_cloud_pcb.IC0.ASIC
 BSG_CHIP_NETLIST_V_GZ = $(BSG_CHIP_DIR)/current_build/pnr/bsg_chip/results/bsg_chip_chip_finish.v.gz
+BP_TILE_NODE_NETLIST_V = $(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node.output.v
+BP_TILE_NODE_INSTANCE_PATH_0_0 = bsg_asic_cloud_pcb.IC0.ASIC.bp_processor_cc_y_0__x_0__tile_node
+BP_TILE_NODE_INSTANCE_PATH_0_1 = bsg_asic_cloud_pcb.IC0.ASIC.bp_processor_cc_y_0__x_1__tile_node
+BP_TILE_NODE_INSTANCE_PATH_1_0 = bsg_asic_cloud_pcb.IC0.ASIC.bp_processor_cc_y_1__x_0__tile_node
+BP_TILE_NODE_INSTANCE_PATH_1_1 = bsg_asic_cloud_pcb.IC0.ASIC.bp_processor_cc_y_1__x_1__tile_node
+BP_TILE_NODE_NETLIST_V_GZ = $(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node_chip_finish.v.gz
 
 VCS_OPTIONS += +optconfigfile+$(BSG_CDC_PATH_FILE)
 
 # grab all of the sync flops
 $(BSG_CDC_PATH_FILE):
 	$(EXPAND_VERILOG) $(BSG_CHIP_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BSG_CHIP_INSTANCE_PATH)." $$$$2 " } { noTiming };" }' | sort > $@
+	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_0_0)." $$$$2 " } { noTiming };" }' | sort >> $@
+	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_0_1)." $$$$2 " } { noTiming };" }' | sort >> $@
+	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_1_0)." $$$$2 " } { noTiming };" }' | sort >> $@
+	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_1_1)." $$$$2 " } { noTiming };" }' | sort >> $@
 
 ########################################
 ## BlackParrot test junk

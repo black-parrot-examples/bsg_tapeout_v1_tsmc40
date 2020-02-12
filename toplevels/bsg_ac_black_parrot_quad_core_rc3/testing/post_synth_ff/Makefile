@@ -89,6 +89,7 @@ VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_cfg_link_pkg.vh
 VCS_OPTIONS += $(BSG_DESIGNS_TARGET_DIR)/v/bsg_chip_pkg.v
 
 # Additional options for RTL-Hard
+VCS_OPTIONS += +define+TSMC_NO_WARNING
 VCS_OPTIONS += +notimingcheck
 VCS_OPTIONS += +nospecify
 

@@ -81,6 +81,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_misc/bsg_circular_ptr.v
   $basejump_stl_dir/bsg_misc/bsg_concentrate_static.v
   $basejump_stl_dir/bsg_misc/bsg_counter_clear_up.v
+  $basejump_stl_dir/bsg_misc/bsg_counter_set_en.v
   $basejump_stl_dir/bsg_misc/bsg_counter_set_down.v
   $basejump_stl_dir/bsg_misc/bsg_counter_up_down.v
   $basejump_stl_dir/bsg_misc/bsg_counter_up_down_variable.v
@@ -130,7 +131,6 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_common_dir/src/v/bp_pma.v
   $bp_common_dir/src/v/bp_tlb.v
   $bp_common_dir/src/v/bp_tlb_replacement.v
-  $bp_common_dir/src/v/bsg_fifo_1r1w_fence.v
   $bp_common_dir/src/v/bsg_fifo_1r1w_rolly.v
   $bp_be_dir/src/v/bp_be_top.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_bypass.v

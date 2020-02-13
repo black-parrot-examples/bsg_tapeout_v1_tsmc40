@@ -32,6 +32,7 @@ set m7_pitch        [get_attribute [get_layers M7]  pitch]
 
 set m6_pitch        [get_attribute [get_layers M6]  pitch]
 set m5_pitch        [get_attribute [get_layers M5]  pitch]
+set m1_pitch        [get_attribute [get_layers M1]  pitch]
 
 ################################################################################
 #
@@ -51,10 +52,8 @@ foreach_in_collection va [get_voltage_areas] {
     }
   } elseif { [regexp "tile" $va_name] } {
     set index [regexp -all -inline -- {[0-9]+} [get_attribute $va name]]
-    create_power_plan_regions tile_ppr_${index} -voltage_area $va -expand [list [expr 20.0 * $m9_pitch] [expr 5.0 * $m10_pitch]]
-  } elseif { [regexp "vc" $va_name] } {
-    set index [regexp -all -inline -- {[0-9]+} [get_attribute $va name]]
-    create_power_plan_regions vcache_ppr_${index} -voltage_area $va -expand [list [expr 20.0 * $m9_pitch] [expr 5.0 * $m10_pitch]]
+    #create_power_plan_regions tile_ppr_${index} -voltage_area $va -expand [list [expr 20.0 * $m9_pitch] [expr 5.0 * $m10_pitch]]
+    create_power_plan_regions tile_ppr_${index} -voltage_area $va -expand [list [expr 20.0 * $m9_pitch] [expr 11.0 * $tile_height - $m1_pitch]]
   } else {
     puts "No power plan regions created for voltage area $va_name"
   }
@@ -165,9 +164,12 @@ preroute_instances -ignore_macros \
 # POWER RINGS FOR SUB-BLOCKS
 #
 
-set block_power_ring_h_width   [expr $m10_pitch * 2.0]
-set block_power_ring_h_spacing [expr $m10_pitch * 0.5]
-set block_power_ring_h_offset  [expr $m10_pitch * 0.0]
+#set block_power_ring_h_width   [expr $m10_pitch * 2.0]
+#set block_power_ring_h_spacing [expr $m10_pitch * 0.5]
+#set block_power_ring_h_offset  [expr $m10_pitch * 0.0]
+set block_power_ring_h_width   [expr $tile_height * 4.0]
+set block_power_ring_h_spacing [expr $tile_height * 2.0]
+set block_power_ring_h_offset  [expr $tile_height * 0.0]
 set block_power_ring_v_width   [expr $m9_pitch * 8.0]
 set block_power_ring_v_spacing [expr $m9_pitch * 2.0]
 set block_power_ring_v_offset  [expr $m9_pitch * 0.0]
@@ -249,16 +251,15 @@ set block_power_h_strap_spacing [expr $m10_pitch * 1.0]
 set block_power_h_strap_pitch   [expr $m10_pitch * 8.0]
 set block_power_h_strap_offset  [expr $m10_pitch * 1.0]
 set block_power_v_strap_width   [expr $m9_pitch * 4.0]
-#set block_power_v_strap_spacing [expr $m9_pitch * 4.0]
-#set block_power_v_strap_pitch   [expr $m9_pitch * 16.0]
 set block_power_v_strap_spacing [expr $m9_pitch * 1.0]
 set block_power_v_strap_pitch   [expr $m9_pitch * 32.0]
 set block_power_v_strap_offset  [expr $m9_pitch * 4.0]
+set block_power_v_strap_extension [expr $tile_height * 10.0 + $m1_pitch]
 
 set_power_plan_strategy block_mesh_h10v9 \
   -nets $core_power_nets \
   -voltage_area [get_voltage_areas *tile*] \
-  -extension { {{nets:$core_power_nets}{stop:innermost_ring}} } \
+  -extension { {{nets:$core_power_nets}{direction:LR}{stop:innermost_ring}} {{nets:$core_power_nets}{direction:TB}{stop:$block_power_v_strap_extension}} } \
   -template $::env(BSG_DESIGNS_TARGET_DIR)/tcl/icc/dp_pns_mesh.tpl:bsg_power_mesh(M10,$block_power_h_strap_width,$block_power_h_strap_spacing,$block_power_h_strap_pitch,$block_power_h_strap_offset,M9,$block_power_v_strap_width,$block_power_v_strap_spacing,$block_power_v_strap_pitch,$block_power_v_strap_offset)
 
 compile_power_plan -strategy block_mesh_h10v9
@@ -330,14 +331,14 @@ set blockage_ppr_groups [get_power_plan_regions]
 set blockage_ppr_names [get_attribute $blockage_ppr_groups name]
 set blockage_value "{power_plan_regions:{$blockage_ppr_names}}"
 
-set core_power_h_strap_width   [expr $m10_pitch * 1.0]
-set core_power_h_strap_spacing [expr $m10_pitch * 1.0]
+set core_power_h_strap_width   [expr $m10_pitch * 2.0]
+set core_power_h_strap_spacing [expr $m10_pitch * 2.0]
 set core_power_h_strap_pitch   [expr $m10_pitch * 8.0]
-set core_power_h_strap_offset  [expr $m10_pitch * 1.0]
-set core_power_v_strap_width   [expr $m9_pitch * 4.0]
-set core_power_v_strap_spacing [expr $m9_pitch * 1.0]
+set core_power_h_strap_offset  [expr $m10_pitch * 2.0]
+set core_power_v_strap_width   [expr $m9_pitch * 8.0]
+set core_power_v_strap_spacing [expr $m9_pitch * 8.0]
 set core_power_v_strap_pitch   [expr $m9_pitch * 32.0]
-set core_power_v_strap_offset  [expr $m9_pitch * 4.0]
+set core_power_v_strap_offset  [expr $m9_pitch * 8.0]
 
 set_power_plan_strategy core_mesh_h10v9 \
   -nets $core_power_nets \

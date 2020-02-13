@@ -1,6 +1,6 @@
 puts "RM-Info: Running script [info script]\n"
 
-if { $::env(BSG_BLOCK_HIER_LEVEL) == "top" } {
+if { $ICC_IMPLEMENTATION_PHASE == "top" } {
 
   foreach_in_collection pin [get_pins -all -of_objects [get_fp_cells -filter "is_io"] -filter "name==PAD||name==VDD||name==VSS||name==VDDPST||name==VSSPST"] {
     set io_cell [get_fp_cells -of_objects $pin]
@@ -28,11 +28,7 @@ if { $::env(BSG_BLOCK_HIER_LEVEL) == "top" } {
   source createNplace_cup_bondpads.tcl
 
   createNplace_cup_bondpads -inline_pad_ref_name PAD60GU_DS -stagger true -stagger_pad_ref_name PAD60NU_DS
-}
 
-#set pin_bbox [list [list 2.205 75.755] [list 27.795 80.255]]
-#add_io_text_custom [get_cells -all -filter "ref_name==PVDD2DGZ"] M8_PIN_TEXT "VDDPST" $pin_bbox
-#add_io_text_custom [get_cells -all -filter "ref_name==PVSS2DGZ"] M8_PIN_TEXT "VSSPST" $pin_bbox
-#
+}
 
 puts "RM-Info: Completed script [info script]\n"

@@ -113,6 +113,17 @@ append_to_collection clk_grp(io_master) [get_clocks -filter "name=~sdo_*_clk&&na
 set clk_grp(router) [get_clocks router_clk*]
 #set_clock_groups -asynchronous -name router_clk_grp -group $clk_grp(router)
 
+set_clock_groups -asynchronous              \
+                 -allow_paths               \
+                 -group $clk_grp(tag)       \
+                 -group $clk_grp(sdi_0)     \
+                 -group $clk_grp(sdo_0_tkn) \
+                 -group $clk_grp(sdi_1)     \
+                 -group $clk_grp(sdo_1_tkn) \
+                 -group $clk_grp(io_master) \
+                 -group $clk_grp(router)    \
+                 -group $clk_grp(bp)
+
 #set clk_grp(dmc) [get_clocks dfi_clk*]
 #append_to_collection clk_grp(dmc) [get_clocks dqs*]
 #append_to_collection clk_grp(dmc) [get_clocks ddr*]
@@ -125,9 +136,10 @@ foreach launch_grp [array name clk_grp] {
   foreach latch_grp [lreplace [array name clk_grp] $index $index] {
     foreach_in_collection launch_clk $clk_grp($launch_grp) {
       foreach_in_collection latch_clk $clk_grp($latch_grp) {
+        group_path -name async_paths -from $launch_clk -to $latch_clk
         set launch_period [get_attribute $launch_clk period]
         set_max_delay $launch_period -from $launch_clk -to $latch_clk -ignore_clock_latency
-        set_min_delay 0 -from $launch_clk -to $latch_clk -ignore_clock_latency
+        set_min_delay 0              -from $launch_clk -to $latch_clk -ignore_clock_latency
       }
     }
   }
@@ -137,21 +149,21 @@ foreach launch_grp [array name clk_grp] {
 #update_timing
 #bsg_async
 
-#foreach_in_collection adt [get_cells -hier adt] {
-#  set path [get_attribute $adt full_name]
-#  set_disable_timing [get_cells $path/M1]
-#  set_disable_timing [get_cells $path/sel_r_reg_0]
-#}
-#
-#foreach_in_collection cdt [get_cells -hier cdt] {
-#  set path [get_attribute $cdt full_name]
-#  set_disable_timing [get_cells $path/M1]
-#}
-#
-#foreach_in_collection fdt [get_cells -hier fdt] {
-#  set path [get_attribute $fdt full_name]
-#  set_disable_timing [get_cells $path/M2]
-#}
+foreach_in_collection adt [get_cells -hier adt] {
+  set path [get_attribute $adt full_name]
+  set_disable_timing [get_cells $path/M1]
+  set_disable_timing [get_cells $path/sel_r_reg_0]
+}
+
+foreach_in_collection cdt [get_cells -hier cdt] {
+  set path [get_attribute $cdt full_name]
+  set_disable_timing [get_cells $path/M1]
+}
+
+foreach_in_collection fdt [get_cells -hier fdt] {
+  set path [get_attribute $fdt full_name]
+  set_disable_timing [get_cells $path/M2]
+}
 
 #foreach_in_collection clk [all_clocks] {
 #  set clock_uncertainty 0.1

@@ -125,6 +125,8 @@ VCS_OPTIONS += +define+BSG_DESIGNS_TESTING_LIBRARY_NAME=$(BSG_DESIGNS_TESTING_LI
 VCS_OPTIONS += -f $(BSG_DESIGNS_TESTING_FILELIST)
 VCS_OPTIONS += -libmap $(BSG_DESIGNS_TESTING_LIBRARY)
 
+VCS_OPTIONS += +define+TSMC_NO_WARNING
+
 $(BSG_CHIP_FILELIST): $(BSG_DESIGNS_TESTING_LIBRARY)
 $(BSG_CHIP_LIBRARY): $(BSG_DESIGNS_TESTING_LIBRARY)
 $(BSG_DESIGNS_TESTING_FILELIST): $(BSG_DESIGNS_TESTING_LIBRARY)
@@ -171,12 +173,8 @@ VCS_OPTIONS += +define+NTC +define+NTC2 +define+RECREM
 VCS_OPTIONS += -suppress=SDFCOM_SWC
 VCS_OPTIONS += -negdelay
 #VCS_OPTIONS += +notimingcheck
-#VCS_OPTIONS += -sdf $(sdf_corner):$(BSG_CHIP_INSTANCE_PATH):$(BSG_CHIP_DIR)/current_build/pnr/bsg_chip/results/bsg_chip.func_wc_cworst.output.sdf
-#VCS_OPTIONS += -sdf $(sdf_corner):$(BP_TILE_NODE_INSTANCE_PATH_0_0):$(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node.func_wc_cworst.output.sdf
-#VCS_OPTIONS += -sdf $(sdf_corner):$(BP_TILE_NODE_INSTANCE_PATH_0_1):$(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node.func_wc_cworst.output.sdf
-#VCS_OPTIONS += -sdf $(sdf_corner):$(BP_TILE_NODE_INSTANCE_PATH_1_0):$(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node.func_wc_cworst.output.sdf
-#VCS_OPTIONS += -sdf $(sdf_corner):$(BP_TILE_NODE_INSTANCE_PATH_1_1):$(BSG_CHIP_DIR)/current_build/pnr/bp_tile_node/results/bp_tile_node.func_wc_cworst.output.sdf
 VCS_OPTIONS += -sdf $(sdf_corner):$(BSG_CHIP_INSTANCE_PATH):$(BSG_CHIP_DIR)/current_build/sta/bsg_chip/work/func_wc_cworst_125/results/bsg_chip.sdf
+VCS_OPTIONS += -sdfretain
 
 ifdef CORNER_SS
   VCS_OPTIONS += +define+CORNER_SS=1

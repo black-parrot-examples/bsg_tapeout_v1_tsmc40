@@ -69,7 +69,7 @@ import bsg_wormhole_router_pkg::*;
   bsg_nonsynth_clock_gen #(.cycle_time_p(`ROUTER_CLK_PERIOD)) router_clk_gen (.o(router_clk));
 
   logic tag_clk;
-  assign p_bsg_tag_clk_o = tag_clk;
+  assign p_bsg_tag_clk_o = ~tag_clk;
   bsg_nonsynth_clock_gen #(.cycle_time_p(`TAG_CLK_PERIOD)) tag_clk_gen (.o(tag_clk));
 
   //////////////////////////////////////////////////
@@ -115,7 +115,7 @@ import bsg_wormhole_router_pkg::*;
                         ,.max_payload_width_p( tag_max_payload_width_gp )
                         )
     tag_trace_replay
-      (.clk_i   ( p_bsg_tag_clk_o )
+      (.clk_i   ( tag_clk )
       ,.reset_i ( tag_reset    )
       ,.en_i    ( 1'b1            )
 
@@ -174,7 +174,7 @@ import bsg_wormhole_router_pkg::*;
                   ,.lg_width_p( tag_lg_max_payload_width_gp )
                   )
     btm
-      (.clk_i      ( p_bsg_tag_clk_o )
+      (.clk_i      ( tag_clk )
       ,.data_i     ( tag_trace_en_r_lo[1] ? p_bsg_tag_data_o : 1'b0 )
       ,.en_i       ( 1'b1 )
       ,.clients_r_o( tag_lines_lo )

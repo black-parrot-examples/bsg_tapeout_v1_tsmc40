@@ -12,9 +12,13 @@ set core_lly [lindex [lindex $core_bbox 0] 1]
 set core_urx [lindex [lindex $core_bbox 1] 0]
 set core_ury [lindex [lindex $core_bbox 1] 1]
 
-set pll_va_llx [expr [lindex [lindex [get_attribute [get_fp_cells breaker_t_0] bbox] 0] 0] + $pll_va_guard]
+set breaker_cell [get_fp_cells breaker_t_0]
+set breaker_bbox [get_attribute $breaker_cell bbox]
+set pll_va_llx [expr $core_llx + int([expr ([lindex [lindex $breaker_bbox 0] 0] - $core_llx) / $tile_height]) * $tile_height + $pll_va_guard]
 set pll_va_lly [expr $core_ury - $pll_va_guard - $pll_va_height]
-set pll_va_urx [expr [lindex [lindex [get_attribute [get_fp_cells breaker_t_1] bbox] 1] 0] - $pll_va_guard]
+set breaker_cell [get_fp_cells breaker_t_1]
+set breaker_bbox [get_attribute $breaker_cell bbox]
+set pll_va_urx [expr $core_llx + int([expr ([lindex [lindex $breaker_bbox 1] 0] - $core_llx) / $tile_height]) * $tile_height - $pll_va_guard]
 set pll_va_ury [expr $core_ury - $pll_va_guard]
 
 create_voltage_area -power_domain PD_PLL -guard_band_x $pll_va_guard -guard_band_y $pll_va_guard -is_fixed -coordinate "$pll_va_llx $pll_va_lly $pll_va_urx $pll_va_ury"
@@ -29,7 +33,7 @@ set bp_tile_pg_width  1000
 set bp_tile_pg_height 850
 set bp_tile_pg_space  90
 
-# define plan groups for manycore
+# define plan groups for bp_tile_node array
 foreach_in_collection tile [get_cells $::env(BP_HIER_CELLS)] {
   set coordinate [regexp -all -inline -- {[0-9]+} [get_attribute $tile name]]
   set x [lindex $coordinate 1]
@@ -41,25 +45,5 @@ foreach_in_collection tile [get_cells $::env(BP_HIER_CELLS)] {
   set tile_name [get_attribute $tile full_name]
   create_voltage_area -power_domain $tile_name/PD -guard_band_x $tile_height -guard_band_y $tile_height -is_fixed -coordinate "$bp_tile_pg_llx $bp_tile_pg_lly $bp_tile_pg_urx $bp_tile_pg_ury"
 }
-
-## distance from core origin to cache origin
-#set cache_x_offset  29
-#set cache_y_offset  [expr ($core_ury - $manycore_tile_pg_lly) / $tile_height]
-#
-## the shape of cache
-#set cache_pg_width  260
-#set cache_pg_height 200
-#set cache_pg_space  16
-#
-## define plan groups for cache
-#foreach_in_collection cache [get_cells $::env(VC_HIER_CELLS)] {
-#  set index [regexp -all -inline -- {[0-9]+} [get_attribute $cache name]]
-#  set cache_pg_llx [expr $core_llx + ($cache_x_offset + $index * ($cache_pg_width  + $cache_pg_space)) * $tile_height]
-#  set cache_pg_lly [expr $core_ury - ($cache_y_offset + $cache_pg_height + $cache_pg_space) * $tile_height]
-#  set cache_pg_urx [expr $cache_pg_llx + $cache_pg_width * $tile_height]
-#  set cache_pg_ury [expr $cache_pg_lly + $cache_pg_height * $tile_height]
-#  set cache_name [get_attribute $cache full_name]
-#  create_voltage_area -power_domain $cache_name/PD -guard_band_x $tile_height -guard_band_y $tile_height -is_fixed -coordinate "$cache_pg_llx $cache_pg_lly $cache_pg_urx $cache_pg_ury"
-#}
 
 puts "RM-Info: Completed script [info script]\n"

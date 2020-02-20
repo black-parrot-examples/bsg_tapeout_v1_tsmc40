@@ -1,6 +1,18 @@
 puts "RM-Info: Running script [info script]\n"
 
-if { $ICC_IMPLEMENTATION_PHASE == "top" } {
+source add_io_text.tcl
+
+if { $ICC_IMPLEMENTATION_PHASE == "block" } {
+
+  foreach_in_collection port [get_ports *] {
+    create_text_on_port $port
+  }
+  
+  foreach_in_collection shape [get_net_shapes -filter {route_type=="P/G Strap"&&layer==M10}] {
+    create_text_on_shape $shape
+  }
+
+} elseif { $ICC_IMPLEMENTATION_PHASE == "top" } {
 
   foreach_in_collection pin [get_pins -all -of_objects [get_fp_cells -filter "is_io"] -filter "name==PAD||name==VDD||name==VSS||name==VDDPST||name==VSSPST"] {
     set io_cell [get_fp_cells -of_objects $pin]
@@ -17,8 +29,6 @@ if { $ICC_IMPLEMENTATION_PHASE == "top" } {
     set text_string [get_attribute [get_nets -all -of_objects $pin] name]
     create_text -orient $text_orientation -height $text_height -layer $text_layer -origin $text_origin $text_string
   }
-
-  source add_io_text.tcl
 
   set pin_bbox [list [list 0 187.5] [list 30 188.5]]
   add_io_text_custom [get_cells -all -filter "ref_name==PVDD2POC"] M4_PIN_TEXT "POC" $pin_bbox

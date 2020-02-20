@@ -8,6 +8,22 @@ source -echo -verbose bsg_async.constraints.tcl
 
 source -echo -verbose clock_variables.tcl
 
+foreach_in_collection adt [get_cells -hier adt] {
+  set path [get_attribute $adt full_name]
+  set_disable_timing [get_cells $path/M1]
+  set_disable_timing [get_cells $path/sel_r_reg_0]
+}
+
+foreach_in_collection cdt [get_cells -hier cdt] {
+  set path [get_attribute $cdt full_name]
+  set_disable_timing [get_cells $path/M1]
+}
+
+foreach_in_collection fdt [get_cells -hier fdt] {
+  set path [get_attribute $fdt full_name]
+  set_disable_timing [get_cells $path/M2]
+}
+
 #bsg_tag_clock_create $TAG_CLK_NAME p_bsg_tag_clk_i p_bsg_tag_data_i p_bsg_tag_en_i $TAG_CLK_PERIOD 0.1
 bsg_tag_clock_create $TAG_CLK_NAME \
                      [get_pins -of_objects [get_cells -of_objects [get_ports p_bsg_tag_clk_i]] -filter "name==C"] \
@@ -15,9 +31,9 @@ bsg_tag_clock_create $TAG_CLK_NAME \
                      [get_pins -of_objects [get_cells -of_objects [get_ports p_bsg_tag_en_i]] -filter "name==C"] \
                      $TAG_CLK_PERIOD 0.1
 
-bsg_clk_gen_clock_create $CORE_CLK_NAME   $OSC_PERIOD        $CORE_CLK_PERIOD   0.1 0.1 0.1
-bsg_clk_gen_clock_create $IOM_CLK_NAME    $OSC_PERIOD        $IOM_CLK_PERIOD    0.1 0.1 0.1
-bsg_clk_gen_clock_create $ROUTER_CLK_NAME $OSC_PERIOD        $ROUTER_CLK_PERIOD 0.1 0.1 0.1
+bsg_clk_gen_clock_create $CORE_CLK_NAME   $OSC_PERIOD $CORE_CLK_PERIOD   0.1 0.1 0.1
+bsg_clk_gen_clock_create $IOM_CLK_NAME    $OSC_PERIOD $IOM_CLK_PERIOD    0.1 0.1 0.1
+bsg_clk_gen_clock_create $ROUTER_CLK_NAME $OSC_PERIOD $ROUTER_CLK_PERIOD 0.1 0.1 0.1
 #bsg_clk_gen_clock_create $DFI_CLK_2X_NAME $DFI_CLK_2X_PERIOD $DFI_CLK_2X_PERIOD 0.1 0.1 0.1
 #create_generated_clock -name $DFI_CLK_1X_NAME -divide_by 2 -source [get_attribute [get_clocks $DFI_CLK_2X_NAME] sources] -master_clock [get_clocks $DFI_CLK_2X_NAME] [get_pins -leaf -of_objects [get_nets -hierarchical ${DFI_CLK_1X_NAME}_lo] -filter "direction==out"]
 
@@ -149,26 +165,9 @@ foreach launch_grp [array name clk_grp] {
 #update_timing
 #bsg_async
 
-foreach_in_collection adt [get_cells -hier adt] {
-  set path [get_attribute $adt full_name]
-  set_disable_timing [get_cells $path/M1]
-  set_disable_timing [get_cells $path/sel_r_reg_0]
-}
-
-foreach_in_collection cdt [get_cells -hier cdt] {
-  set path [get_attribute $cdt full_name]
-  set_disable_timing [get_cells $path/M1]
-}
-
-foreach_in_collection fdt [get_cells -hier fdt] {
-  set path [get_attribute $fdt full_name]
-  set_disable_timing [get_cells $path/M2]
-}
-
-#foreach_in_collection clk [all_clocks] {
-#  set clock_uncertainty 0.1
-#  set_clock_uncertainty $clock_uncertainty $clk
-#}
+set_max_transition 0.4 [current_design]
+set_max_capacitance 0.15 [current_design]
+set_max_fanout 16 [current_design]
 
 puts "BSG-info: Completed script [info script]\n"
 

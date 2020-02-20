@@ -18,6 +18,11 @@ bsg_set_general_timing_constraints $ROUTER_CLK_NAME [get_ports mem_clk_i]       
 set_false_path -from [get_ports *cord_i*]
 set_false_path -from [get_ports *did_i*]
 
+set_clock_groups -asynchronous                      \
+                 -allow_paths                       \
+                 -group [get_clocks $CORE_CLK_NAME] \
+                 -group [get_clocks $ROUTER_CLK_NAME]
+
 source bsg_async.constraints.tcl
 update_timing
 bsg_async

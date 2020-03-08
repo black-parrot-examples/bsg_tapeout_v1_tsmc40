@@ -32,7 +32,7 @@ package bsg_chip_pkg;
 
   localparam link_channel_width_gp = 8;
   localparam link_num_channels_gp = 1;
-  localparam link_width_gp = 64;
+  localparam link_width_gp = 68;
   localparam link_lg_fifo_depth_gp = 6;
   localparam link_lg_credit_to_token_decimation_gp = 3;
 

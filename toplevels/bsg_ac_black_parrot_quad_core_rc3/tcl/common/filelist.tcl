@@ -116,6 +116,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_misc/bsg_dff_en.v
   $basejump_stl_dir/bsg_misc/bsg_dff_reset.v
   $basejump_stl_dir/bsg_misc/bsg_dff_reset_en.v
+  $basejump_stl_dir/bsg_misc/bsg_edge_detect.v
   $basejump_stl_dir/bsg_misc/bsg_encode_one_hot.v
   $basejump_stl_dir/bsg_misc/bsg_expand_bitmask.v
   $basejump_stl_dir/bsg_misc/bsg_hash_bank.v
@@ -224,6 +225,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_top_dir/src/v/bp_clint_slice_buffered.v
   $bp_top_dir/src/v/bp_core.v
   $bp_top_dir/src/v/bp_core_complex.v
+  $bp_top_dir/src/v/bp_core_minimal.v
   $bp_top_dir/src/v/bp_io_complex.v
   $bp_top_dir/src/v/bp_io_link_to_lce.v
   $bp_top_dir/src/v/bp_io_tile.v

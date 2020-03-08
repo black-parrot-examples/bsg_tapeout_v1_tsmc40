@@ -24,7 +24,9 @@ module bsg_chip
 `include "bsg_pinout.v"
 `include "bsg_iopads.v"
 
-  `declare_bsg_ready_and_link_sif_s(ct_width_gp, bsg_ready_and_link_sif_s);
+  localparam flit_width_p = mem_noc_flit_width_p;
+  `declare_bsg_ready_and_link_sif_s(mem_noc_flit_width_p, bsg_ready_and_link_sif_s);
+  `declare_bsg_ready_and_link_sif_s(link_width_gp-2, ct_link_sif_s);
 
   //////////////////////////////////////////////////
   //
@@ -249,11 +251,15 @@ module bsg_chip
   bsg_ready_and_link_sif_s [ct_num_in_gp-1:0]        repeated_prev_router_links_li, repeated_prev_router_links_lo;
   bsg_ready_and_link_sif_s [ct_num_in_gp-1:0]        repeated_next_router_links_li, repeated_next_router_links_lo;
 
+  ct_link_sif_s [ct_num_in_gp-1:0] next_ct_links_li, next_ct_links_lo;
+  ct_link_sif_s [ct_num_in_gp-1:0] prev_ct_links_li, prev_ct_links_lo;
+
   bsg_chip_io_complex_links_ct_fifo #(.link_width_p                        ( link_width_gp         )
                                      ,.link_channel_width_p                ( link_channel_width_gp )
                                      ,.link_num_channels_p                 ( link_num_channels_gp  )
                                      ,.link_lg_fifo_depth_p                ( link_lg_fifo_depth_gp )
                                      ,.link_lg_credit_to_token_decimation_p( link_lg_credit_to_token_decimation_gp )
+                                     ,.link_use_extra_data_bit_p           ( 1 )
                                      ,.ct_width_p                          ( ct_width_gp )
                                      ,.ct_num_in_p                         ( ct_num_in_gp )
                                      ,.ct_remote_credits_p                 ( ct_remote_credits_gp )
@@ -279,15 +285,24 @@ module bsg_chip
       ,.co_data_o( co2_data_lo[link_channel_width_gp-1:0] )
       ,.co_tkn_i ( co2_tkn_li )
 
-      ,.links_i  ( repeated_prev_router_links_li ) 
-      ,.links_o  ( repeated_prev_router_links_lo )
+      ,.links_i  ( prev_ct_links_li ) 
+      ,.links_o  ( prev_ct_links_lo )
       );
+
+  assign prev_ct_links_li[0] = {repeated_prev_router_links_li[0][flit_width_p+:2], 2'b00, repeated_prev_router_links_li[0][0+:flit_width_p]};
+  assign prev_ct_links_li[1] = {repeated_prev_router_links_li[1][flit_width_p+:2], 2'b00, repeated_prev_router_links_li[1][0+:flit_width_p]};
+  assign prev_ct_links_li[2] = {repeated_prev_router_links_li[2][flit_width_p+:2], 2'b00, repeated_prev_router_links_li[2][0+:flit_width_p]};
+
+  assign repeated_prev_router_links_lo[0] = {prev_ct_links_lo[0][flit_width_p+2+:2], prev_ct_links_lo[0][0+:flit_width_p]};
+  assign repeated_prev_router_links_lo[1] = {prev_ct_links_lo[1][flit_width_p+2+:2], prev_ct_links_lo[1][0+:flit_width_p]};
+  assign repeated_prev_router_links_lo[2] = {prev_ct_links_lo[2][flit_width_p+2+:2], prev_ct_links_lo[2][0+:flit_width_p]};
 
   bsg_chip_io_complex_links_ct_fifo #(.link_width_p                        ( link_width_gp         )
                                      ,.link_channel_width_p                ( link_channel_width_gp )
                                      ,.link_num_channels_p                 ( link_num_channels_gp  )
                                      ,.link_lg_fifo_depth_p                ( link_lg_fifo_depth_gp )
                                      ,.link_lg_credit_to_token_decimation_p( link_lg_credit_to_token_decimation_gp )
+                                     ,.link_use_extra_data_bit_p           ( 1 )
                                      ,.ct_width_p                          ( ct_width_gp )
                                      ,.ct_num_in_p                         ( ct_num_in_gp )
                                      ,.ct_remote_credits_p                 ( ct_remote_credits_gp )
@@ -313,9 +328,17 @@ module bsg_chip
       ,.co_data_o( co_data_lo[link_channel_width_gp-1:0] )
       ,.co_tkn_i ( co_tkn_li )
 
-      ,.links_i  ( repeated_next_router_links_li )
-      ,.links_o  ( repeated_next_router_links_lo )
+      ,.links_i  ( next_ct_links_li )
+      ,.links_o  ( next_ct_links_lo )
       );
+
+  assign next_ct_links_li[0] = {repeated_next_router_links_li[0][flit_width_p+:2], 2'b00, repeated_next_router_links_li[0][0+:flit_width_p]};
+  assign next_ct_links_li[1] = {repeated_next_router_links_li[1][flit_width_p+:2], 2'b00, repeated_next_router_links_li[1][0+:flit_width_p]};
+  assign next_ct_links_li[2] = {repeated_next_router_links_li[2][flit_width_p+:2], 2'b00, repeated_next_router_links_li[2][0+:flit_width_p]};
+
+  assign repeated_next_router_links_lo[0] = {next_ct_links_lo[0][flit_width_p+2+:2], next_ct_links_lo[0][0+:flit_width_p]};
+  assign repeated_next_router_links_lo[1] = {next_ct_links_lo[1][flit_width_p+2+:2], next_ct_links_lo[1][0+:flit_width_p]};
+  assign repeated_next_router_links_lo[2] = {next_ct_links_lo[2][flit_width_p+2+:2], next_ct_links_lo[2][0+:flit_width_p]};
 
   //////////////////////////////////////////////////
   //
@@ -436,7 +459,7 @@ module bsg_chip
   for (i = 0; i < 3; i++)
     begin : repeater
       bsg_noc_repeater_node
-       #(.width_p(ct_width_gp))
+       #(.width_p(flit_width_p))
        prev_bypass_repeater
         (.clk_i(router_clk_lo)
          ,.reset_i(router_reset_lo)
@@ -449,7 +472,7 @@ module bsg_chip
          );
 
       bsg_noc_repeater_node
-       #(.width_p(ct_width_gp))
+       #(.width_p(flit_width_p))
        next_bypass_repeater
         (.clk_i(router_clk_lo)
          ,.reset_i(router_reset_lo)

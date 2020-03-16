@@ -222,6 +222,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_bidir.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_client.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_master.v
+  $bp_me_dir/src/v/wormhole/bp_me_cce_to_xui.v
   $bp_me_dir/src/v/wormhole/bp_me_cord_to_id.v
   $bp_me_dir/src/v/wormhole/bp_me_lce_id_to_cord.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_lce_req.v
@@ -252,6 +253,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_async/bsg_sync_sync.v
   $basejump_stl_dir/bsg_async/bsg_async_ptr_gray.v
   $basejump_stl_dir/bsg_clk_gen/bsg_clk_gen.v
+  $basejump_stl_dir/bsg_clk_gen/bsg_dly_line.v
   $basejump_stl_dir/bsg_async/bsg_async_fifo.v
   $basejump_stl_dir/bsg_async/bsg_async_credit_counter.v
   $basejump_stl_dir/bsg_dataflow/bsg_round_robin_1_to_n.v
@@ -288,6 +290,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_dmc/bsg_dmc.v
   $basejump_stl_dir/bsg_dmc/bsg_dmc_controller.v
   $basejump_stl_dir/bsg_dmc/bsg_dmc_phy.v
+  $basejump_stl_dir/bsg_dmc/bsg_dmc_clk_rst_gen.v
   $basejump_stl_dir/bsg_dataflow/bsg_make_2D_array.v
   $basejump_stl_dir/bsg_dataflow/bsg_flatten_2D_array.v
   

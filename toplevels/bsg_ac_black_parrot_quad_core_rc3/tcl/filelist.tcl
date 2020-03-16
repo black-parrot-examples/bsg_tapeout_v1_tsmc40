@@ -21,6 +21,8 @@ set bp_me_dir     ${blackparrot_dir}/bp_me
 
 set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_cache/bsg_cache_pkg.v
+  $basejump_stl_dir/bsg_dmc/bsg_dmc_pkg.v
+  $basejump_stl_dir/bsg_tag/bsg_tag_pkg.v
   $basejump_stl_dir/bsg_noc/bsg_noc_pkg.v
   $basejump_stl_dir/bsg_noc/bsg_wormhole_router_pkg.v
   $bp_common_dir/src/include/bp_common_pkg.vh
@@ -204,6 +206,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_bidir.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_client.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_to_mem_link_master.v
+  $bp_me_dir/src/v/wormhole/bp_me_cce_to_xui.v
   $bp_me_dir/src/v/wormhole/bp_me_cord_to_id.v
   $bp_me_dir/src/v/wormhole/bp_me_lce_id_to_cord.v
   $bp_me_dir/src/v/wormhole/bp_me_wormhole_packet_encode_lce_req.v
@@ -229,11 +232,11 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_top_dir/src/v/bp_tile.v
   $bp_top_dir/src/v/bp_tile_node.v
 
-  $basejump_stl_dir/bsg_tag/bsg_tag_pkg.v
   $basejump_stl_dir/bsg_async/bsg_launch_sync_sync.v
   $basejump_stl_dir/bsg_async/bsg_sync_sync.v
   $basejump_stl_dir/bsg_async/bsg_async_ptr_gray.v
   $basejump_stl_dir/bsg_clk_gen/bsg_clk_gen.v
+  $basejump_stl_dir/bsg_clk_gen/bsg_dly_line.v
   $basejump_stl_dir/bsg_async/bsg_async_fifo.v
   $basejump_stl_dir/bsg_async/bsg_async_credit_counter.v
   $basejump_stl_dir/bsg_dataflow/bsg_round_robin_1_to_n.v
@@ -263,10 +266,10 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_tag/bsg_tag_client.v
   $basejump_stl_dir/bsg_tag/bsg_tag_client_unsync.v
 
-  $basejump_stl_dir/bsg_dmc/bsg_dmc_pkg.v
   $basejump_stl_dir/bsg_dmc/bsg_dmc.v
   $basejump_stl_dir/bsg_dmc/bsg_dmc_controller.v
   $basejump_stl_dir/bsg_dmc/bsg_dmc_phy.v
+  $basejump_stl_dir/bsg_dmc/bsg_dmc_clk_rst_gen.v
   $basejump_stl_dir/bsg_dataflow/bsg_make_2D_array.v
   $basejump_stl_dir/bsg_dataflow/bsg_flatten_2D_array.v
   

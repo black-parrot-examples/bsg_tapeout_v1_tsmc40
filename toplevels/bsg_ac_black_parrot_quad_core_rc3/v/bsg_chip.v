@@ -457,16 +457,37 @@ module bsg_chip
      ,.resp_link_o(dram_resp_link_li)
      );
 
-  assign bypass_cmd_li = dram_cmd_lo;
-  assign bypass_cmd_v_li = dram_cmd_v_lo;
-  assign dmc_cmd_li = dram_cmd_lo;
-  assign dmc_cmd_v_li = dram_cmd_v_lo;
-  assign dram_cmd_ready_li = dmc_bypass? bypass_cmd_ready_lo: dmc_cmd_ready_lo;
+  always_comb
+  begin
+    if (dmc_bypass)
+      begin
+        bypass_cmd_li        = dram_cmd_lo;
+        bypass_cmd_v_li      = dram_cmd_v_lo;
+        dram_cmd_ready_li    = bypass_cmd_ready_lo;
 
-  assign dram_resp_li = dmc_bypass? bypass_resp_lo: dmc_resp_lo;
-  assign dram_resp_v_li = dmc_bypass? bypass_resp_v_lo: dmc_resp_v_lo;
-  assign bypass_resp_ready_li = dram_resp_ready_lo;
-  assign dmc_resp_ready_li = dram_resp_ready_lo;
+        dram_resp_li         = bypass_resp_lo;
+        dram_resp_v_li       = bypass_resp_v_lo;
+        bypass_resp_ready_li = dram_resp_ready_lo;
+
+        dmc_cmd_li           = '0;
+        dmc_cmd_v_li         = 1'b0;
+        dmc_resp_ready_li    = 1'b1;
+      end
+    else
+      begin
+        dmc_cmd_li           = dram_cmd_lo;
+        dmc_cmd_v_li         = dram_cmd_v_lo;
+        dram_cmd_ready_li    = dmc_cmd_ready_lo;
+
+        dram_resp_li         = dmc_resp_lo;
+        dram_resp_v_li       = dmc_resp_v_lo;
+        dmc_resp_ready_li    = dram_resp_ready_lo;
+
+        bypass_cmd_li        = '0;
+        bypass_cmd_v_li      = 1'b0;
+        bypass_resp_ready_li = 1'b1;
+      end
+  end
 
   bsg_ready_and_link_sif_s [E:P] bypass_link_li, bypass_link_lo;
   bp_me_cce_to_mem_link_master

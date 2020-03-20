@@ -182,6 +182,9 @@ import bsg_wormhole_router_pkg::*;
       ,.clients_r_o( tag_lines_lo )
       );
 
+  // Tag line for bypass link
+  wire bsg_tag_s bypass_link_tag_lines_lo = tag_lines_lo[48];
+
   //////////////////////////////////////////////////
   //
   // BSG Tag Client Instance (Copied from ASIC)
@@ -236,6 +239,20 @@ import bsg_wormhole_router_pkg::*;
       );
   wire router_reset_lo = router_tag_data_lo.reset;
   wire [wh_did_width_gp-1:0] router_did_lo = router_tag_data_lo.did;
+
+  // Tag payload for bypass link signals
+  logic [7:0] bypass_link_tag_data_lo;
+  logic       bypass_link_tag_new_data_lo;
+
+  bsg_tag_client #(.width_p( 8 ), .default_p( 0 ))
+    btc_bypass_link
+      (.bsg_tag_i     ( bypass_link_tag_lines_lo )
+      ,.recv_clk_i    ( router_clk )
+      ,.recv_reset_i  ( 1'b0 )
+      ,.recv_new_r_o  ( bypass_link_tag_new_data_lo )
+      ,.recv_data_r_o ( bypass_link_tag_data_lo )
+      );
+  wire [2:0] bypass_link_switch_lo = bypass_link_tag_data_lo[2:0];
 
   //////////////////////////////////////////////////
   //

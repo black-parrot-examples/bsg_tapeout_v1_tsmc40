@@ -74,6 +74,9 @@ module bsg_chip
 
   wire bsg_tag_s [11:0] dmc_cfg_tag_lines_lo         = tag_lines_lo[36+:12];
 
+  // Tag line for bypass link
+  wire bsg_tag_s bypass_link_tag_lines_lo = tag_lines_lo[48];
+
   // BSG tag master instance
   bsg_tag_master #(.els_p( tag_num_clients_gp )
                   ,.lg_width_p( tag_lg_max_payload_width_gp )
@@ -202,6 +205,20 @@ module bsg_chip
           );
     end
   endgenerate
+
+  // Tag payload for bypass link signals
+  logic [7:0] bypass_link_tag_data_lo;
+  logic       bypass_link_tag_new_data_lo;
+
+  bsg_tag_client #(.width_p( 8 ), .default_p( 0 ))
+    btc_bypass_link
+      (.bsg_tag_i     ( bypass_link_tag_lines_lo )
+      ,.recv_clk_i    ( router_clk_lo )
+      ,.recv_reset_i  ( 1'b0 )
+      ,.recv_new_r_o  ( bypass_link_tag_new_data_lo )
+      ,.recv_data_r_o ( bypass_link_tag_data_lo )
+      );
+  wire [2:0] bypass_link_switch_lo = bypass_link_tag_data_lo[2:0];
       
 
   //////////////////////////////////////////////////
@@ -431,8 +448,6 @@ module bsg_chip
   bp_cce_mem_msg_s dmc_resp_lo;
   logic            dmc_resp_v_lo, dmc_resp_ready_li;
 
-  logic dmc_bypass;
-
   bp_me_cce_to_mem_link_client
    #(.bp_params_p(bp_params_p)
      ,.num_outstanding_req_p(mem_noc_max_credits_p)
@@ -459,7 +474,7 @@ module bsg_chip
 
   always_comb
   begin
-    if (dmc_bypass)
+    if (bypass_link_switch_lo[0])
       begin
         bypass_cmd_li        = dram_cmd_lo;
         bypass_cmd_v_li      = dram_cmd_v_lo;
@@ -697,7 +712,6 @@ module bsg_chip
   assign dmc_p.bank_pos     = dmc_cfg_tag_data_lo[9][7:2];
   assign dmc_p.dqs_sel_cal  = dmc_cfg_tag_data_lo[10][1:0];
   assign dmc_p.init_cmd_cnt = dmc_cfg_tag_data_lo[10][5:2];
-  assign dmc_bypass         = dmc_cfg_tag_data_lo[10][6];
   wire   dmc_sys_reset_li   = dmc_cfg_tag_data_lo[11][0];
 
   bsg_dmc #

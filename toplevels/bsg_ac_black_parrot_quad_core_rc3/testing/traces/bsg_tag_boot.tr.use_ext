@@ -352,6 +352,9 @@
 #SEND  en   id=47  r l=8
 0001___11___101111_0_1000___011111111
 
+#SEND  en   id=48  r l=8
+0001___11___110000_0_1000___011111111
+
 ################################################################################
 #
 # START CONFIGURATION
@@ -421,12 +424,20 @@
 0001___01___101100_1_1000___011101011
 #SEND  en   id=45  d l=8    {bank_pos, bank_width}
 0001___01___101101_1_1000___001100110
-#SEND  en   id=46  d l=8    {dmc_bypass, init_cmd_cnt, dqs_sel_cal}
+#SEND  en   id=46  d l=8    {init_cmd_cnt, dqs_sel_cal}
 0001___01___101110_1_1000___000010100
 #SEND  en   id=47  d l=8    {reset}
 #0001___01___101111_1_1000___000000000
 0001___01___101111_1_1000___000000001
 0001___01___101111_1_1000___000000000
+
+# Setup ASIC bypass link switches
+#SEND  en   id=48  d l=8    {SW2, SW1, SW0}
+0001___01___110000_1_1000___000000000
+
+# Setup GW bypass link switches
+#SEND  en   id=48  d l=8    {SW2, SW1, SW0}
+0001___10___110000_1_1000___000000000
 
 ### STEP 2: Perform async token resets
 

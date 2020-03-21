@@ -472,37 +472,28 @@ module bsg_chip
      ,.resp_link_o(dram_resp_link_li)
      );
 
-  always_comb
-  begin
-    if (bypass_link_switch_lo[0])
-      begin
-        bypass_cmd_li        = dram_cmd_lo;
-        bypass_cmd_v_li      = dram_cmd_v_lo;
-        dram_cmd_ready_li    = bypass_cmd_ready_lo;
+  bsg_noc_switch_static
+ #(.width_p($bits(bp_cce_mem_msg_s))
+  ,.els_p  (2)
+  ) sw0
+  (.sel_i       (bypass_link_switch_lo[0])
 
-        dram_resp_li         = bypass_resp_lo;
-        dram_resp_v_li       = bypass_resp_v_lo;
-        bypass_resp_ready_li = dram_resp_ready_lo;
+  ,.v_i         ({bypass_resp_v_lo    , dmc_resp_v_lo    })
+  ,.data_i      ({bypass_resp_lo      , dmc_resp_lo      })
+  ,.ready_o     ({bypass_resp_ready_li, dmc_resp_ready_li})
 
-        dmc_cmd_li           = '0;
-        dmc_cmd_v_li         = 1'b0;
-        dmc_resp_ready_li    = 1'b1;
-      end
-    else
-      begin
-        dmc_cmd_li           = dram_cmd_lo;
-        dmc_cmd_v_li         = dram_cmd_v_lo;
-        dram_cmd_ready_li    = dmc_cmd_ready_lo;
+  ,.v_o         ({bypass_cmd_v_li     , dmc_cmd_v_li     })
+  ,.data_o      ({bypass_cmd_li       , dmc_cmd_li       })
+  ,.ready_i     ({bypass_cmd_ready_lo , dmc_cmd_ready_lo })
 
-        dram_resp_li         = dmc_resp_lo;
-        dram_resp_v_li       = dmc_resp_v_lo;
-        dmc_resp_ready_li    = dram_resp_ready_lo;
+  ,.mult_v_i    (dram_cmd_v_lo     )
+  ,.mult_data_i (dram_cmd_lo       )
+  ,.mult_ready_o(dram_cmd_ready_li )
 
-        bypass_cmd_li        = '0;
-        bypass_cmd_v_li      = 1'b0;
-        bypass_resp_ready_li = 1'b1;
-      end
-  end
+  ,.mult_v_o    (dram_resp_v_li    )
+  ,.mult_data_o (dram_resp_li      )
+  ,.mult_ready_i(dram_resp_ready_lo)
+  );
 
   bsg_ready_and_link_sif_s [E:P] bypass_link_li, bypass_link_lo;
   bp_me_cce_to_mem_link_master

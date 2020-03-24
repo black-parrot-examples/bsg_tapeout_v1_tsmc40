@@ -543,31 +543,35 @@ import bsg_wormhole_router_pkg::*;
      ,.mem_resp_yumi_i(dram_resp_ready_lo & dram_resp_v_li)
      );
 
-  logic cfg_done_lo;
-  logic nbf_done_lo;
-  localparam cce_instr_ram_addr_width_lp = `BSG_SAFE_CLOG2(num_cce_instr_ram_els_p);
-  bp_cce_mmio_cfg_loader
-    #(.bp_params_p(bp_params_p)
-      ,.inst_width_p(`bp_cce_inst_width)
-      ,.inst_ram_addr_width_p(cce_instr_ram_addr_width_lp)
-      ,.inst_ram_els_p(num_cce_instr_ram_els_p)
-      ,.skip_ram_init_p('0)
-      ,.clear_freeze_p(0)
-      )
-    cfg_loader
-    (.clk_i(blackparrot_clk)
-     ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
+    logic cfg_done_lo;
+    logic nbf_done_lo;
+  `ifndef DRAM_TEST
+    localparam cce_instr_ram_addr_width_lp = `BSG_SAFE_CLOG2(num_cce_instr_ram_els_p);
+    bp_cce_mmio_cfg_loader
+      #(.bp_params_p(bp_params_p)
+        ,.inst_width_p(`bp_cce_inst_width)
+        ,.inst_ram_addr_width_p(cce_instr_ram_addr_width_lp)
+        ,.inst_ram_els_p(num_cce_instr_ram_els_p)
+        ,.skip_ram_init_p('0)
+        ,.clear_freeze_p(0)
+        )
+      cfg_loader
+      (.clk_i(blackparrot_clk)
+       ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
+    
+       ,.io_cmd_o(cfg_cmd_lo)
+       ,.io_cmd_v_o(cfg_cmd_v_lo)
+       ,.io_cmd_yumi_i(cfg_cmd_ready_li & cfg_cmd_v_lo)
+    
+       ,.io_resp_i(cfg_resp_li)
+       ,.io_resp_v_i(cfg_resp_v_li)
+       ,.io_resp_ready_o(cfg_resp_ready_lo)
   
-     ,.io_cmd_o(cfg_cmd_lo)
-     ,.io_cmd_v_o(cfg_cmd_v_lo)
-     ,.io_cmd_yumi_i(cfg_cmd_ready_li & cfg_cmd_v_lo)
-  
-     ,.io_resp_i(cfg_resp_li)
-     ,.io_resp_v_i(cfg_resp_v_li)
-     ,.io_resp_ready_o(cfg_resp_ready_lo)
-
-     ,.done_o(cfg_done_lo)
-    );
+       ,.done_o(cfg_done_lo)
+      );
+  `else
+    assign cfg_done_lo = 1'b1;
+  `endif
 
   bp_nonsynth_nbf_loader
    #(.bp_params_p(bp_params_p))
@@ -585,6 +589,16 @@ import bsg_wormhole_router_pkg::*;
 
      ,.done_o(nbf_done_lo)
      );
+
+// TODO: print DRAM stats
+`ifdef DRAM_TEST
+  always_comb
+    if (nbf_done_lo)
+      begin
+        $display("DRAM test done");
+        $finish();
+      end
+`endif
 
   logic [num_core_p-1:0] program_finish;
   bp_nonsynth_host

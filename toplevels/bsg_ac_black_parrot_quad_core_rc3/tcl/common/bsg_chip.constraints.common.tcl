@@ -5,6 +5,7 @@ source -echo -verbose bsg_clk_gen.constraints.tcl
 source -echo -verbose bsg_link.constraints.tcl
 source -echo -verbose bsg_dmc.constraints.tcl
 source -echo -verbose bsg_async.constraints.tcl
+source -echo -verbose bsg_async_block.constraints.tcl
 
 source -echo -verbose clock_variables.tcl
 
@@ -130,7 +131,6 @@ set clk_grp(router) [get_clocks router_clk*]
 #set_clock_groups -asynchronous -name router_clk_grp -group $clk_grp(router)
 
 set_clock_groups -asynchronous              \
-                 -allow_paths               \
                  -group $clk_grp(tag)       \
                  -group $clk_grp(sdi_0)     \
                  -group $clk_grp(sdo_0_tkn) \
@@ -139,6 +139,7 @@ set_clock_groups -asynchronous              \
                  -group $clk_grp(io_master) \
                  -group $clk_grp(router)    \
                  -group $clk_grp(bp)
+                 #-allow_paths               \
 
 #set clk_grp(dmc) [get_clocks dfi_clk*]
 #append_to_collection clk_grp(dmc) [get_clocks dqs*]
@@ -147,19 +148,31 @@ set_clock_groups -asynchronous              \
 
 # timing exceptions
 update_timing
-foreach launch_grp [array name clk_grp] {
-  set index [lsearch [array name clk_grp] $launch_grp]
-  foreach latch_grp [lreplace [array name clk_grp] $index $index] {
-    foreach_in_collection launch_clk $clk_grp($launch_grp) {
-      foreach_in_collection latch_clk $clk_grp($latch_grp) {
-        group_path -name async_paths -from $launch_clk -to $latch_clk
-        set launch_period [get_attribute $launch_clk period]
-        set_max_delay $launch_period -from $launch_clk -to $latch_clk -ignore_clock_latency
-        set_min_delay 0              -from $launch_clk -to $latch_clk -ignore_clock_latency
-      }
-    }
-  }
-}
+
+bsg_async_block [list [get_clock bp_clk] \
+                      [get_clock router_clk] \
+                      [get_clock io_master_clk] \
+                      [get_clock tag_clk] \
+                      [get_clock bp_clk_osc] \
+                      [get_clock router_clk_osc] \
+                      [get_clock io_master_clk_osc] \
+                      [get_clock sdi_0_clk] \
+                      [get_clock sdi_1_clk] \
+                      [get_clock sdo_0_tkn_clk] \
+                      [get_clock sdo_1_tkn_clk]]
+#foreach launch_grp [array name clk_grp] {
+#  set index [lsearch [array name clk_grp] $launch_grp]
+#  foreach latch_grp [lreplace [array name clk_grp] $index $index] {
+#    foreach_in_collection launch_clk $clk_grp($launch_grp) {
+#      foreach_in_collection latch_clk $clk_grp($latch_grp) {
+#        group_path -name async_paths -from $launch_clk -to $latch_clk
+#        set launch_period [get_attribute $launch_clk period]
+#        set_max_delay $launch_period -from $launch_clk -to $latch_clk -ignore_clock_latency
+#        set_min_delay 0              -from $launch_clk -to $latch_clk -ignore_clock_latency
+#      }
+#    }
+#  }
+#}
 
 #set_false_path -to [get_pins -of_objects [get_fp_cells -filter "is_hard_macro"] -filter "name==CLKR||name==CLKW"]
 #update_timing

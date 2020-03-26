@@ -30,14 +30,14 @@ proc bsg_async_block {clks} {
     -group [get_clocks $clks] \
     -group [get_clocks *_cdc] 
 
-  # apply set max delay
   foreach_in_collection cdcclk [get_clocks *_cdc] {
-    set_max_delay [get_attribute $cdcclk period] -from $cdcclk
-  }
-
-  # apply set min delay
-  foreach_in_collection cdcclk [get_clocks *_cdc] {
-    set_min_delay 0 -from $cdcclk
+    set other_cdcclks [remove_from_collection [get_clocks *_cdc] $cdcclk]
+    # set group_path
+    group_path -name async_paths -from $cdcclk -to $other_cdcclks
+    # apply set max delay
+    set_max_delay [get_attribute $cdcclk period] -from $cdcclk -to $other_cdcclks
+    # apply set min delay
+    set_min_delay 0 -from $cdcclk -to $other_cdcclks
   }
 
   # set false path to IO

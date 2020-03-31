@@ -148,7 +148,7 @@ set_clock_groups -asynchronous              \
 # timing exceptions
 update_timing
 
-bsg_async_block [list [get_clock bp_clk] \
+bsg_async_cdc [list [get_clock bp_clk] \
                       [get_clock router_clk] \
                       [get_clock io_master_clk] \
                       [get_clock tag_clk] \

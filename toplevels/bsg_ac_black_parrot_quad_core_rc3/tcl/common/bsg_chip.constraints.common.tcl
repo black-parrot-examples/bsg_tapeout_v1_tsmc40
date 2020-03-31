@@ -5,7 +5,6 @@ source -echo -verbose bsg_clk_gen.constraints.tcl
 source -echo -verbose bsg_link.constraints.tcl
 source -echo -verbose bsg_dmc.constraints.tcl
 source -echo -verbose bsg_async.constraints.tcl
-source -echo -verbose bsg_async_block.constraints.tcl
 
 source -echo -verbose clock_variables.tcl
 
@@ -160,6 +159,7 @@ bsg_async_block [list [get_clock bp_clk] \
                       [get_clock sdi_1_clk] \
                       [get_clock sdo_0_tkn_clk] \
                       [get_clock sdo_1_tkn_clk]]
+
 #foreach launch_grp [array name clk_grp] {
 #  set index [lsearch [array name clk_grp] $launch_grp]
 #  foreach latch_grp [lreplace [array name clk_grp] $index $index] {

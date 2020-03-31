@@ -21,14 +21,10 @@ set_false_path -from [get_ports *did_i*]
 set_clock_groups -asynchronous                      \
                  -group [get_clocks $CORE_CLK_NAME] \
                  -group [get_clocks $ROUTER_CLK_NAME]
-#                 -allow_paths                       \
 
-#source bsg_async.constraints.tcl
-#update_timing
-#bsg_async
-source bsg_async_block.constraints.tcl
+source bsg_async.constraints.tcl
 update_timing
-bsg_async_block [get_clocks];
+bsg_async_cdc [get_clocks];
 
 puts "BSG-info: Completed script [info script]\n"
 

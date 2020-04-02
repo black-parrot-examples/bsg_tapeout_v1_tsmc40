@@ -38,7 +38,10 @@ proc bsg_async_icl {} {
 # async constraint script based on creating shadow "_cdc" clock.
 # clks = collection of clocks.
 #
-proc bsg_async_cdc {clks} {
+proc bsg_async_cdc { clks } {
+
+  # Report clocks
+  report_clock $clks
 
   # Create cdc clocks.
   foreach_in_collection clk $clks {
@@ -59,7 +62,7 @@ proc bsg_async_cdc {clks} {
 
   # Make cdc clocks physically exclusive from all other clocks.
   set_clock_groups -physically_exclusive \
-    -group [get_clocks $clks] \
+    -group [remove_from_collection [all_clocks] [get_clocks *_cdc]] \
     -group [get_clocks *_cdc] 
 
   foreach_in_collection cdcclk [get_clocks *_cdc] {

@@ -1,6 +1,7 @@
 puts "BSG-info: Running script [info script]\n"
 
 source clock_variables.tcl
+source bsg_async.constraints.tcl
 source bsg_set_general_timing_constraints.tcl
 
 set coh_input_ports  [remove_from_collection [get_ports coh* -filter "direction==in"] [get_ports coh_clk_i]]
@@ -22,9 +23,7 @@ set_clock_groups -asynchronous                      \
                  -group [get_clocks $CORE_CLK_NAME] \
                  -group [get_clocks $ROUTER_CLK_NAME]
 
-source bsg_async.constraints.tcl
-update_timing
-bsg_async_cdc [get_clocks];
+bsg_async_cdc [all_clocks];
 
 puts "BSG-info: Completed script [info script]\n"
 

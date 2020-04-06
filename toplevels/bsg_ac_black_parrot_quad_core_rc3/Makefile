@@ -19,7 +19,7 @@ basejump_stl_commit  :=tapeout_bp_rc3
 
 bsg_40_dir           :=$(THIS_DIR)/bsg_40
 bsg_40_url           :=$(GITHUB)bespoke-silicon-group/bsg_40
-bsg_40_commit        :=master
+bsg_40_commit        :=retime
 
 bsg_cadenv_dir       :=$(THIS_DIR)/bsg_cadenv
 bsg_cadenv_url       :=$(BITBUCKET)taylor-bsg/bsg_cadenv
@@ -33,9 +33,9 @@ bsg_packaging_dir    :=$(THIS_DIR)/bsg_packaging
 bsg_packaging_url    :=$(BITBUCKET)taylor-bsg/bsg_packaging
 bsg_packaging_commit :=master
 
-bp_pre_alpha_release_dir     :=$(THIS_DIR)/pre-alpha-release
-bp_pre_alpha_release_url     :=$(GITHUB)black-parrot/pre-alpha-release
-bp_pre_alpha_release_commit  :=tapeout_bp_rc3
+blackparrot_dir      :=$(THIS_DIR)/black-parrot
+blackparrot_url      :=$(GITHUB)black-parrot/black-parrot
+blackparrot_commit   :=tapeout_bp_rc3
 
 all_repos = $(subst _url,.repo,$(filter %_url,$(.VARIABLES)))
 

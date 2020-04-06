@@ -549,7 +549,7 @@ import bsg_wormhole_router_pkg::*;
     localparam cce_instr_ram_addr_width_lp = `BSG_SAFE_CLOG2(num_cce_instr_ram_els_p);
     bp_cce_mmio_cfg_loader
       #(.bp_params_p(bp_params_p)
-        ,.inst_width_p(`bp_cce_inst_width)
+        ,.inst_width_p($bits(bp_cce_inst_s))
         ,.inst_ram_addr_width_p(cce_instr_ram_addr_width_lp)
         ,.inst_ram_els_p(num_cce_instr_ram_els_p)
         ,.skip_ram_init_p('0)
@@ -558,7 +558,9 @@ import bsg_wormhole_router_pkg::*;
       cfg_loader
       (.clk_i(blackparrot_clk)
        ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
-    
+
+       ,.lce_id_i('0)    
+
        ,.io_cmd_o(cfg_cmd_lo)
        ,.io_cmd_v_o(cfg_cmd_v_lo)
        ,.io_cmd_yumi_i(cfg_cmd_ready_li & cfg_cmd_v_lo)
@@ -578,6 +580,8 @@ import bsg_wormhole_router_pkg::*;
    nbf_loader
     (.clk_i(blackparrot_clk)
      ,.reset_i(core_reset_lo | ~cfg_done_lo | ~tag_trace_done_lo)
+
+     ,.lce_id_i('0)
 
      ,.io_cmd_o(nbf_cmd_lo)
      ,.io_cmd_v_o(nbf_cmd_v_lo)

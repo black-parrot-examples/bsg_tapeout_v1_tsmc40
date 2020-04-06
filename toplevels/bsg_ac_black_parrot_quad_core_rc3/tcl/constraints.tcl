@@ -165,6 +165,7 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
     }
   }
 
+  set_optimize_registers true -design bp_be_pipe_mul
 
 
 ########################################

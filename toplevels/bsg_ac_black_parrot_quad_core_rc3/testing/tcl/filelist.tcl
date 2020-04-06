@@ -27,7 +27,6 @@ set bp_me_dir     ${blackparrot_dir}/bp_me
   # $bp_be_dir/src/include/bp_be_dcache/bp_be_dcache_pkg.vh
   # $bp_be_dir/src/include/bp_be_pkg.vh
   # $bp_me_dir/src/include/v/bp_cce_pkg.v
-  # $bp_me_dir/src/include/v/bp_me_pkg.vh
 set TESTING_PACKAGE_FILES [join "
   $basejump_stl_dir/bsg_misc/bsg_defines.v
   $basejump_stl_dir/bsg_cache/bsg_cache_pkg.v

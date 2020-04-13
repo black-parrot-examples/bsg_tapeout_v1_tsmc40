@@ -19,7 +19,7 @@ basejump_stl_commit  :=tapeout_bp_rc3
 
 bsg_40_dir           :=$(THIS_DIR)/bsg_40
 bsg_40_url           :=$(GITHUB)bespoke-silicon-group/bsg_40
-bsg_40_commit        :=retime
+bsg_40_commit        :=master
 
 bsg_cadenv_dir       :=$(THIS_DIR)/bsg_cadenv
 bsg_cadenv_url       :=$(BITBUCKET)taylor-bsg/bsg_cadenv

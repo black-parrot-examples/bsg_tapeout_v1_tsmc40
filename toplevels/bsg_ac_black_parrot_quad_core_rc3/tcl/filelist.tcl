@@ -172,6 +172,8 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/cache/bp_me_cache_slice.v
   $bp_me_dir/src/v/cache/bp_me_cce_to_cache.v
   $bp_me_dir/src/v/cce/bp_cce.v
+  $bp_me_dir/src/v/cce/bp_cce_wrapper.v
+  $bp_me_dir/src/v/cce/bp_cce_fsm.v
   $bp_me_dir/src/v/cce/bp_cce_alu.v
   $bp_me_dir/src/v/cce/bp_cce_arbitrate.v
   $bp_me_dir/src/v/cce/bp_cce_branch.v
@@ -208,7 +210,6 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_top_dir/src/v/bsg_async_noc_link.v
   $bp_top_dir/src/v/bp_cacc_complex.v
   $bp_top_dir/src/v/bp_cfg.v
-  $bp_top_dir/src/v/bp_cfg_buffered.v
   $bp_top_dir/src/v/bp_clint_slice.v
   $bp_top_dir/src/v/bp_core.v
   $bp_top_dir/src/v/bp_core_complex.v

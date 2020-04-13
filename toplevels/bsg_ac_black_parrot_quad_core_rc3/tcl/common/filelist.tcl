@@ -229,7 +229,6 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_top_dir/src/v/bsg_async_noc_link.v
   $bp_top_dir/src/v/bp_cacc_complex.v
   $bp_top_dir/src/v/bp_cfg.v
-  $bp_top_dir/src/v/bp_cfg_buffered.v
   $bp_top_dir/src/v/bp_clint_slice.v
   $bp_top_dir/src/v/bp_core.v
   $bp_top_dir/src/v/bp_core_complex.v

@@ -277,7 +277,7 @@ foreach_in_collection mim [get_plan_groups] {
 
     set macros [sort_collection -dictionary [get_fp_cells -of_objects $mim -filter "is_hard_macro&&full_name=~*cce*directory*"] name]
     set cce_dir_mem_list ""
-    for {set row 0} {$row<4} {incr row} { 
+    for {set row 0} {$row<8} {incr row} { 
       set macro_row [index_collection $macros [expr 2 * $row] [expr 2 * $row + 1]]
       set_fp_macro_options [index_collection $macro_row 0] -legal_orientations FN
       set_fp_macro_options [index_collection $macro_row 1] -legal_orientations N

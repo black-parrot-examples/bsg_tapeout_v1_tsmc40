@@ -1,5 +1,16 @@
 puts "Flow-Info: Running script [info script]\n"
 
+source proc_auto_weights.tcl
+
+set cur_scenario [current_scenario]
+foreach scenario [all_active_scenarios] {
+  current_scenario $scenario
+  if { $ICC_IMPLEMENTATION_PHASE != "default" } {
+    proc_auto_weights -exclude_groups "REGIN REGOUT"
+  }
+}
+current_scenario $cur_scenario
+
 if { $ICC_IMPLEMENTATION_PHASE == "top" } {
   set va [get_voltage_areas PD_PLL]
   

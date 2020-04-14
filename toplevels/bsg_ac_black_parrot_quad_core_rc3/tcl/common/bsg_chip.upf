@@ -35,17 +35,18 @@ set_domain_supply_net PD_PLL -primary_power_net VDD_PLL -primary_ground_net VSS
 
 #set_level_shifter -domain {PD_PLL} -applies_to inputs  -location self {pll_ls_in}
 #set_level_shifter -domain {PD_PLL} -applies_to outputs -location parent {pll_ls_out}
-#
-#add_port_state {VDDPST}  -state {io_hv 1.98}  -state {io_lv 1.62}
-#add_port_state {VSSPST}  -state {gnd 0.0}
-#add_port_state {VDD}     -state {top_hv 0.99} -state {top_lv 0.81}
+
+add_port_state {VDDPST}  -state {io_hv 1.98}  -state {io_lv 1.62}
+add_port_state {VSSPST}  -state {gnd 0.0}
+add_port_state {VDD}     -state {top_hv 0.99} -state {top_lv 0.81}
 #add_port_state {VDD_PLL} -state {pll_hv 1.1} -state {pll_lv 0.9}
-#add_port_state {VSS}     -state {gnd 0.0}
-#
-#create_pst {pst} -supplies {VDDPST VSSPST VDD VDD_PLL VSS}
-#
-#add_pst_state {wc} -pst {pst} -state {io_lv gnd top_lv pll_lv gnd}
-#add_pst_state {bc} -pst {pst} -state {io_hv gnd top_hv pll_hv gnd}
-#add_pst_state {ml} -pst {pst} -state {io_hv gnd top_hv pll_hv gnd}
-#
-#set_port_attributes -elements { . } -attribute related_supply_default_primary true
+add_port_state {VDD_PLL} -state {pll_hv 0.99} -state {pll_lv 0.81}
+add_port_state {VSS}     -state {gnd 0.0}
+
+create_pst {pst} -supplies {VDDPST VSSPST VDD VDD_PLL VSS}
+
+add_pst_state {wc} -pst {pst} -state {io_lv gnd top_lv pll_lv gnd}
+add_pst_state {bc} -pst {pst} -state {io_hv gnd top_hv pll_hv gnd}
+add_pst_state {ml} -pst {pst} -state {io_hv gnd top_hv pll_hv gnd}
+
+set_port_attributes -elements { . } -attribute related_supply_default_primary true

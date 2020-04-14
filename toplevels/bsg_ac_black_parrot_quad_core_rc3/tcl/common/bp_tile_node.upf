@@ -11,11 +11,11 @@ connect_supply_net VSS -ports {VSS}
 
 set_domain_supply_net PD -primary_power_net VDD -primary_ground_net VSS
 
-#add_port_state {VDD} -state {hv 0.99} -state {lv 0.81}
-#add_port_state {VSS} -state {gnd 0.0}
-#
-#create_pst {pst} -supplies {VDD VSS}
-#
-#add_pst_state {wc} -pst {pst} -state {lv gnd}
-#add_pst_state {bc} -pst {pst} -state {hv gnd}
-#add_pst_state {ml} -pst {pst} -state {hv gnd}
+add_port_state {VDD} -state {hv 0.99} -state {lv 0.81}
+add_port_state {VSS} -state {gnd 0.0}
+
+create_pst {pst} -supplies {VDD VSS}
+
+add_pst_state {wc} -pst {pst} -state {lv gnd}
+add_pst_state {bc} -pst {pst} -state {hv gnd}
+add_pst_state {ml} -pst {pst} -state {hv gnd}

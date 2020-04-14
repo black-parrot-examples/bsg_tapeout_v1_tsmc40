@@ -281,6 +281,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_misc/bsg_counter_clock_downsample.v
   $basejump_stl_dir/bsg_misc/bsg_strobe.v
   $basejump_stl_dir/bsg_noc/bsg_ready_and_link_async_to_wormhole.v
+  $basejump_stl_dir/bsg_noc/bsg_noc_switch_static.v
   $basejump_stl_dir/bsg_tag/bsg_tag_master.v
   $basejump_stl_dir/bsg_tag/bsg_tag_client.v
   $basejump_stl_dir/bsg_tag/bsg_tag_client_unsync.v

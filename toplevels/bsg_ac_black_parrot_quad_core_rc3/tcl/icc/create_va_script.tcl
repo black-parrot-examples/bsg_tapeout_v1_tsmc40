@@ -24,22 +24,24 @@ set pll_va_ury [expr $core_ury - $pll_va_guard]
 create_voltage_area -power_domain PD_PLL -guard_band_x $pll_va_guard -guard_band_y $pll_va_guard -is_fixed -coordinate "$pll_va_llx $pll_va_lly $pll_va_urx $pll_va_ury"
 
 # distance from core origin to manycore origin
-set bp_array_x_offset 80
-set bp_array_y_offset [expr ($pll_va_height + 2 * $pll_va_guard) / $tile_height]
+set bp_array_x_offset 90
+#set bp_array_y_offset [expr ($pll_va_height + 2 * $pll_va_guard) / $tile_height]
+set bp_array_y_offset 120
 
 # the shape of bp tile
 #  Die area: 2835 x 2835 
-set bp_tile_pg_width  1000
-set bp_tile_pg_height 850
-set bp_tile_pg_space  90
+set bp_tile_pg_width   950
+set bp_tile_pg_height  800
+set bp_tile_pg_x_space 170
+set bp_tile_pg_y_space 80
 
 # define plan groups for bp_tile_node array
 foreach_in_collection tile [get_cells $::env(BP_HIER_CELLS)] {
   set coordinate [regexp -all -inline -- {[0-9]+} [get_attribute $tile name]]
   set x [lindex $coordinate 1]
   set y [expr 1 + [lindex $coordinate 0]]
-  set bp_tile_pg_llx [expr $core_llx + ($bp_array_x_offset + $x * ($bp_tile_pg_width  + $bp_tile_pg_space)) * $tile_height]
-  set bp_tile_pg_lly [expr $core_ury - ($bp_array_y_offset + $y * ($bp_tile_pg_height + $bp_tile_pg_space)) * $tile_height]
+  set bp_tile_pg_llx [expr $core_llx + ($bp_array_x_offset + $x * ($bp_tile_pg_width  + $bp_tile_pg_x_space)) * $tile_height]
+  set bp_tile_pg_lly [expr $core_ury - ($bp_array_y_offset + $y * ($bp_tile_pg_height + $bp_tile_pg_y_space)) * $tile_height]
   set bp_tile_pg_urx [expr $bp_tile_pg_llx + $bp_tile_pg_width * $tile_height]
   set bp_tile_pg_ury [expr $bp_tile_pg_lly + $bp_tile_pg_height * $tile_height]
   set tile_name [get_attribute $tile full_name]

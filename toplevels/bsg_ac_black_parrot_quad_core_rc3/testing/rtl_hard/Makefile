@@ -29,7 +29,7 @@ export TESTING_BSG_DESIGNS_TARGET_DIR ?= $(BSG_DESIGNS_TARGET_DIR)
 
 export BSG_PACKAGE           ?=uw_bga
 export BSG_PINOUT            ?=bsg_asic_cloud
-export BSG_PACKAGING_FOUNDRY ?=tsmc40
+export BSG_PACKAGING_FOUNDRY ?=tsmc_40
 export BSG_PADMAPPING        ?=default
 
 export BLACKPARROT_COMMON_DIR ?= $(BLACKPARROT_DIR)/bp_common
@@ -42,7 +42,7 @@ export BLACKPARROT_ME_DIR     ?= $(BLACKPARROT_DIR)/bp_me
 export BSG_CHIP_DIR             ?= $(BSG_DESIGNS_TARGET_DIR)/bsg_40
 export MEMGEN_RUN_DIR           ?= $(BSG_CHIP_DIR)/pdk_prep/memgen
 export BSG_TOPLEVEL_DESIGN_TYPE ?=chip_3x3
-export BSG_TARGET_PROCESS       ?=tsmc40
+export BSG_TARGET_PROCESS       ?=tsmc_40
 
 ########################################
 ## VCS OPTIONS
@@ -63,12 +63,14 @@ VCS_OPTIONS += -diag timescale
 VCS_OPTIONS += -o $(BSG_OUT_SIM)
 VCS_OPTIONS += -Mdir=$(BSG_OUT_DIR)
 VCS_OPTIONS += -top bsg_config bsg_config.v
+VCS_OPTIONS += +warn_all,noOPD,noTMR,noTFIPC
 
 # DRAMSim2
 VCS_OPTIONS += -CFLAGS "-I$(BLACKPARROT_DIR)/external/include -std=c++11"
 VCS_OPTIONS += -LDFLAGS "-L$(BLACKPARROT_DIR)/external/lib -ldramsim -Wl,-rpath=$(BLACKPARROT_DIR)/external/lib"
 
 # Additional options for RTL-Hard
+VCS_OPTIONS += +define+TSMC_NO_WARNING
 VCS_OPTIONS += +notimingcheck
 VCS_OPTIONS += +nospecify
 
@@ -99,6 +101,7 @@ VCS_OPTIONS += -f $(BSG_DESIGNS_TESTING_FILELIST)
 VCS_OPTIONS += -libmap $(BSG_DESIGNS_TESTING_LIBRARY)
 VCS_OPTIONS += +define+den2048Mb+sg5+x16+FULL_MEM
 
+include $(BSG_DESIGNS_TARGET_DIR)/mk/bsg_40.config.mk
 include $(BSG_CHIP_DIR)/cad/pdk_setup/pdk_setup_dir.mk
 
 $(BSG_CHIP_FILELIST): $(BSG_DESIGNS_TESTING_LIBRARY)
@@ -119,11 +122,16 @@ $(BSG_OUT_DIR)/%_rom.v: $(BSG_WORK_DIR)/../traces/%.tr | $(BSG_OUT_DIR)
 
 VCS_OPTIONS += $(addprefix -v ,$(BSG_TRACE_ROMS))
 
+ifeq ($(DRAM_TEST), 1)
+VCS_OPTIONS += +define+DRAM_TEST=1
+endif
+
 ########################################
 ## BlackParrot test junk
 ########################################
 
-PROG     :=hello_world
+#PROG     :=hello_world
+PROG     :=cache_hammer
 DRAM_CH  :=DDR2_micron_16M_8b_x8_sg3E.ini
 DRAM_SYS :=system.ini
 
@@ -141,6 +149,10 @@ dram_sys.ini:
 
 cce_ucode.mem:
 	@cp $(BLACKPARROT_DIR)/bp_me/src/asm/roms/mesi/bp_cce_inst_rom_mesi.mem $(BSG_OUT_DIR)/$@
+
+DRAM_ITERS ?= 1024
+dram_bw.nbf:
+	python $(BLACKPARROT_DIR)/bp_common/software/py/nbf.py --dram $(DRAM_ITERS) > $(BSG_OUT_DIR)/$@
 
 ########################################
 ## Run Targets
@@ -162,7 +174,7 @@ view:
 	cd $(BSG_OUT_DIR); $(VCS_BIN)/dve -full64 -vpd vcdplus.vpd
 
 build: $(BSG_OUT_SIM)
-$(BSG_OUT_SIM): $(BSG_CHIP_FILELIST) $(BSG_CHIP_LIBRARY) $(BSG_DESIGNS_TESTING_FILELIST) $(BSG_DESIGNS_TESTING_LIBRARY) $(BSG_TRACE_ROMS) prog.nbf prog.mem dram_ch.ini dram_sys.ini cce_ucode.mem
+$(BSG_OUT_SIM): $(BSG_CHIP_FILELIST) $(BSG_CHIP_LIBRARY) $(BSG_DESIGNS_TESTING_FILELIST) $(BSG_DESIGNS_TESTING_LIBRARY) $(BSG_TRACE_ROMS) prog.nbf prog.mem dram_ch.ini dram_sys.ini cce_ucode.mem dram_bw.nbf
 	$(VCS) $(VCS_OPTIONS) | tee -i $(BSG_OUT_DIR)/build.log
 
 $(BSG_OUT_DIR)/root: | $(BSG_OUT_DIR)

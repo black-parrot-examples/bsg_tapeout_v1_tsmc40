@@ -67,8 +67,8 @@ proc bsg_create_library {library_name library_file source_files {include_paths "
 source $::env(BSG_CHIP_DIR)/cad/pdk_setup/pdk_setup.tcl
 
 # chip source (rtl) files and include paths list
-#set all_final_source_files [glob $::env(BSG_CHIP_DIR)/current_build/synth_init/*/results/*.mapped.v]
-set all_final_source_files [glob $::env(BSG_CHIP_DIR)/current_build/synth_spg/*/results/*.mapped.v]
+set all_final_source_files [glob $::env(BSG_CHIP_DIR)/current_build/synth_init/*/results/*.mapped.v]
+#set all_final_source_files [glob $::env(BSG_CHIP_DIR)/current_build/synth_spg/*/results/*.mapped.v]
 
 foreach lib [array name VERILOG_FILE] {
   if { $VERILOG_FILE($lib) != "" } {

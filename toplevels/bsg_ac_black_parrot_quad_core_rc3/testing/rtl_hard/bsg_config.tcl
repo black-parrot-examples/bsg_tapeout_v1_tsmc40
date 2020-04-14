@@ -67,25 +67,71 @@ proc bsg_create_library {library_name library_file source_files {include_paths "
 source $::env(BSG_CHIP_DIR)/cad/pdk_setup/pdk_setup.tcl
 
 # chip source (rtl) files and include paths list
-source $::env(BSG_DESIGNS_TARGET_DIR)/tcl/common/dc.read_design.tcl
+source $::env(BSG_DESIGNS_TARGET_DIR)/tcl/common/filelist.tcl
+source $::env(BSG_DESIGNS_TARGET_DIR)/tcl/common/$::env(BSG_TARGET_PROCESS)/filelist_deltas.tcl
 
-set all_final_source_files ""
-set final_sverilog_include_paths ""
-foreach lib [array name VERILOG_FILES] {
-  if { $VERILOG_FILES($lib) != "" } {
-    set all_final_source_files [concat $all_final_source_files [join $SVERILOG_SOURCE_FILES($lib)]]
+########################################
+## Design's include path
+########################################
+
+set final_sverilog_include_paths [list]
+foreach incdir $SVERILOG_INCLUDE_PATHS {
+  # replace 'portable' directories with the target process
+  if { $::env(BSG_TOPLEVEL_DESIGN_TYPE) != "block" } {
+    lappend final_sverilog_include_paths [regsub -all portable $incdir $::env(BSG_PACKAGING_FOUNDRY)]
+  } else {
+    lappend final_sverilog_include_paths $incdir
+  }
+}
+
+# finalized list of include dirs
+set final_sverilog_include_paths [join "$final_sverilog_include_paths"]
+
+########################################
+## Design's filelist(s)
+########################################
+
+# get names of all modules to hard-swap
+set hard_swap_module_list [list]
+foreach f $HARD_SWAP_FILELIST {
+  lappend hard_swap_module_list [file rootname [file tail $f]]
+}
+
+# generate a new list of source files while performing hard-swapping
+set sverilog_source_files [list]
+foreach f $SVERILOG_SOURCE_FILES {
+  set module_name [file rootname [file tail $f]]
+  set idx [lsearch $hard_swap_module_list $module_name]
+  if {$idx == -1} {
+    lappend sverilog_source_files $f
+  } else {
+    lappend sverilog_source_files [lindex $HARD_SWAP_FILELIST $idx]
+  }
+}
+
+# finalized list of pre-synthesized source files
+set final_netlist_source_files $NETLIST_SOURCE_FILES
+
+# finalized list of source files that need synthesizing
+set final_sverilog_source_files [concat $sverilog_source_files $NEW_SVERILOG_SOURCE_FILES]
+
+# all source files (including pre-synthesized netlist files)
+set all_final_source_files [concat $final_netlist_source_files $final_sverilog_source_files]
+foreach lib [array name VERILOG_FILE] {
+  if { $VERILOG_FILE($lib) != "" } {
+    set all_final_source_files [concat $all_final_source_files [join $VERILOG_FILE($lib)]]
   }
 }
 
 # chip filelist
 bsg_create_filelist $::env(BSG_CHIP_FILELIST) \
-                    $SVERILOG_SOURCE_FILES
+                    $all_final_source_files
 
 # chip library
 bsg_create_library $::env(BSG_CHIP_LIBRARY_NAME) \
                    $::env(BSG_CHIP_LIBRARY)      \
-                   $SVERILOG_SOURCE_FILES \
-                   $SVERILOG_INCLUDE_PATHS
+                   $all_final_source_files  \
+                   $final_sverilog_include_paths
 
 # testing source (rtl) files and include paths list
 source $::env(BSG_DESIGNS_TARGET_DIR)/testing/tcl/filelist.tcl

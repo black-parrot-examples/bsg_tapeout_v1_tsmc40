@@ -16,13 +16,13 @@ include $(BSG_DESIGNS_TARGET_DIR)/bsg_cadenv/cadenv.mk
 # Repository setup
 export BASEJUMP_STL_DIR       ?= $(BSG_DESIGNS_TARGET_DIR)/basejump_stl
 export BSG_PACKAGING_DIR      ?= $(BSG_DESIGNS_TARGET_DIR)/bsg_packaging
-export BLACKPARROT_DIR        ?= $(BSG_DESIGNS_TARGET_DIR)/pre-alpha-release
+export BLACKPARROT_DIR        ?= $(BSG_DESIGNS_TARGET_DIR)/black-parrot
 export BOARD_DIR              ?= $(BSG_DESIGNS_TARGET_DIR)/board
 
 export TESTING_BSG_DESIGNS_DIR        ?= $(BSG_OUT_DIR)/root
 export TESTING_BASEJUMP_STL_DIR       ?= $(BSG_OUT_DIR)/root/basejump_stl
 export TESTING_BSG_PACKAGING_DIR      ?= $(BSG_OUT_DIR)/root/bsg_packaging
-export TESTING_BLACKPARROT_DIR        ?= $(BSG_OUT_DIR)/root/pre-alpha-release
+export TESTING_BLACKPARROT_DIR        ?= $(BSG_OUT_DIR)/root/black-parrot
 export TESTING_BOARD_DIR              ?= $(BSG_OUT_DIR)/root/board
 export TESTING_BSG_DESIGNS_TARGET_DIR ?= $(BSG_DESIGNS_TARGET_DIR)
 
@@ -84,11 +84,11 @@ VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_pkg.vh
 VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_aviary_pkg.vh
 VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_rv64_pkg.vh
 VCS_OPTIONS += $(BLACKPARROT_BE_DIR)/src/include/bp_be_pkg.vh
+VCS_OPTIONS += $(BLACKPARROT_ME_DIR)/src/include/v/bp_me_pkg.vh
+VCS_OPTIONS += $(BLACKPARROT_ME_DIR)/src/include/v/bp_cce_pkg.v
 VCS_OPTIONS += $(BLACKPARROT_BE_DIR)/src/include/bp_be_dcache/bp_be_dcache_pkg.vh
 VCS_OPTIONS += $(BASEJUMP_STL_DIR)/bsg_noc/bsg_wormhole_router_pkg.v
-VCS_OPTIONS += $(BLACKPARROT_ME_DIR)/src/include/v/bp_cce_pkg.v
 VCS_OPTIONS += $(BLACKPARROT_COMMON_DIR)/src/include/bp_common_cfg_link_pkg.vh
-VCS_OPTIONS += $(BLACKPARROT_ME_DIR)/src/include/v/bp_me_pkg.vh
 VCS_OPTIONS += $(BSG_DESIGNS_TARGET_DIR)/v/bsg_chip_pkg.v
 
 ########################################
@@ -127,6 +127,9 @@ VCS_OPTIONS += -libmap $(BSG_DESIGNS_TESTING_LIBRARY)
 
 VCS_OPTIONS += +define+TSMC_NO_WARNING
 
+include $(BSG_DESIGNS_TARGET_DIR)/mk/bsg_40.config.mk
+include $(BSG_CHIP_DIR)/cad/pdk_setup/pdk_setup_dir.mk
+
 $(BSG_CHIP_FILELIST): $(BSG_DESIGNS_TESTING_LIBRARY)
 $(BSG_CHIP_LIBRARY): $(BSG_DESIGNS_TESTING_LIBRARY)
 $(BSG_DESIGNS_TESTING_FILELIST): $(BSG_DESIGNS_TESTING_LIBRARY)
@@ -144,6 +147,10 @@ $(BSG_OUT_DIR)/%_rom.v: $(BSG_WORK_DIR)/../traces/%.tr | $(BSG_OUT_DIR)
 	$(BASEJUMP_STL_DIR)/bsg_mem/bsg_ascii_to_rom.py $< $*_rom > $@
 
 VCS_OPTIONS += $(addprefix -v ,$(BSG_TRACE_ROMS))
+
+ifeq ($(DRAM_TEST), 1)
+VCS_OPTIONS += +define+DRAM_TEST=1
+endif
 
 ########################################
 ## DRAM Definitions
@@ -196,19 +203,23 @@ VCS_OPTIONS += +optconfigfile+$(BSG_CDC_PATH_FILE)
 
 # grab all of the sync flops
 $(BSG_CDC_PATH_FILE):
-	$(EXPAND_VERILOG) $(BSG_CHIP_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BSG_CHIP_INSTANCE_PATH)." $$$$2 " } { noTiming };" }' | sort > $@
-	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_0_0)." $$$$2 " } { noTiming };" }' | sort >> $@
-	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_0_1)." $$$$2 " } { noTiming };" }' | sort >> $@
-	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_1_0)." $$$$2 " } { noTiming };" }' | sort >> $@
-	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "_hard_sync_int" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_1_1)." $$$$2 " } { noTiming };" }' | sort >> $@
+	$(EXPAND_VERILOG) $(BSG_CHIP_NETLIST_V)| grep "bsg_SYNC_" | awk '{ print "instance { $(BSG_CHIP_INSTANCE_PATH)." $$$$2 " } { noTiming };" }' | sort > $@
+#	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "bsg_SYNC_*_reg_*" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_0_0)." $$$$2 " } { noTiming };" }' | sort >> $@
+#	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "bsg_SYNC_*_reg_*" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_0_1)." $$$$2 " } { noTiming };" }' | sort >> $@
+#	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "bsg_SYNC_*_reg_*" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_1_0)." $$$$2 " } { noTiming };" }' | sort >> $@
+#	$(EXPAND_VERILOG) $(BP_TILE_NODE_NETLIST_V)| grep "bsg_SYNC_*_reg_*" | awk '{ print "instance { $(BP_TILE_NODE_INSTANCE_PATH_1_1)." $$$$2 " } { noTiming };" }' | sort >> $@
 
 ########################################
 ## BlackParrot test junk
 ########################################
 
-PROG     :=hello_world
+#PROG     :=hello_world
+PROG     :=cache_hammer
 DRAM_CH  :=DDR2_micron_16M_8b_x8_sg3E.ini
 DRAM_SYS :=system.ini
+
+prog.nbf:
+	@cp $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).nbf $(BSG_OUT_DIR)/$@
 
 prog.mem:
 	@cp $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).mem $(BSG_OUT_DIR)/$@
@@ -221,6 +232,10 @@ dram_sys.ini:
 
 cce_ucode.mem:
 	@cp $(BLACKPARROT_DIR)/bp_me/src/asm/roms/mesi/bp_cce_inst_rom_mesi.mem $(BSG_OUT_DIR)/$@
+
+DRAM_ITERS ?= 1024
+dram_bw.nbf:
+	python $(BLACKPARROT_DIR)/bp_common/software/py/nbf.py --dram $(DRAM_ITERS) > $(BSG_OUT_DIR)/$@
 
 ########################################
 ## Run Targets
@@ -242,11 +257,12 @@ view:
 	cd $(BSG_OUT_DIR); $(VCS_BIN)/dve -full64 -vpd vcdplus.vpd
 
 build: $(BSG_OUT_SIM)
-$(BSG_OUT_SIM): $(BSG_CHIP_FILELIST) $(BSG_CHIP_LIBRARY) $(BSG_DESIGNS_TESTING_FILELIST) $(BSG_DESIGNS_TESTING_LIBRARY) $(BSG_TRACE_ROMS) $(BSG_CDC_PATH_FILE) prog.mem dram_ch.ini dram_sys.ini cce_ucode.mem
+$(BSG_OUT_SIM): $(BSG_CHIP_FILELIST) $(BSG_CHIP_LIBRARY) $(BSG_DESIGNS_TESTING_FILELIST) $(BSG_DESIGNS_TESTING_LIBRARY) $(BSG_TRACE_ROMS) $(BSG_CDC_PATH_FILE) prog.nbf prog.mem dram_ch.ini dram_sys.ini cce_ucode.mem dram_bw.nbf
 	$(VCS) $(VCS_OPTIONS) | tee -i $(BSG_OUT_DIR)/build.log
 
 $(BSG_OUT_DIR)/root: | $(BSG_OUT_DIR)
 	ln -nsf $(BSG_DESIGNS_TARGET_DIR) $@
+	ln -nsf $(BSG_DESIGNS_DIR)/modules $@/modules
 
 $(BSG_OUT_DIR):
 	mkdir -p $@
@@ -260,5 +276,4 @@ clean:
 	rm -f  inter.vpd
 	rm -f  ucli.key
 	rm -f  main.riscv main_dmem.mem main_dram.mem
-
 

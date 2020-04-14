@@ -31,11 +31,11 @@ bsg_tag_clock_create $TAG_CLK_NAME \
                      [get_pins -of_objects [get_cells -of_objects [get_ports p_bsg_tag_en_i]] -filter "name==C"] \
                      $TAG_CLK_PERIOD 0.1
 
-bsg_clk_gen_clock_create $CORE_CLK_NAME   $OSC_PERIOD $CORE_CLK_PERIOD   0.1 0.1 0.1
-bsg_clk_gen_clock_create $IOM_CLK_NAME    $OSC_PERIOD $IOM_CLK_PERIOD    0.1 0.1 0.1
-bsg_clk_gen_clock_create $ROUTER_CLK_NAME $OSC_PERIOD $ROUTER_CLK_PERIOD 0.1 0.1 0.1
-#bsg_clk_gen_clock_create $DFI_CLK_2X_NAME $DFI_CLK_2X_PERIOD $DFI_CLK_2X_PERIOD 0.1 0.1 0.1
-#create_generated_clock -name $DFI_CLK_1X_NAME -divide_by 2 -source [get_attribute [get_clocks $DFI_CLK_2X_NAME] sources] -master_clock [get_clocks $DFI_CLK_2X_NAME] [get_pins -leaf -of_objects [get_nets -hierarchical ${DFI_CLK_1X_NAME}_lo] -filter "direction==out"]
+bsg_clk_gen_clock_create $CORE_CLK_NAME   $OSC_PERIOD        $CORE_CLK_PERIOD   0.1 0.1 0.1
+bsg_clk_gen_clock_create $IOM_CLK_NAME    $OSC_PERIOD        $IOM_CLK_PERIOD    0.1 0.1 0.1
+bsg_clk_gen_clock_create $ROUTER_CLK_NAME $OSC_PERIOD        $ROUTER_CLK_PERIOD 0.1 0.1 0.1
+bsg_clk_gen_clock_create $DFI_CLK_2X_NAME $DFI_CLK_2X_PERIOD $DFI_CLK_2X_PERIOD 0.1 0.1 0.1
+create_generated_clock -name $DFI_CLK_1X_NAME -divide_by 2 -source [get_attribute [get_clocks $DFI_CLK_2X_NAME] sources] -master_clock [get_clocks $DFI_CLK_2X_NAME] [get_pins -leaf -of_objects [get_nets -hierarchical ${DFI_CLK_1X_NAME}_lo] -filter "direction==out"]
 
 create_clock -period $OSC_PERIOD -name ${CORE_CLK_NAME}_ext   [get_pins -of_objects [get_cells -of_objects [get_ports p_clk_A_i]] -filter "name==C"]
 create_clock -period $OSC_PERIOD -name ${IOM_CLK_NAME}_ext    [get_pins -of_objects [get_cells -of_objects [get_ports p_clk_B_i]] -filter "name==C"]
@@ -98,10 +98,10 @@ foreach id [list 0 1] {
 #set ddr_intf($gid,dq_i)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(2[4-9]|3[0-1])_io}]] -filter "name==C"]
 #set ddr_intf($gid,dq_o)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(2[4-9]|3[0-1])_io}]] -filter "name==I||name==OEN"]
 
-#bsg_dmc_ctrl_timing_constraints $DFI_CLK_1X_NAME $DFI_CLK_2X_NAME
-#foreach id [list 0 1 2 3] {
-#  bsg_dmc_data_timing_constraints false $id $DFI_CLK_1X_NAME $DFI_CLK_2X_NAME
-#}
+bsg_dmc_ctrl_timing_constraints $DFI_CLK_1X_NAME $DFI_CLK_2X_NAME
+foreach id [list 0 1 2 3] {
+  bsg_dmc_data_timing_constraints false $id $DFI_CLK_1X_NAME $DFI_CLK_2X_NAME
+}
 
 #
 global clk_grp
@@ -131,10 +131,10 @@ set_clock_groups -asynchronous -name io_master_clk_grp -group $clk_grp(io_master
 set clk_grp(router) [get_clocks router_clk*]
 set_clock_groups -asynchronous -name router_clk_grp -group $clk_grp(router)
 
-#set clk_grp(dmc) [get_clocks dfi_clk*]
-#append_to_collection clk_grp(dmc) [get_clocks dqs*]
-#append_to_collection clk_grp(dmc) [get_clocks ddr*]
-#set_clock_groups -asynchronous -name dmc_clk_grp -group $clk_grp(dmc)
+set clk_grp(dmc) [get_clocks dfi_clk*]
+append_to_collection clk_grp(dmc) [get_clocks dqs*]
+append_to_collection clk_grp(dmc) [get_clocks ddr*]
+set_clock_groups -asynchronous -name dmc_clk_grp -group $clk_grp(dmc)
 
 # timing exceptions
 set                  clocks [get_clocks tag_clk]
@@ -152,7 +152,7 @@ bsg_async_cdc $clocks
 
 # design rule constraints
 set_max_transition 0.4 [current_design]
-set_max_capacitance 0.15 [current_design]
+set_max_capacitance 0.4 [current_design]
 set_max_fanout 16 [current_design]
 
 puts "BSG-info: Completed script [info script]\n"

@@ -33,7 +33,7 @@ if { $ICC_IMPLEMENTATION_PHASE == "block" } {
   set pin_bbox [list [list 0 187.5] [list 30 188.5]]
   add_io_text_custom [get_cells -all -filter "ref_name==PVDD2POC"] M4_PIN_TEXT "POC" $pin_bbox
 
-  insert_pad_filler -cell $IO_FILLER_CELL
+  insert_pad_filler -cell $IO_FILLER
 
   source createNplace_cup_bondpads.tcl
 

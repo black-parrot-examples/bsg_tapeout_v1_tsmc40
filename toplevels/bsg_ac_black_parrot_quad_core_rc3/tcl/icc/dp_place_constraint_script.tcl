@@ -277,7 +277,7 @@ foreach_in_collection mim [get_plan_groups] {
 
     set macros [sort_collection -dictionary [get_fp_cells -of_objects $mim -filter "is_hard_macro&&full_name=~*cce*directory*"] name]
     set cce_dir_mem_list ""
-    for {set row 0} {$row<8} {incr row} { 
+    for {set row 0} {$row<4} {incr row} { 
       set macro_row [index_collection $macros [expr 2 * $row] [expr 2 * $row + 1]]
       set_fp_macro_options [index_collection $macro_row 0] -legal_orientations FN
       set_fp_macro_options [index_collection $macro_row 1] -legal_orientations N
@@ -336,12 +336,10 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
       set pins [index_collection $lce_cmd_in [expr $i * [sizeof $lce_cmd_in] / 4] [expr ($i + 1) * [sizeof $lce_cmd_in] / 4 - 1]]
       append_to_collection pins [index_collection $lce_req_in  [expr $i * [sizeof $lce_req_in] / 4]  [expr ($i + 1) * [sizeof $lce_req_in] / 4 - 1]]
       append_to_collection pins [index_collection $lce_resp_in [expr $i * [sizeof $lce_resp_in] / 4] [expr ($i + 1) * [sizeof $lce_resp_in] / 4 - 1]]
-      append_to_collection pins [index_collection $mem_cmd_in  [expr $i * [sizeof $mem_cmd_in] / 4]  [expr ($i + 1) * [sizeof $mem_cmd_in] / 4 - 1]]
-      append_to_collection pins [index_collection $mem_resp_in [expr $i * [sizeof $mem_resp_in] / 4] [expr ($i + 1) * [sizeof $mem_resp_in] / 4 - 1]]
       if { $i == 0 } {
-        create_fp_pins $pins -layer M4 -side 1 -step 2 -offset [expr 300 * $tile_height]
+        create_fp_pins $pins -layer M2 -side 1 -step 2 -offset [expr 300 * $tile_height]
       } elseif { $i == 1 } {
-        create_fp_pins $pins -layer M6 -side 3 -step 2 -offset [expr 300 * $tile_height]
+        create_fp_pins $pins -layer M4 -side 3 -step 2 -offset [expr 300 * $tile_height]
       } elseif { $i == 2 } {
         create_fp_pins $pins -layer M3 -side 2 -step 2 -offset [expr 400 * $tile_height]
       } elseif { $i == 3 } {
@@ -351,18 +349,24 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
       set pins [index_collection $lce_cmd_out [expr $i * [sizeof $lce_cmd_out] / 4] [expr ($i + 1) * [sizeof $lce_cmd_out] / 4 - 1]]
       append_to_collection pins [index_collection $lce_req_out  [expr $i * [sizeof $lce_req_out] / 4]  [expr ($i + 1) * [sizeof $lce_req_out] / 4 - 1]]
       append_to_collection pins [index_collection $lce_resp_out [expr $i * [sizeof $lce_resp_out] / 4] [expr ($i + 1) * [sizeof $lce_resp_out] / 4 - 1]]
-      append_to_collection pins [index_collection $mem_cmd_out  [expr $i * [sizeof $mem_cmd_out] / 4]  [expr ($i + 1) * [sizeof $mem_cmd_out] / 4 - 1]]
-      append_to_collection pins [index_collection $mem_resp_out [expr $i * [sizeof $mem_resp_out] / 4] [expr ($i + 1) * [sizeof $mem_resp_out] / 4 - 1]]
       if { $i == 0 } {
-        create_fp_pins $pins -layer M6 -side 1 -step 2 -offset [expr 300 * $tile_height]
+        create_fp_pins $pins -layer M4 -side 1 -step 2 -offset [expr 300 * $tile_height]
       } elseif { $i == 1 } {
-        create_fp_pins $pins -layer M4 -side 3 -step 2 -offset [expr 300 * $tile_height]
+        create_fp_pins $pins -layer M2 -side 3 -step 2 -offset [expr 300 * $tile_height]
       } elseif { $i == 2 } {
         create_fp_pins $pins -layer M5 -side 2 -step 2 -offset [expr 400 * $tile_height]
       } elseif { $i == 3 } {
         create_fp_pins $pins -layer M3 -side 4 -step 2 -offset [expr 400 * $tile_height]
       }
     }
+
+    set pins $mem_cmd_in
+    append_to_collection pins $mem_resp_out
+    create_fp_pins $pins -layer M7 -side 2 -step 2 -offset [expr 400 * $tile_height]
+
+    set pins $mem_cmd_out
+    append_to_collection pins $mem_resp_in
+    create_fp_pins $pins -layer M7 -side 4 -step 2 -offset [expr 400 * $tile_height]
 
     set pins [sort_collection -dictionary [get_pins -of_objects $mim_cell -filter "name=~*clk_i*"] name]
     append_to_collection pins [sort_collection -dictionary [get_pins -of_objects $mim_cell -filter "name=~*reset_i*"] name]
@@ -372,11 +376,124 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
   }
 }
 
-set_fp_pin_constraints -allowed_layers {M3 M4 M5 M6 M7 M8}
+set_fp_pin_constraints -allowed_layers {M2 M3 M4 M5 M6 M7 M8}
+
+#set coordinates ""
+#set mims [get_plan_groups -filter "mim_master_name==bp_tile_node"]
+#foreach_in_collection mim $mims {
+#  lappend coordinates [regexp -all -inline -- {[0-9]+} [get_attribute $mim name]]
+#}
+#set dim_x [lindex [lindex [lsort -index 1 $coordinates] end] 1]
+#set dim_y [lindex [lindex [lsort -index 0 $coordinates] end] 0]
+#
+#set coordinates ""
+#foreach_in_collection mim $mims {
+#  set coordinate [regexp -all -inline -- {[0-9]+} [get_attribute $mim name]]
+#  set x [lindex $coordinate 1]
+#  set y [lindex $coordinate 0]
+#  set x_plus_one [expr $x + 1]
+#  set y_plus_one [expr $y + 1]
+#  if { $x < $dim_x } {
+#    set mim_n [get_plan_groups -filter "mim_master_name==bp_tile_node&&name=~*_${y}_*_${x_plus_one}_*"]
+#    set bbox_llx [expr [get_attribute $mim bbox_urx] + $tile_height]
+#    set bbox_lly [expr [get_attribute $mim bbox_lly] - $tile_height]
+#    set bbox_urx [expr [get_attribute $mim_n bbox_llx] - $tile_height]
+#    set bbox_ury [expr [get_attribute $mim_n bbox_ury] + $tile_height]
+#    #create_placement_blockage -bbox [list $bbox_llx $bbox_lly $bbox_urx $bbox_ury] -type partial -blocked_percentage 95 -buffer_only
+#    append coordinates "$bbox_llx $bbox_lly $bbox_urx $bbox_ury "
+#  }
+#  if { $y < $dim_y } {
+#    set mim_n [get_plan_groups -filter "mim_master_name==bp_tile_node&&name=~*_${y_plus_one}_*_${x}_*"]
+#    set bbox_llx [expr [get_attribute $mim_n bbox_llx] - $tile_height]
+#    set bbox_lly [expr [get_attribute $mim_n bbox_ury] + $tile_height]
+#    set bbox_urx [expr [get_attribute $mim bbox_urx] + $tile_height]
+#    set bbox_ury [expr [get_attribute $mim bbox_lly] - $tile_height]
+#    #create_placement_blockage -bbox [list $bbox_llx $bbox_lly $bbox_urx $bbox_ury] -type partial -blocked_percentage 95 -buffer_only
+#    append coordinates "$bbox_llx $bbox_lly $bbox_urx $bbox_ury "
+#  }
+#  if { $x < $dim_x && $y < $dim_y } {
+#    set mim_n [get_plan_groups -filter "mim_master_name==bp_tile_node&&name=~*_${y_plus_one}_*_${x_plus_one}_*"]
+#    set bbox_llx [expr [get_attribute $mim bbox_urx] + $tile_height]
+#    set bbox_lly [expr [get_attribute $mim_n bbox_ury] + $tile_height]
+#    set bbox_urx [expr [get_attribute $mim_n bbox_llx] - $tile_height]
+#    set bbox_ury [expr [get_attribute $mim bbox_lly] - $tile_height]
+#    #create_placement_blockage -bbox [list $bbox_llx $bbox_lly $bbox_urx $bbox_ury] -type partial -blocked_percentage 95 -buffer_only
+#    append coordinates "$bbox_llx $bbox_lly $bbox_urx $bbox_ury "
+#  }
+#}
+#
+#set buffers [remove_from_collection -intersect [filter_collection [all_fanin -to [get_pins -of_objects [get_attribute $mims logic_cell] -filter "direction==in&&name=~*link*"] -only_cells] "!is_hierarchical"] [filter_collection [all_fanout -from [get_pins -of_objects [get_attribute $mims logic_cell] -filter "direction==out&&name=~*link*"] -only_cells] "!is_hierarchical"]]
+##create_bounds -name "buffer_bound" -exclusive -coordinate $coordinates $buffers
+#create_bounds -name "buffer_bound" -cycle_color -coordinate $coordinates -type hard $buffers
+
+#set cell [get_cells prev]
+#set cell_name [get_attribute $cell name]
+#set coordinates ""
+#set ref_io_cell [get_fp_cells co2_0_o]
+#set io_bbox [get_attribute $ref_io_cell bbox]
+#set x [expr $core_llx + 10 * $tile_height]
+#set y [expr $core_lly + int([expr ([lindex [lindex $io_bbox 0] 1] - $core_lly) / $tile_height]) * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#set x [expr $x + 60 * $tile_height]
+#set y [expr $core_ury - 70 * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#set ref_io_cell [get_fp_cells co_8_i]
+#set io_bbox [get_attribute $ref_io_cell bbox]
+#set x [expr $core_llx + 10 * $tile_height]
+#set y [expr $core_ury - 70 * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#set x [expr $core_llx + int([expr ([lindex [lindex $io_bbox 1] 0] - $core_llx) / $tile_height]) * $tile_height]
+#set y [expr $core_ury - 10 * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#create_bounds -name $cell_name -cycle_color -coordinate $coordinates -exclusive $cell
+##create_bounds -name $cell_name -cycle_color -coordinate $coordinates -type hard $cell
+#
+#set cell [get_cells next]
+#set cell_name [get_attribute $cell name]
+#set coordinates ""
+#set ref_io_cell [get_fp_cells ci_8_i]
+#set io_bbox [get_attribute $ref_io_cell bbox]
+#set x [expr $core_urx - 70 * $tile_height]
+#set y [expr $core_lly + int([expr ([lindex [lindex $io_bbox 0] 1] - $core_lly) / $tile_height]) * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#set x [expr $x + 60 * $tile_height]
+#set y [expr $core_ury - 70 * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#set ref_io_cell [get_fp_cells ci2_0_o]
+#set io_bbox [get_attribute $ref_io_cell bbox]
+#set x [expr $core_llx + int([expr ([lindex [lindex $io_bbox 0] 0] - $core_llx) / $tile_height]) * $tile_height]
+#set y [expr $core_ury - 70 * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#set x [expr $core_urx - 10 * $tile_height]
+#set y [expr $core_ury - 10 * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#create_bounds -name $cell_name -cycle_color -coordinate $coordinates -exclusive $cell
+##create_bounds -name $cell_name -cycle_color -coordinate $coordinates -type hard $cell
+#
+#set cell [get_cells *dmc_controller]
+#set cell_name [get_attribute $cell name]
+#set coordinates ""
+#set x [expr $core_llx + 800 * $tile_height]
+#set y [expr $core_lly + 50 * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#set x [expr $x + 650 * $tile_height]
+#set y [expr $y + 300 * $tile_height]
+#lappend coordinates $x
+#lappend coordinates $y
+#create_bounds -name $cell_name -cycle_color -coordinate $coordinates -exclusive $cell
+##create_bounds -name $cell_name -cycle_color -coordinate $coordinates -type hard $cell
 
 set_fp_placement_strategy -plan_group_interface_net_weight 10.0
 set_fp_placement_strategy -IO_net_weight 10.0
-#set_fp_placement_strategy -congestion_effort high
 
 set_fp_placement_strategy -virtual_IPO true
 

@@ -816,14 +816,14 @@ module bsg_chip
   assign ddr_dqs_n_2_o_io_int = ddr_dqs_n_lo[2]; assign ddr_dqs_n_2_oen_int = ddr_dqs_n_oen_lo[2];
   assign ddr_dqs_n_3_o_io_int = ddr_dqs_n_lo[3]; assign ddr_dqs_n_3_oen_int = ddr_dqs_n_oen_lo[3];
 
-  assign ddr_dqs_p_li[0] = ddr_dqs_p_0_i_io_int;
-  assign ddr_dqs_p_li[1] = ddr_dqs_p_1_i_io_int;
-  assign ddr_dqs_p_li[2] = ddr_dqs_p_2_i_io_int;
-  assign ddr_dqs_p_li[3] = ddr_dqs_p_3_i_io_int;
-  assign ddr_dqs_n_li[0] = ddr_dqs_n_0_i_io_int;
-  assign ddr_dqs_n_li[1] = ddr_dqs_n_1_i_io_int;
-  assign ddr_dqs_n_li[2] = ddr_dqs_n_2_i_io_int;
-  assign ddr_dqs_n_li[3] = ddr_dqs_n_3_i_io_int;
+  assign ddr_dqs_p_li[0] = !ddr_dqs_p_ien_lo[0]? ddr_dqs_p_0_i_io_int: 1'b0;
+  assign ddr_dqs_p_li[1] = !ddr_dqs_p_ien_lo[1]? ddr_dqs_p_1_i_io_int: 1'b0;
+  assign ddr_dqs_p_li[2] = !ddr_dqs_p_ien_lo[2]? ddr_dqs_p_2_i_io_int: 1'b0;
+  assign ddr_dqs_p_li[3] = !ddr_dqs_p_ien_lo[3]? ddr_dqs_p_3_i_io_int: 1'b0;
+  assign ddr_dqs_n_li[0] = !ddr_dqs_p_ien_lo[0]? ddr_dqs_n_0_i_io_int: 1'b1;
+  assign ddr_dqs_n_li[1] = !ddr_dqs_p_ien_lo[1]? ddr_dqs_n_1_i_io_int: 1'b1;
+  assign ddr_dqs_n_li[2] = !ddr_dqs_p_ien_lo[2]? ddr_dqs_n_2_i_io_int: 1'b1;
+  assign ddr_dqs_n_li[3] = !ddr_dqs_p_ien_lo[3]? ddr_dqs_n_3_i_io_int: 1'b1;
 
   assign ddr_dq_li[0]  = ddr_dq_0_i_io_int;  assign ddr_dq_0_o_io_int  = ddr_dq_lo[0];  assign ddr_dq_0_oen_int  = ddr_dq_oen_lo[0];
   assign ddr_dq_li[1]  = ddr_dq_1_i_io_int;  assign ddr_dq_1_o_io_int  = ddr_dq_lo[1];  assign ddr_dq_1_oen_int  = ddr_dq_oen_lo[1];

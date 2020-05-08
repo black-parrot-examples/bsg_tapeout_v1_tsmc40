@@ -121,7 +121,7 @@ DRAM_CH  :=DDR2_micron_16M_8b_x8_sg3E.ini
 DRAM_SYS :=system.ini
 
 prog.nbf:
-	@cp $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).nbf $(BSG_OUT_DIR)/$@
+	python $(BLACKPARROT_DIR)/bp_common/software/py/nbf.py --mem_file $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).mem > $(BSG_OUT_DIR)/$@
 
 prog.mem:
 	@cp $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).mem $(BSG_OUT_DIR)/$@
@@ -133,7 +133,7 @@ dram_sys.ini:
 	@cp $(BLACKPARROT_DIR)/bp_common/test/cfg/$(DRAM_SYS) $(BSG_OUT_DIR)/$@
 
 cce_ucode.mem:
-	@cp $(BLACKPARROT_DIR)/bp_me/src/asm/roms/mesi/bp_cce_inst_rom_mesi.mem $(BSG_OUT_DIR)/$@
+	@cp $(BLACKPARROT_DIR)/bp_me/src/asm/roms/mesi.mem $(BSG_OUT_DIR)/$@
 
 DRAM_ITERS ?= 1024
 dram_bw.nbf:

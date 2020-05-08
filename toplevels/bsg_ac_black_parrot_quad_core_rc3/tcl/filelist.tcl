@@ -139,6 +139,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_be_dir/src/v/bp_be_calculator/bp_be_calculator_top.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_instr_decoder.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_int_alu.v
+  $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_ctrl.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_fp.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_int.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_long.v
@@ -173,7 +174,6 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/cache/bp_me_cce_to_cache.v
   $bp_me_dir/src/v/cce/bp_cce.v
   $bp_me_dir/src/v/cce/bp_cce_wrapper.v
-  $bp_me_dir/src/v/cce/bp_cce_fsm.v
   $bp_me_dir/src/v/cce/bp_cce_alu.v
   $bp_me_dir/src/v/cce/bp_cce_arbitrate.v
   $bp_me_dir/src/v/cce/bp_cce_branch.v
@@ -193,7 +193,6 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/cce/bp_cce_reg.v
   $bp_me_dir/src/v/cce/bp_cce_spec_bits.v
   $bp_me_dir/src/v/cce/bp_cce_src_sel.v
-  $bp_me_dir/src/v/cce/bp_cce_wrapper.v
   $bp_me_dir/src/v/cce/bp_io_cce.v
   $bp_me_dir/src/v/wormhole/bp_me_addr_to_cce_id.v
   $bp_me_dir/src/v/wormhole/bp_me_cce_id_to_cord.v

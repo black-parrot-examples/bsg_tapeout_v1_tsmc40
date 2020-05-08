@@ -162,6 +162,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_be_dir/src/v/bp_be_calculator/bp_be_int_alu.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_fp.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_int.v
+  $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_ctrl.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_long.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_mem.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_pipe_mul.v

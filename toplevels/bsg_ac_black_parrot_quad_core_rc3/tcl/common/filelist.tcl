@@ -81,7 +81,11 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_dataflow/bsg_shift_reg.v
   $basejump_stl_dir/bsg_dataflow/bsg_two_fifo.v
   $basejump_stl_dir/bsg_mem/bsg_cam_1r1w.v
+  $basejump_stl_dir/bsg_mem/bsg_cam_1r1w_replacement.v
+  $basejump_stl_dir/bsg_mem/bsg_cam_1r1w_sync.v
+  $basejump_stl_dir/bsg_mem/bsg_cam_1r1w_tag_array.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1r1w.v
+  $basejump_stl_dir/bsg_mem/bsg_mem_1r1w_one_hot.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1r1w_sync.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1r1w_sync_synth.v
   $basejump_stl_dir/bsg_mem/bsg_mem_1r1w_synth.v
@@ -126,6 +130,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_misc/bsg_lru_pseudo_tree_decode.v
   $basejump_stl_dir/bsg_misc/bsg_lru_pseudo_tree_encode.v
   $basejump_stl_dir/bsg_misc/bsg_mux.v
+  $basejump_stl_dir/bsg_misc/bsg_mux_bitwise.v
   $basejump_stl_dir/bsg_misc/bsg_mux_butterfly.v
   $basejump_stl_dir/bsg_misc/bsg_mux_one_hot.v
   $basejump_stl_dir/bsg_misc/bsg_mux_segmented.v
@@ -153,7 +158,6 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_noc/bsg_wormhole_router_output_control.v 
   $bp_common_dir/src/v/bp_pma.v
   $bp_common_dir/src/v/bp_tlb.v
-  $bp_common_dir/src/v/bp_tlb_replacement.v
   $bp_common_dir/src/v/bsg_fifo_1r1w_rolly.v
   $bp_be_dir/src/v/bp_be_top.v
   $bp_be_dir/src/v/bp_be_calculator/bp_be_bypass.v
@@ -197,7 +201,6 @@ set SVERILOG_SOURCE_FILES [join "
   $bp_me_dir/src/v/cce/bp_cce_alu.v
   $bp_me_dir/src/v/cce/bp_cce_arbitrate.v
   $bp_me_dir/src/v/cce/bp_cce_branch.v
-  $bp_me_dir/src/v/cce/bp_cce_buffered.v
   $bp_me_dir/src/v/cce/bp_cce_dir.v
   $bp_me_dir/src/v/cce/bp_cce_dir_lru_extract.v
   $bp_me_dir/src/v/cce/bp_cce_dir_segment.v

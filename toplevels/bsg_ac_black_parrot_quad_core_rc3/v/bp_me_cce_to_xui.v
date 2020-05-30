@@ -64,7 +64,7 @@ assign mem_resp_o = mem_resp_cast_lo;
 assign app_addr_o      = mem_cmd_cast_li.header.addr;
 assign app_cmd_o       = mem_cmd_cast_li.header.msg_type == e_cce_mem_rd;
 assign app_en_o        = mem_cmd_v_i & mem_cmd_ready_o;
-assign app_wdf_wren_o  = app_en_o & (mem_cmd_cast_li.header.msg_type == e_cce_mem_wb);
+assign app_wdf_wren_o  = app_en_o & (mem_cmd_cast_li.header.msg_type == e_cce_mem_wr);
 assign app_wdf_data_o  = mem_cmd_cast_li.data;
 assign app_wdf_mask_o  = '0;
 assign app_wdf_end_o   = app_wdf_wren_o;
@@ -95,7 +95,7 @@ always_ff @ (posedge clk_i) begin
   if (reset_i)
     wr_cyc <= 1'b0;
   else if(mem_cmd_v_i && mem_cmd_ready_o)
-    wr_cyc <= (mem_cmd_cast_li.header.msg_type==e_cce_mem_wb) & app_rdy_i;
+    wr_cyc <= (mem_cmd_cast_li.header.msg_type==e_cce_mem_wr) & app_rdy_i;
   else
     wr_cyc <= 1'b0;
 end

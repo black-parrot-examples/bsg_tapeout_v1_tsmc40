@@ -352,7 +352,7 @@ module bsg_chip
   bsg_ready_and_link_sif_s bp_next_resp_link_li, bp_next_resp_link_lo;
 
   bsg_ready_and_link_sif_s dram_cmd_link_lo, dram_resp_link_li;
-  bp_processor #(.bp_params_p(bp_cfg_gp))
+  bp_multicore #(.bp_params_p(bp_cfg_gp))
     bp_processor
       (.core_clk_i  ( bp_clk_lo )
       ,.core_reset_i( core_reset_lo )

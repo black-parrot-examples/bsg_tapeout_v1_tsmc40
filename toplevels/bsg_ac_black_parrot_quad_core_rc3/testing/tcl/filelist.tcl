@@ -116,6 +116,7 @@ set TESTING_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_misc/bsg_dff_en.v
   $basejump_stl_dir/bsg_misc/bsg_dff_reset_en.v
   $basejump_stl_dir/bsg_misc/bsg_dff_reset.v
+  $basejump_stl_dir/bsg_misc/bsg_dff_reset_en_bypass.v
   $basejump_stl_dir/bsg_misc/bsg_dff.v
   $basejump_stl_dir/bsg_misc/bsg_encode_one_hot.v
   $basejump_stl_dir/bsg_misc/bsg_gray_to_binary.v
@@ -158,6 +159,7 @@ set TESTING_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_tag/bsg_tag_trace_replay.v
   $basejump_stl_dir/bsg_test/bsg_nonsynth_clock_gen.v
   $basejump_stl_dir/bsg_test/bsg_nonsynth_reset_gen.v
+  $basejump_stl_dir/bsg_test/bsg_nonsynth_test_rom.v
   $basejump_stl_dir/bsg_test/test_bsg_data_gen.v
   $basejump_stl_dir/testing/bsg_dmc/lpddr_verilog_model/mobile_ddr.v
   $board_dir/pcb/asic_cloud/v/bsg_asic_cloud/bsg_asic_socket.v

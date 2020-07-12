@@ -167,7 +167,7 @@ if { $::env(BSG_BLOCK_HIER_LEVEL) == "top" } {
   set_ungroup [get_designs -filter "hdl_template==bsg_clk_gen_osc"] false
   set_ungroup [get_designs -filter "hdl_template==bp_io_complex"] false
   set_ungroup [get_designs -filter "hdl_template==bsg_chip_io_complex_links_ct_fifo"] false
-  set_ungroup [get_designs -filter "hdl_template==bp_processor"] true
+  set_ungroup [get_designs -filter "hdl_template==bp_multicore"] true
   set_ungroup [get_designs -filter "hdl_template==bp_core_complex"] true
 } else {
   set_ungroup [remove_from_collection [all_designs] [current_design]]

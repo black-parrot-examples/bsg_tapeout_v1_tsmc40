@@ -412,25 +412,15 @@ import bsg_wormhole_router_pkg::*;
   bsg_ready_and_link_sif_s gw_resp_link_li, gw_resp_link_lo;
   bsg_ready_and_link_sif_s [E:W] gw_dram_link_li, gw_dram_link_lo;
 
-  bp_cce_mem_msg_s      cfg_cmd_lo;
-  logic                 cfg_cmd_v_lo, cfg_cmd_ready_li;
-  bp_cce_mem_msg_s      cfg_resp_li;
-  logic                 cfg_resp_v_li, cfg_resp_ready_lo;
-
   bp_cce_mem_msg_s      host_cmd_li;
   logic                 host_cmd_v_li, host_cmd_ready_lo;
   bp_cce_mem_msg_s      host_resp_lo;
   logic                 host_resp_v_lo, host_resp_ready_li;
 
-  bp_cce_mem_msg_s      nbf_cmd_lo;
-  logic                 nbf_cmd_v_lo, nbf_cmd_ready_li;
-  bp_cce_mem_msg_s      nbf_resp_li;
-  logic                 nbf_resp_v_li, nbf_resp_ready_lo;
-
   bp_cce_mem_msg_s      load_cmd_lo;
   logic                 load_cmd_v_lo, load_cmd_ready_li;
   bp_cce_mem_msg_s      load_resp_li;
-  logic                 load_resp_v_li, load_resp_yumi_lo;
+  logic                 load_resp_v_li, load_resp_ready_lo;
   
   bp_cce_mem_msg_s      dram_cmd_lo;
   logic                 dram_cmd_v_lo, dram_cmd_ready_li;
@@ -455,7 +445,7 @@ import bsg_wormhole_router_pkg::*;
 
      ,.mem_resp_o(load_resp_li)
      ,.mem_resp_v_o(load_resp_v_li)
-     ,.mem_resp_yumi_i(load_resp_yumi_lo)
+     ,.mem_resp_yumi_i(load_resp_ready_lo & load_resp_v_li)
 
      ,.mem_cmd_o(host_cmd_li)
      ,.mem_cmd_v_o(host_cmd_v_li)
@@ -543,53 +533,22 @@ import bsg_wormhole_router_pkg::*;
      ,.mem_resp_yumi_i(dram_resp_ready_lo & dram_resp_v_li)
      );
 
-    logic cfg_done_lo;
-    logic nbf_done_lo;
-  `ifndef DRAM_TEST
-    localparam cce_instr_ram_addr_width_lp = `BSG_SAFE_CLOG2(num_cce_instr_ram_els_p);
-    bp_cce_mmio_cfg_loader
-      #(.bp_params_p(bp_params_p)
-        ,.inst_width_p($bits(bp_cce_inst_s))
-        ,.inst_ram_addr_width_p(cce_instr_ram_addr_width_lp)
-        ,.inst_ram_els_p(num_cce_instr_ram_els_p)
-        ,.skip_ram_init_p('0)
-        ,.clear_freeze_p(0)
-        )
-      cfg_loader
-      (.clk_i(blackparrot_clk)
-       ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
-
-       ,.lce_id_i('0)    
-
-       ,.io_cmd_o(cfg_cmd_lo)
-       ,.io_cmd_v_o(cfg_cmd_v_lo)
-       ,.io_cmd_yumi_i(cfg_cmd_ready_li & cfg_cmd_v_lo)
-    
-       ,.io_resp_i(cfg_resp_li)
-       ,.io_resp_v_i(cfg_resp_v_li)
-       ,.io_resp_ready_o(cfg_resp_ready_lo)
-  
-       ,.done_o(cfg_done_lo)
-      );
-  `else
-    assign cfg_done_lo = 1'b1;
-  `endif
-
+  logic nbf_done_lo;
   bp_nonsynth_nbf_loader
    #(.bp_params_p(bp_params_p))
    nbf_loader
     (.clk_i(blackparrot_clk)
-     ,.reset_i(core_reset_lo | ~cfg_done_lo | ~tag_trace_done_lo)
+     ,.reset_i(core_reset_lo | ~tag_trace_done_lo)
 
      ,.lce_id_i('0)
 
-     ,.io_cmd_o(nbf_cmd_lo)
-     ,.io_cmd_v_o(nbf_cmd_v_lo)
-     ,.io_cmd_yumi_i(nbf_cmd_ready_li & nbf_cmd_v_lo)
+     ,.io_cmd_o(load_cmd_lo)
+     ,.io_cmd_v_o(load_cmd_v_lo)
+     ,.io_cmd_yumi_i(load_cmd_ready_li & load_cmd_v_lo)
 
-     ,.io_resp_i(nbf_resp_li)
-     ,.io_resp_v_i(nbf_resp_v_li)
-     ,.io_resp_ready_o(nbf_resp_ready_lo)
+     ,.io_resp_i(load_resp_li)
+     ,.io_resp_v_i(load_resp_v_li)
+     ,.io_resp_ready_o(load_resp_ready_lo)
 
      ,.done_o(nbf_done_lo)
      );
@@ -621,41 +580,6 @@ import bsg_wormhole_router_pkg::*;
   
      ,.program_finish_o(program_finish)
      );
-
-  always_comb
-    if (~cfg_done_lo)
-      begin
-        load_cmd_lo = cfg_cmd_lo;
-        load_cmd_v_lo = load_cmd_ready_li & cfg_cmd_v_lo;
-
-        nbf_cmd_ready_li = 1'b0;
-        cfg_cmd_ready_li = load_cmd_ready_li;
-  
-        nbf_resp_li = '0;
-        nbf_resp_v_li = 1'b0;
-  
-        cfg_resp_li = load_resp_li;
-        cfg_resp_v_li = cfg_resp_ready_lo & load_resp_v_li;
-  
-        load_resp_yumi_lo = cfg_resp_v_li;
-      end
-    else
-      begin
-        load_cmd_lo = nbf_cmd_lo;
-        load_cmd_v_lo = load_cmd_ready_li & nbf_cmd_v_lo;
-  
-        nbf_cmd_ready_li = load_cmd_ready_li;
-        cfg_cmd_ready_li = 1'b0;
-  
-        nbf_resp_li = load_resp_li;
-        nbf_resp_v_li = nbf_resp_ready_lo & load_resp_v_li;
-  
-        cfg_resp_li = '0;
-        cfg_resp_v_li = 1'b0;
-  
-        load_resp_yumi_lo = nbf_resp_v_li;
-      end
-
 
   assign prev_router_links_li[0] = '0;
   assign prev_router_links_li[1] = '0;

@@ -165,19 +165,25 @@ if { ${DESIGN_NAME} == "bp_tile_node" } {
     }
   }
 
-  set_optimize_registers true -design bp_be_pipe_mul
+  set_app_var compile_keep_original_for_extrnal_references true
+
   current_design *pipe_fma*
   create_clock -period ${core_clk_period_ps} [get_ports "clk_i"]
   set_optimize_registers true -check_design
-  set_app_var compile_keep_original_for_extrnal_references true
-  compile_ultra -retime -timing
+  uniquify -force
+  ungroup -flatten [get_cells -hier]
 
-  set_optimize_registers true -design bp_be_pipe_mul
   current_design *pipe_aux*
   create_clock -period ${core_clk_period_ps} [get_ports "clk_i"]
   set_optimize_registers true -check_design
-  set_app_var compile_keep_original_for_extrnal_references true
-  compile_ultra -retime -timing
+  uniquify -force
+  ungroup -flatten [get_cells -hier]
+  
+  current_design *pipe_mem*
+  create_clock -period ${core_clk_period_ps} [get_ports "clk_i"]
+  set_optimize_registers true -check_design
+  uniquify -force
+  ungroup -flatten [get_cells -hier]
 
   current_design bp_tile_node
 

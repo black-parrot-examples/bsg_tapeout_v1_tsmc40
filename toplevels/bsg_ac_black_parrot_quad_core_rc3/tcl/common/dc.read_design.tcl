@@ -10,7 +10,7 @@
 
 puts "BSG-info: Running script [info script]\n"
 
-source -echo -verbose filelist.tcl
+source -echo -verbose src_inc.tcl
 source -echo -verbose $::env(BSG_TARGET_PROCESS)/filelist_deltas.tcl
 
 ########################################
@@ -83,18 +83,11 @@ set all_final_source_files [concat $final_netlist_source_files $final_sverilog_s
 # design that you don't want to set that attribute on.
 if { $final_netlist_source_files != "" } {
   read_verilog -netlist $final_netlist_source_files
-  #set_dont_touch [get_designs] true
   foreach_in_collection design [get_designs bsg_rp*] {
     current_design $design
     set_dont_touch [get_cells *]
   }
 }
-
-# Prevent constant propagation on hardened tielo and tiehi cells
-#set bsg_tie_lo_designs [get_designs -quiet bsg_rp_tsmc_*_TIELO_b*]
-#set bsg_tie_hi_designs [get_designs -quiet bsg_rp_tsmc_*_TIEHI_b*]
-#if { [sizeof_collection $bsg_tie_lo_designs] > 0 } { set_compile_directives -constant_propagation false $bsg_tie_lo_designs }
-#if { [sizeof_collection $bsg_tie_hi_designs] > 0 } { set_compile_directives -constant_propagation false $bsg_tie_hi_designs }
 
 # Performa analysis on all of the files
 if { $final_sverilog_source_files != "" } {
@@ -107,12 +100,16 @@ if { $final_sverilog_source_files != "" } {
 ## Elaborate the design
 ########################################
 
-set_app_var hdlin_ff_always_sync_set_reset  true
-set_app_var hdlin_ff_always_async_set_reset false
-
 # Performa elaboration on the top block
 if { ![elaborate $::env(TOP_HIER_BLOCK)] } {
   exit -1
+}
+
+# Prevent all registers in bsg_launch_sync_sync from being optimized away
+foreach_in_collection design [get_designs -filter "hdl_template==bsg_launch_sync_sync"] {
+  current_design $design
+  set_ungroup [get_cells *]
+  set_size_only [all_registers] true
 }
 
 ########################################
@@ -121,7 +118,6 @@ if { ![elaborate $::env(TOP_HIER_BLOCK)] } {
 
 # Check if the design name is found in the collection of designs. If not, then
 # it either doesn't exist or it has been renamed (from parameters)
-
 foreach design_name $HIERARCHICAL_DESIGNS {
   if { [sizeof_collection [get_designs -quiet $design_name]] == 0 } {
     set designs [get_designs -quiet -filter "hdl_template==${design_name}"]
@@ -146,7 +142,6 @@ current_design ${DESIGN_NAME}
 # to be a problem particularly for Formality so we query the tool for the
 # parameters and dump them to a file for the Formality flow. This info can also
 # just be useful on its own.
-
 set param_list [list]
 foreach {name arrow value} [lsearch -all -inline -not -exact [split [get_attribute [current_design] hdl_parameters] {, }] {}] {
   lappend param_list "${name}=${value}"
@@ -158,43 +153,27 @@ close $fid
 
 if { $::env(BSG_BLOCK_HIER_LEVEL) == "top" } {
   set_dont_touch [get_cells -of_objects [get_ports *]]
-  if { [sizeof_collection [get_designs -filter "hdl_template==bsg_launch_sync_sync"]] > 0 } {
-    set_boundary_optimization [get_designs -filter "hdl_template==bsg_launch_sync_sync"] false
-  }
-  #current_design [get_designs -filter "hdl_template==bsg_clk_gen_power_domain"]
-  #set_ungroup [remove_from_collection [all_designs] [current_design]]
-  #current_design $DESIGN_NAME
+  set_ungroup [get_designs -filter "hdl_template==bsg_clk_gen_power_domain"] false
   set_ungroup [get_designs -filter "hdl_template==bsg_clk_gen_osc"] false
-  set_ungroup [get_designs -filter "hdl_template==bp_io_complex"] false
-  set_ungroup [get_designs -filter "hdl_template==bsg_chip_io_complex_links_ct_fifo"] false
   set_ungroup [get_designs -filter "hdl_template==bp_multicore"] true
   set_ungroup [get_designs -filter "hdl_template==bp_core_complex"] true
+  set_ungroup [get_designs -filter "hdl_template==bp_io_complex"] true
+  set_ungroup [get_designs -filter "hdl_template==bsg_chip_io_complex_links_ct_fifo"] true
 } else {
   set_ungroup [remove_from_collection [all_designs] [current_design]]
-  set_isolate_ports [remove_from_collection [all_inputs] [get_ports *_clk_i]]
-  set_isolate_ports [all_outputs]
+  #set_isolate_ports [remove_from_collection [all_inputs] [get_ports *_clk_i]]
+  #set_isolate_ports [all_outputs]
 }
 
-########################################
-## TLU+ Setup (if needed)
-########################################
-
-# BSG-STD: GF14 specific, most other processes this will be done in the
-# dc_setup.tcl file. We had to defer loading the TLU+ files until now because
-# we needed to set a reference direction which failed unless a design was
-# loaded.
-if { $::env(BSG_TARGET_PROCESS) == "gf_14" } {
-  if {[shell_is_in_topographical_mode]} {
-    set_tlu_plus_files -max_tluplus $TLUPLUS_MAX_FILE -min_tluplus $TLUPLUS_MIN_FILE -tech2itf_map $MAP_FILE
-    set_extraction_options -reference_direction vertical
-    check_tlu_plus_files
-  }
+set cells [filter_collection [all_registers] "name=~*BSG_NO_CLOCK_GATE*"]
+if { [sizeof $cells] > 0 } {
+  set_clock_gating_objects -exclude $cells
+} else {
+  puts "BSG-info: Nothing will be excluded from clock gating"
 }
 
 define_name_rule verilog -preserve_struct_port
 change_names -rules verilog -hierarchy
-
-set_app_var case_analysis_propagate_through_icg true
 
 puts "BSG-info: Completed script [info script]\n"
 

@@ -1,6 +1,6 @@
 puts "BSG-info: Running script [info script]\n"
 
-read_sdc ${DESIGN_NAME}_func_bc_cbest.sdc
+source -echo -verbose dc.mcmm.scenarios.tcl
 
 puts "BSG-info: Completed script [info script]\n"
 

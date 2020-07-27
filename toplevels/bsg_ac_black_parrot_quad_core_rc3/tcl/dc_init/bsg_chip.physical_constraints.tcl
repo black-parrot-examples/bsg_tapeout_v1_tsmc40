@@ -1,6 +1,6 @@
 puts "BSG-info: Running script [info script]\n"
 
-create_die_area -coordinate { 0 0 2895 2895 } 
+#create_die_area -coordinate { 0 0 2895 2895 } 
 
 set_port_side -side right p_ci_0_i
 set_port_side -side right p_ci_1_i

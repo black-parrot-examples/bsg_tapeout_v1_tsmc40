@@ -61,42 +61,42 @@ foreach id [list 0 1] {
   bsg_link_timing_constraints false $IOM_CLK_NAME $id 0.1
 }
 
-global ddr_intf
-set ddr_intf(ck_p)         [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_ck_p_o]] -filter "name==I"]
-set ddr_intf(ck_n)         [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_ck_n_o]] -filter "name==I"]
-set ddr_intf(ca)           [get_pins -of_objects [get_cells -of_objects [get_ports -filter "name=~p_ddr_*_o&&name!~p_ddr_ck_*&&name!~p_ddr_dm_*"]] -filter "name==I"]
-set gid 0
-set ddr_intf($gid,dqs_p_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_0_io]] -filter "name==C"]
-set ddr_intf($gid,dqs_p_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_0_io]] -filter "name==I"]
-set ddr_intf($gid,dqs_n_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_0_io]] -filter "name==C"]
-set ddr_intf($gid,dqs_n_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_0_io]] -filter "name==I"]
-set ddr_intf($gid,dm_o)    [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dm_0_o]] -filter "name==I"]
-set ddr_intf($gid,dq_i)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_([0-7])_io}]] -filter "name==C"]
-set ddr_intf($gid,dq_o)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_([0-7])_io}]] -filter "name==I||name==OEN"]
-incr gid
-set ddr_intf($gid,dqs_p_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_1_io]] -filter "name==C"]
-set ddr_intf($gid,dqs_p_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_1_io]] -filter "name==I"]
-set ddr_intf($gid,dqs_n_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_1_io]] -filter "name==C"]
-set ddr_intf($gid,dqs_n_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_1_io]] -filter "name==I"]
-set ddr_intf($gid,dm_o)    [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dm_1_o]] -filter "name==I"]
-set ddr_intf($gid,dq_i)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_([8-9]|1[0-5])_io}]] -filter "name==C"]
-set ddr_intf($gid,dq_o)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_([8-9]|1[0-5])_io}]] -filter "name==I||name==OEN"]
-incr gid
-set ddr_intf($gid,dqs_p_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_2_io]] -filter "name==C"]
-set ddr_intf($gid,dqs_p_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_2_io]] -filter "name==I"]
-set ddr_intf($gid,dqs_n_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_2_io]] -filter "name==C"]
-set ddr_intf($gid,dqs_n_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_2_io]] -filter "name==I"]
-set ddr_intf($gid,dm_o)    [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dm_2_o]] -filter "name==I"]
-set ddr_intf($gid,dq_i)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(1[6-9]|2[0-3])_io}]] -filter "name==C"]
-set ddr_intf($gid,dq_o)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(1[6-9]|2[0-3])_io}]] -filter "name==I||name==OEN"]
-incr gid
-set ddr_intf($gid,dqs_p_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_3_io]] -filter "name==C"]
-set ddr_intf($gid,dqs_p_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_3_io]] -filter "name==I"]
-set ddr_intf($gid,dqs_n_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_3_io]] -filter "name==C"]
-set ddr_intf($gid,dqs_n_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_3_io]] -filter "name==I"]
-set ddr_intf($gid,dm_o)    [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dm_3_o]] -filter "name==I"]
-set ddr_intf($gid,dq_i)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(2[4-9]|3[0-1])_io}]] -filter "name==C"]
-set ddr_intf($gid,dq_o)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(2[4-9]|3[0-1])_io}]] -filter "name==I||name==OEN"]
+#global ddr_intf
+#set ddr_intf(ck_p)         [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_ck_p_o]] -filter "name==I"]
+#set ddr_intf(ck_n)         [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_ck_n_o]] -filter "name==I"]
+#set ddr_intf(ca)           [get_pins -of_objects [get_cells -of_objects [get_ports -filter "name=~p_ddr_*_o&&name!~p_ddr_ck_*&&name!~p_ddr_dm_*"]] -filter "name==I"]
+#set gid 0
+#set ddr_intf($gid,dqs_p_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_0_io]] -filter "name==C"]
+#set ddr_intf($gid,dqs_p_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_0_io]] -filter "name==I"]
+#set ddr_intf($gid,dqs_n_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_0_io]] -filter "name==C"]
+#set ddr_intf($gid,dqs_n_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_0_io]] -filter "name==I"]
+#set ddr_intf($gid,dm_o)    [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dm_0_o]] -filter "name==I"]
+#set ddr_intf($gid,dq_i)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_([0-7])_io}]] -filter "name==C"]
+#set ddr_intf($gid,dq_o)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_([0-7])_io}]] -filter "name==I||name==OEN"]
+#incr gid
+#set ddr_intf($gid,dqs_p_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_1_io]] -filter "name==C"]
+#set ddr_intf($gid,dqs_p_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_1_io]] -filter "name==I"]
+#set ddr_intf($gid,dqs_n_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_1_io]] -filter "name==C"]
+#set ddr_intf($gid,dqs_n_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_1_io]] -filter "name==I"]
+#set ddr_intf($gid,dm_o)    [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dm_1_o]] -filter "name==I"]
+#set ddr_intf($gid,dq_i)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_([8-9]|1[0-5])_io}]] -filter "name==C"]
+#set ddr_intf($gid,dq_o)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_([8-9]|1[0-5])_io}]] -filter "name==I||name==OEN"]
+#incr gid
+#set ddr_intf($gid,dqs_p_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_2_io]] -filter "name==C"]
+#set ddr_intf($gid,dqs_p_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_2_io]] -filter "name==I"]
+#set ddr_intf($gid,dqs_n_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_2_io]] -filter "name==C"]
+#set ddr_intf($gid,dqs_n_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_2_io]] -filter "name==I"]
+#set ddr_intf($gid,dm_o)    [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dm_2_o]] -filter "name==I"]
+#set ddr_intf($gid,dq_i)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(1[6-9]|2[0-3])_io}]] -filter "name==C"]
+#set ddr_intf($gid,dq_o)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(1[6-9]|2[0-3])_io}]] -filter "name==I||name==OEN"]
+#incr gid
+#set ddr_intf($gid,dqs_p_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_3_io]] -filter "name==C"]
+#set ddr_intf($gid,dqs_p_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_p_3_io]] -filter "name==I"]
+#set ddr_intf($gid,dqs_n_i) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_3_io]] -filter "name==C"]
+#set ddr_intf($gid,dqs_n_o) [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dqs_n_3_io]] -filter "name==I"]
+#set ddr_intf($gid,dm_o)    [get_pins -of_objects [get_cells -of_objects [get_ports p_ddr_dm_3_o]] -filter "name==I"]
+#set ddr_intf($gid,dq_i)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(2[4-9]|3[0-1])_io}]] -filter "name==C"]
+#set ddr_intf($gid,dq_o)    [get_pins -of_objects [get_cells -of_objects [get_ports -regexp {p_ddr_dq_(2[4-9]|3[0-1])_io}]] -filter "name==I||name==OEN"]
 
 #bsg_dmc_ctrl_timing_constraints $DFI_CLK_1X_NAME $DFI_CLK_2X_NAME
 #foreach id [list 0 1 2 3] {
@@ -146,7 +146,7 @@ append_to_collection clocks [get_clocks sdo_1_tkn_clk]
 append_to_collection clocks [get_clocks bp_clk]
 append_to_collection clocks [get_clocks io_master_clk]
 append_to_collection clocks [get_clocks router_clk]
-append_to_collection clocks [get_clocks dfi_clk_1x]
+#append_to_collection clocks [get_clocks dfi_clk_1x]
 
 bsg_async_cdc $clocks
 

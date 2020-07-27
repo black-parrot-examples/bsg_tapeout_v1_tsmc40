@@ -88,3 +88,6 @@ export PDK_USE_LT  ?=false
 export PDK_USE_ML  ?=true
 export PDK_USE_MLG ?=false
 export PDK_USE_TC  ?=false
+
+#
+export PDK_USE_MV ?=false

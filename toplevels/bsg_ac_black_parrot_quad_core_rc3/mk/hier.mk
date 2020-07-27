@@ -15,16 +15,20 @@
 
 export TOP_HIER_BLOCK  := bsg_chip
 export MID_HIER_BLOCKS :=
-export BOT_HIER_BLOCKS := bp_tile_node
+export BOT_HIER_BLOCKS := bp_tile_node bp_io_tile_node bsg_channel_tunnel
 
-export BP_HIER_CELLS := bp_processor_cc_y_0__x_0__tile_node \
-                        bp_processor_cc_y_0__x_1__tile_node \
-                        bp_processor_cc_y_1__x_0__tile_node \
-                        bp_processor_cc_y_1__x_1__tile_node
+export BP_TILES := bp_processor_cc_y_0__x_0__tile_node \
+                   bp_processor_cc_y_0__x_1__tile_node \
+                   bp_processor_cc_y_1__x_0__tile_node \
+                   bp_processor_cc_y_1__x_1__tile_node
 
-export MISC_HIER_CELLS := prev next bp_processor_ic
+export BP_IO_TILES := bp_processor_ic_node_0__io \
+                      bp_processor_ic_node_1__io
 
-export HIERARCHICAL_CELLS := $(BP_HIER_CELLS)
+export CHANNEL_TUNNELS := prev_tunnel \
+                          next_tunnel
 
-export MIM_INSTANCE_LIST := $(BP_HIER_CELLS)
-export MIM_MASTER_LIST := bp_processor_cc_y_0__x_0__tile_node
+export HIERARCHICAL_CELLS := $(BP_TILES) $(BP_IO_TILES) $(CHANNEL_TUNNELS)
+
+export MIM_INSTANCE_LIST := $(HIERARCHICAL_CELLS)
+export MIM_MASTER_LIST := bp_processor_cc_y_0__x_0__tile_node bp_processor_ic_node_0__io prev_tunnel

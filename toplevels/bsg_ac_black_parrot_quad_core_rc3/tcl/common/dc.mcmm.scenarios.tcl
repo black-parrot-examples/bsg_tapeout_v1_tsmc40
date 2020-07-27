@@ -1,7 +1,7 @@
 #################################################################################
 # Design Compiler MCMM Scenarios Setup File Reference
 # Script: dc.mcmm.scenarios.tcl
-# Version: O-2018.06-SP4 
+# Version: Q-2019.12  
 # Copyright (C) 2011-2019 Synopsys, Inc. All rights reserved.
 #################################################################################
 
@@ -27,11 +27,6 @@
 # In MCMM, good leakage and dynamic power optimization results can be obtained by
 # using a worst case leakage scenario along with scenario-independent clock gating
 # (compile_ultra -gate_clock).
-#
-# For low power placement to work, it is required to have at least one scenario with 
-# dynamic power optimization enabled.
-#
-#    set_scenario_options -dynamic_power true ...
 #
 # A recommended scenario naming convention (used by Lynx) is the following:
 #
@@ -76,16 +71,6 @@ set_tlu_plus_files -max_tluplus ${TLUPLUS_MAX_FILE} \
 
 check_tlu_plus_files
 
-# For a MV flow, apply set_voltage settings for each scenario if these settings
-# are not already a part of the input SDC file.
-
-set MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE [dcrm_mcmm_filename ${DCRM_MV_SET_VOLTAGE_INPUT_FILE} ${scenario}]
-
-if {[file exists [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]]} {
-  puts "RM-Info: Sourcing script file [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]\n"
-  source -echo -verbose ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}
-}
-
 # Include scenario specific SAIF file, if possible, for power analysis.
 # Otherwise, the default toggle rate of 0.1 will be used for propagating
 # switching activity.
@@ -101,7 +86,7 @@ report_scenario_options
 # Define additional setup scenarios here as needed, using the same format.
 
 #################################################################################
-# Worst Case Leakage Scenario
+# Best Case Hold Scenario
 #################################################################################
 
 set scenario $MODE(func)_$LIB_CORNER(bc)_$PARA_CORNER(cmin)
@@ -109,8 +94,8 @@ set scenario $MODE(func)_$LIB_CORNER(bc)_$PARA_CORNER(cmin)
 create_scenario ${scenario}
 
 # If this is the top-level design in a hierarchical flow and there are scenario
-# name mismatches with hierarchical blocks, use the following command to map the
-# the mismatched block scenario names to this top-level scenario.
+# name mismatches with hierarchical blocks, use the following command to map the 
+# mismatched block scenario names to this top-level scenario.
 
 # select_block_scenario -block_references <BLOCK_DESIGNS_LIST> -block_scenario <BLOCK_SCENARIO_NAME>
 
@@ -129,78 +114,18 @@ set_tlu_plus_files -max_tluplus ${TLUPLUS_MIN_FILE} \
 
 check_tlu_plus_files
 
-# For a MV flow, apply set_voltage settings for each scenario if these settings
-# are not already a part of the input SDC file.
-
-set MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE [dcrm_mcmm_filename ${DCRM_MV_SET_VOLTAGE_INPUT_FILE} ${scenario}]
-
-if {[file exists [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]]} {
-  puts "RM-Info: Sourcing script file [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]\n"
-  source -echo -verbose ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}
-}
-
-# Include scenario specific SAIF file, if possible, for power optimization and analysis.
+# Include scenario specific SAIF file, if possible, for power analysis.
 # Otherwise, the default toggle rate of 0.1 will be used for propagating
 # switching activity.
 
 # read_saif -auto_map_names -input ${DESIGN_NAME}.${scenario}.saif -instance < DESIGN_INSTANCE > -verbose
 
-# Set options for worst case leakage scenario
+# Set options for worst case hold scenario
 set_scenario_options -setup false -hold true -leakage_power false
 set_scenario_options -cts_mode true
 
 report_scenario_options
 
-##################################################################################
-## Worst Case Leakage Scenario
-##################################################################################
-#
-#set scenario mode_norm.OC_WCZ.RC_MAX
-#
-#create_scenario ${scenario}
-#
-## If this is the top-level design in a hierarchical flow and there are scenario
-## name mismatches with hierarchical blocks, use the following command to map the
-## the mismatched block scenario names to this top-level scenario.
-#
-## select_block_scenario -block_references <BLOCK_DESIGNS_LIST> -block_scenario <BLOCK_SCENARIO_NAME>
-#
-## Read in scenario-specific constraints file
-#
-#puts "RM-Info: Sourcing script file [which [dcrm_mcmm_filename ${DCRM_CONSTRAINTS_INPUT_FILE} ${scenario}]]\n"
-#source [dcrm_mcmm_filename ${DCRM_CONSTRAINTS_INPUT_FILE} ${scenario}]
-#
-## puts "RM-Info: Reading SDC file [which [dcrm_mcmm_filename ${DCRM_SDC_INPUT_FILE} ${scenario}]]\n"
-## read_sdc [dcrm_mcmm_filename ${DCRM_SDC_INPUT_FILE} ${scenario}]
-#
-#set_operating_conditions -max_library ${PDK_SC_RVT_WCZ_LIB_NAME} -max $OPERATING_CONDITION($::env(OPCOND_WCZ))
-#
-#set_tlu_plus_files -max_tluplus ${TLUPLUS_MAX_FILE} \
-#                   -tech2itf_map ${MAP_FILE}
-#
-#check_tlu_plus_files
-#
-## For a MV flow, apply set_voltage settings for each scenario if these settings
-## are not already a part of the input SDC file.
-#
-#set MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE [dcrm_mcmm_filename ${DCRM_MV_SET_VOLTAGE_INPUT_FILE} ${scenario}]
-#
-#if {[file exists [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]]} {
-#  puts "RM-Info: Sourcing script file [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]\n"
-#  source -echo -verbose ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}
-#}
-#
-## Include scenario specific SAIF file, if possible, for power optimization and analysis.
-## Otherwise, the default toggle rate of 0.1 will be used for propagating
-## switching activity.
-#
-## read_saif -auto_map_names -input ${DESIGN_NAME}.${scenario}.saif -instance < DESIGN_INSTANCE > -verbose
-#
-## Set options for worst case leakage scenario
-#set_scenario_options -setup true -hold false -leakage_power false
-#
-#report_scenario_options
-#
 #################################################################################
 # Worst Case Leakage Scenario
 #################################################################################
@@ -229,16 +154,6 @@ set_tlu_plus_files -max_tluplus ${TLUPLUS_MAX_FILE} \
                    -tech2itf_map ${MAP_FILE}
 
 check_tlu_plus_files
-
-# For a MV flow, apply set_voltage settings for each scenario if these settings
-# are not already a part of the input SDC file.
-
-set MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE [dcrm_mcmm_filename ${DCRM_MV_SET_VOLTAGE_INPUT_FILE} ${scenario}]
-
-if {[file exists [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]]} {
-  puts "RM-Info: Sourcing script file [which ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}]\n"
-  source -echo -verbose ${MCMM_DCRM_MV_SET_VOLTAGE_INPUT_FILE}
-}
 
 # Include scenario specific SAIF file, if possible, for power optimization and analysis.
 # Otherwise, the default toggle rate of 0.1 will be used for propagating

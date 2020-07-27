@@ -5,6 +5,7 @@ set HARD_SWAP_FILELIST [join "
   $basejump_stl_dir/hard/tsmc_40/bsg_mem/bsg_mem_1rw_sync.v
   $basejump_stl_dir/hard/tsmc_40/bsg_mem/bsg_mem_1rw_sync_mask_write_bit.v
   $basejump_stl_dir/hard/tsmc_40/bsg_mem/bsg_mem_1rw_sync_mask_write_byte.v
+  $basejump_stl_dir/hard/tsmc_40/bsg_mem/bsg_mem_1r1w_sync.v
   $basejump_stl_dir/hard/tsmc_40/bsg_mem/bsg_mem_2r1w_sync.v
   $basejump_stl_dir/hard/tsmc_40/bsg_misc/bsg_mux.v
 "]

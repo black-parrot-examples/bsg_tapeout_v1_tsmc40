@@ -1,19 +1,18 @@
 puts "Flow-Info: Running script [info script]\n"
 
-set tile_height [get_attribute [get_core_area] tile_height]
-
-set core_bbox [get_attribute [get_core_area] bbox]
-set core_llx  [lindex [lindex $core_bbox 0] 0]
-set core_lly  [lindex [lindex $core_bbox 0] 1]
-set core_urx  [lindex [lindex $core_bbox 1] 0]
-set core_ury  [lindex [lindex $core_bbox 1] 1]
-
-# define plan groups for bp tiles
-foreach_in_collection tile [get_cells $::env(BP_HIER_CELLS)] {
-  set bp_tile_name [get_attribute $tile full_name]
-  set va [get_voltage_area $bp_tile_name/PD]
-  create_plan_groups $tile -cycle_color -coordinate [get_attribute $va bbox] -is_fixed
+# define plan groups for hierarchical cells
+foreach_in_collection cell [get_cells $::env(HIERARCHICAL_CELLS)] {
+  set cell_name [get_attribute $cell full_name]
+  set va [get_voltage_area $cell_name]
+  create_plan_groups $cell -cycle_color -polygon [get_attribute $va points] -is_fixed
 }
+
+flip_mim -direction X [get_plan_groups next_tunnel]
+
+set padding [get_attribute [get_core_area] tile_height]
+create_fp_plan_group_padding -internal_widths [list $padding $padding $padding $padding] -external_widths [list $padding $padding $padding $padding] [get_plan_groups]
+
+#add_end_cap -respect_blockage -respect_keepout -lib_cell $ICC_H_CAP_CEL -at_plan_group_boundary
 
 set idx 0
 foreach_in_collection plan_group [get_plan_groups] {

@@ -29,7 +29,7 @@ export TESTING_BSG_DESIGNS_TARGET_DIR ?= $(BSG_DESIGNS_TARGET_DIR)
 
 export BSG_PACKAGE           ?=uw_bga
 export BSG_PINOUT            ?=bsg_asic_cloud
-export BSG_PACKAGING_FOUNDRY ?=tsmc_40
+export BSG_PACKAGING_FOUNDRY ?=tsmc40
 export BSG_PADMAPPING        ?=default
 
 export BLACKPARROT_COMMON_DIR ?= $(BLACKPARROT_DIR)/bp_common
@@ -130,16 +130,20 @@ endif
 ## BlackParrot test junk
 ########################################
 
-#PROG     :=hello_world
-PROG     :=cache_hammer
+PROG     :=hello_world
+#PROG     :=cache_hammer
 DRAM_CH  :=DDR2_micron_16M_8b_x8_sg3E.ini
 DRAM_SYS :=system.ini
+CCE_UCODE := $(BLACKPARROT_DIR)/bp_me/src/asm/roms/mesi.mem
 
 prog.nbf:
-	@cp $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).nbf $(BSG_OUT_DIR)/$@
+	python $(BLACKPARROT_DIR)/bp_common/software/py/nbf.py --mem $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).mem 4 $(CCE_UCODE)  > $(BSG_OUT_DIR)/$@
 
 prog.mem:
 	@cp $(BLACKPARROT_DIR)/bp_common/test/mem/$(PROG).mem $(BSG_OUT_DIR)/$@
+
+bootrom.mem:
+	@cp $(BLACKPARROT_DIR)/bp_common/test/mem/bootrom.mem $(BSG_OUT_DIR)/$@
 
 dram_ch.ini:
 	@cp $(BLACKPARROT_DIR)/bp_common/test/cfg/$(DRAM_CH) $(BSG_OUT_DIR)/$@
@@ -147,12 +151,9 @@ dram_ch.ini:
 dram_sys.ini:
 	@cp $(BLACKPARROT_DIR)/bp_common/test/cfg/$(DRAM_SYS) $(BSG_OUT_DIR)/$@
 
-cce_ucode.mem:
-	@cp $(BLACKPARROT_DIR)/bp_me/src/asm/roms/mesi/bp_cce_inst_rom_mesi.mem $(BSG_OUT_DIR)/$@
-
 DRAM_ITERS ?= 1024
 dram_bw.nbf:
-	python $(BLACKPARROT_DIR)/bp_common/software/py/nbf.py --dram $(DRAM_ITERS) > $(BSG_OUT_DIR)/$@
+	python $(BLACKPARROT_DIR)/bp_common/software/py/nbf.py --dram $(DRAM_ITERS) 4 $(CCE_UCODE) > $(BSG_OUT_DIR)/$@
 
 ########################################
 ## Run Targets
@@ -162,7 +163,7 @@ run: clean $(BSG_OUT_SIM)
 	cd $(BSG_OUT_DIR); ./simv | tee -i $(BSG_OUT_DIR)/run.log
 
 run-no-tee: clean $(BSG_OUT_SIM)
-	cd $(BSG_OUT_DIR); ./simv
+	cd $(BSG_OUT_DIR); ./simv 
 
 rerun: $(BSG_OUT_SIM)
 	cd $(BSG_OUT_DIR); ./simv | tee -i $(BSG_OUT_DIR)/run.log
@@ -174,7 +175,7 @@ view:
 	cd $(BSG_OUT_DIR); $(VCS_BIN)/dve -full64 -vpd vcdplus.vpd
 
 build: $(BSG_OUT_SIM)
-$(BSG_OUT_SIM): $(BSG_CHIP_FILELIST) $(BSG_CHIP_LIBRARY) $(BSG_DESIGNS_TESTING_FILELIST) $(BSG_DESIGNS_TESTING_LIBRARY) $(BSG_TRACE_ROMS) prog.nbf prog.mem dram_ch.ini dram_sys.ini cce_ucode.mem dram_bw.nbf
+$(BSG_OUT_SIM): $(BSG_CHIP_FILELIST) $(BSG_CHIP_LIBRARY) $(BSG_DESIGNS_TESTING_FILELIST) $(BSG_DESIGNS_TESTING_LIBRARY) $(BSG_TRACE_ROMS) prog.nbf prog.mem bootrom.mem dram_ch.ini dram_sys.ini dram_bw.nbf
 	$(VCS) $(VCS_OPTIONS) | tee -i $(BSG_OUT_DIR)/build.log
 
 $(BSG_OUT_DIR)/root: | $(BSG_OUT_DIR)

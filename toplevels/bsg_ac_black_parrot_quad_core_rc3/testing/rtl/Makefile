@@ -115,8 +115,8 @@ endif
 ## BlackParrot test junk
 ########################################
 
-#PROG     :=hello_world
-PROG     :=cache_hammer
+PROG     :=hello_world
+#PROG     :=cache_hammer
 DRAM_CH  :=DDR2_micron_16M_8b_x8_sg3E.ini
 DRAM_SYS :=system.ini
 CCE_UCODE := $(BLACKPARROT_DIR)/bp_me/src/asm/roms/mesi.mem

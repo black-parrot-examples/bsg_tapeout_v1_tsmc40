@@ -15,7 +15,7 @@
 
 export TOP_HIER_BLOCK  := bsg_chip
 export MID_HIER_BLOCKS :=
-export BOT_HIER_BLOCKS := bp_tile_node bp_io_tile_node bsg_channel_tunnel
+export BOT_HIER_BLOCKS := bp_tile_node bp_io_tile_node bsg_channel_tunnel bsg_dmc_controller
 
 export BP_TILES := bp_processor_cc_y_0__x_0__tile_node \
                    bp_processor_cc_y_0__x_1__tile_node \
@@ -28,7 +28,7 @@ export BP_IO_TILES := bp_processor_ic_node_0__io \
 export CHANNEL_TUNNELS := prev_tunnel \
                           next_tunnel
 
-export HIERARCHICAL_CELLS := $(BP_TILES) $(BP_IO_TILES) $(CHANNEL_TUNNELS)
+export HIERARCHICAL_CELLS := $(BP_TILES) $(BP_IO_TILES) $(CHANNEL_TUNNELS) dmc_controller
 
 export MIM_INSTANCE_LIST := $(HIERARCHICAL_CELLS)
 export MIM_MASTER_LIST := bp_processor_cc_y_0__x_0__tile_node bp_processor_ic_node_0__io prev_tunnel

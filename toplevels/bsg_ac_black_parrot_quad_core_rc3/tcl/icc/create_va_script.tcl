@@ -28,12 +28,12 @@ create_voltage_area clk_gen_pd -name PLL -guard_band_x $pll_guard -guard_band_y 
 # the shape of hierarchical blocks
 # Core area: 2835 x 2835 
 # top-left corner of core area as origin
-set bp_tile_x_offset 100
+set bp_tile_x_offset 150
 set bp_tile_y_offset 200
 
 set bp_tile_width   950
 set bp_tile_height  850
-set bp_tile_x_space 150
+set bp_tile_x_space 50
 set bp_tile_y_space 50
 
 # define voltage areas for bp_tile_node instances
@@ -92,5 +92,18 @@ foreach_in_collection cell [get_cells $::env(CHANNEL_TUNNELS)] {
   set cell_name [get_attribute $cell full_name]
   create_voltage_area $cell -name $cell_name -guard_band_x $tile_height -guard_band_y $tile_height -is_fixed -coordinate "$ct_llx $ct_lly $ct_urx $ct_ury"
 }
+
+#
+set dmc_pg_width  250
+set dmc_pg_height 150
+
+set dmc_x_offset 1000
+set dmc_y_offset 50
+
+set llx [expr $core_llx + $dmc_x_offset * $tile_height]
+set lly [expr $core_lly + $dmc_y_offset * $tile_height]
+set urx [expr $llx + $dmc_pg_width * $tile_height]
+set ury [expr $lly + $dmc_pg_height * $tile_height]
+create_voltage_area [get_cells dmc_controller] -name dmc_controller -guard_band_x $tile_height -guard_band_y $tile_height -is_fixed -coordinate "$llx $lly $urx $ury"
 
 puts "RM-Info: Completed script [info script]\n"

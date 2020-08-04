@@ -51,7 +51,7 @@ package bsg_chip_pkg;
   //
 
   // Total number of clients the master will be driving.
-  localparam tag_num_clients_gp = 49;
+  localparam tag_num_clients_gp = 50;
 
   localparam tag_max_payload_width_in_bp_complex_gp = (wh_did_width_gp + 1);
   localparam tag_max_payload_width_in_clk_gen_pd_gp = `BSG_MAX(clk_gen_ds_width_gp+1, clk_gen_num_adgs_gp+4);
@@ -66,6 +66,8 @@ package bsg_chip_pkg;
   // BSG DMC PARAMETERS
   localparam dmc_addr_width_gp = 28;
   localparam dmc_data_width_gp = 32;
+  localparam dmc_cmd_afifo_depth_gp = 4;
+  localparam dmc_cmd_sfifo_depth_gp = 4;
 
 endpackage // bsg_chip_pkg
 

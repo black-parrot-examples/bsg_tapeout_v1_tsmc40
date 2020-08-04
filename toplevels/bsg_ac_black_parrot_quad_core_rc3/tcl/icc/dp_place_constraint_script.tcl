@@ -283,60 +283,21 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
   }
 }
 
-#set cell [get_attribute [get_plan_groups bp_processor_ic] logic_cell]
-#set io_cmd_in   [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~io_cmd_link*&&direction==in"] name]
-#set io_resp_in  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~io_resp_link*&&direction==in"] name]
-#set io_cmd_out  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~io_cmd_link*&&direction==out"] name]
-#set io_resp_out [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~io_resp_link*&&direction==out"] name]
-#set                  io_cmd_pins  [index_collection $io_cmd_in   0 [expr [sizeof $io_cmd_in] / 2 - 1]]
-#append_to_collection io_cmd_pins  [index_collection $io_cmd_out  0 [expr [sizeof $io_cmd_out] / 2 - 1]]
-#set                  io_resp_pins [index_collection $io_resp_in  0 [expr [sizeof $io_resp_in] / 2 - 1]]
-#append_to_collection io_resp_pins [index_collection $io_resp_out 0 [expr [sizeof $io_resp_out] / 2 - 1]]
-#create_fp_pins $io_cmd_pins  -layer M4 -side 1 -step 8 -offset [expr 20 * $tile_height]
-#create_fp_pins $io_resp_pins -layer M6 -side 1 -step 8 -offset [expr 20 * $tile_height]
-#set                  io_cmd_pins  [index_collection $io_cmd_in   [expr [sizeof $io_cmd_in] / 2]   [expr [sizeof $io_cmd_in] - 1]]
-#append_to_collection io_cmd_pins  [index_collection $io_cmd_out  [expr [sizeof $io_cmd_out] / 2]  [expr [sizeof $io_cmd_out] - 1]]
-#set                  io_resp_pins [index_collection $io_resp_in  [expr [sizeof $io_resp_in] / 2]  [expr [sizeof $io_resp_in] - 1]]
-#append_to_collection io_resp_pins [index_collection $io_resp_out [expr [sizeof $io_resp_out] / 2] [expr [sizeof $io_resp_out] - 1]]
-#create_fp_pins $io_cmd_pins  -layer M4 -side 7 -step 8 -offset [expr 20 * $tile_height]
-#create_fp_pins $io_resp_pins -layer M6 -side 7 -step 8 -offset [expr 20 * $tile_height]
-#set coh_cmd_in  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~coh_cmd_link*&&direction==in"] name]
-#set coh_req_in  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~coh_req_link*&&direction==in"] name]
-#set coh_cmd_out [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~coh_cmd_link*&&direction==out"] name]
-#set coh_req_out [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~coh_req_link*&&direction==out"] name]
-#set                  coh_cmd_pins [index_collection $coh_cmd_out 0 [expr [sizeof $coh_cmd_out] / 2 - 1]]
-#append_to_collection coh_cmd_pins [index_collection $coh_cmd_in  0 [expr [sizeof $coh_cmd_in] / 2 - 1]]
-#set                  coh_req_pins [index_collection $coh_req_out 0 [expr [sizeof $coh_req_out] / 2 - 1]]
-#append_to_collection coh_req_pins [index_collection $coh_req_in  0 [expr [sizeof $coh_req_in] / 2 - 1]]
-#create_fp_pins $coh_cmd_pins -layer M3 -side 8 -step 8 -offset [expr 20 * $tile_height]
-#create_fp_pins $coh_req_pins -layer M5 -side 8 -step 8 -offset [expr 20 * $tile_height]
-#set                  coh_cmd_pins [index_collection $coh_cmd_out [expr [sizeof $coh_cmd_out] / 2] [expr [sizeof $coh_cmd_out] - 1]]
-#append_to_collection coh_cmd_pins [index_collection $coh_cmd_in  [expr [sizeof $coh_cmd_in] / 2]  [expr [sizeof $coh_cmd_in] - 1]]
-#set                  coh_req_pins [index_collection $coh_req_out [expr [sizeof $coh_req_out] / 2] [expr [sizeof $coh_req_out] - 1]]
-#append_to_collection coh_req_pins [index_collection $coh_req_in  [expr [sizeof $coh_req_in] / 2]  [expr [sizeof $coh_req_in] - 1]]
-#create_fp_pins $coh_cmd_pins -layer M3 -side 8 -step 8 -offset [expr 600 * $tile_height]
-#create_fp_pins $coh_req_pins -layer M5 -side 8 -step 8 -offset [expr 600 * $tile_height]
-#set pins [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~*did_i*"] name]
-#append_to_collection pins [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~*reset_i*"] name]
-#append_to_collection pins [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~*clk_i*"] name]
-#create_fp_pins $pins -layer M5 -side 6 -step 8 -offset [expr 100 * $tile_height]
+set cell [get_attribute [get_plan_groups dmc_controller] logic_cell]
+set app_wr_pins  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~app_wdf_*"] name]
+set app_rd_pins  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~app_rd_*"] name]
+set app_cmd_pins [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~app_*&&name!~app_wdf_*&&name!~app_rd_*"] name]
+append_to_collection app_cmd_pins [get_pins -of_objects $cell -filter "name==init_calib_complete_o"]
+append_to_collection app_cmd_pins [get_pins -of_objects $cell -filter "name=~ui_*"]
+create_fp_pins $app_wr_pins  -layer M2 -side 2 -step 3 -offset [expr 20 * $tile_height]
+create_fp_pins $app_rd_pins  -layer M4 -side 2 -step 3 -offset [expr 20 * $tile_height]
+create_fp_pins $app_cmd_pins -layer M6 -side 2 -step 3 -offset [expr 20 * $tile_height]
+set dfi_pins [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~dfi_*"] name]
+create_fp_pins $dfi_pins -layer M6 -side 4 -step 8 -offset [expr 50 * $tile_height]
+set cfg_pins [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~dmc_p_i*"] name]
+create_fp_pins $cfg_pins -layer M5 -side 3 -step 8 -offset [expr 40 * $tile_height]
 
 source -echo -verbose block_pin_physical_constraints.tcl
-#set_fp_pin_constraints -allowed_layers {M2 M3 M4 M5 M6 M7 M8}
-
-#set cell [get_cells *dmc_controller]
-#set cell_name [get_attribute $cell name]
-#set coordinates ""
-#set x [expr $core_llx + 800 * $tile_height]
-#set y [expr $core_lly + 50 * $tile_height]
-#lappend coordinates $x
-#lappend coordinates $y
-#set x [expr $x + 650 * $tile_height]
-#set y [expr $y + 300 * $tile_height]
-#lappend coordinates $x
-#lappend coordinates $y
-#create_bounds -name $cell_name -cycle_color -coordinate $coordinates -exclusive $cell
-##create_bounds -name $cell_name -cycle_color -coordinate $coordinates -type hard $cell
 
 set_fp_placement_strategy -plan_group_interface_net_weight 10.0
 set_fp_placement_strategy -IO_net_weight 10.0

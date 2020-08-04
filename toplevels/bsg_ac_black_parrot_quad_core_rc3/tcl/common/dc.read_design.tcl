@@ -155,6 +155,7 @@ if { $::env(BSG_BLOCK_HIER_LEVEL) == "top" } {
   set_dont_touch [get_cells -of_objects [get_ports *]]
   set_ungroup [get_designs -filter "hdl_template==bsg_clk_gen_power_domain"] false
   set_ungroup [get_designs -filter "hdl_template==bsg_clk_gen_osc"] false
+  set_ungroup [get_designs -filter "hdl_template==bsg_dly_line"] false
   set_ungroup [get_designs -filter "hdl_template==bp_multicore"] true
   set_ungroup [get_designs -filter "hdl_template==bp_core_complex"] true
   set_ungroup [get_designs -filter "hdl_template==bp_io_complex"] true

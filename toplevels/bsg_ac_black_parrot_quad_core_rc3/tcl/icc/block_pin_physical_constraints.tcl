@@ -291,71 +291,54 @@ foreach_in_collection mim [get_plan_groups $ICC_MIM_MASTER_LIST] {
   }
 }
 
-#set cell [get_attribute [get_plan_groups bp_processor_ic] logic_cell]
-#set cell_name [get_attribute $cell full_name]
-#set p_in(io_cmd)   [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~io_cmd_link*&&direction==in"] name]
-#set p_in(io_resp)  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~io_resp_link*&&direction==in"] name]
-#set p_out(io_cmd)  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~io_cmd_link*&&direction==out"] name]
-#set p_out(io_resp) [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~io_resp_link*&&direction==out"] name]
-#set p_in(coh_cmd)  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~coh_cmd_link*&&direction==in"] name]
-#set p_in(coh_req)  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~coh_req_link*&&direction==in"] name]
-#set p_out(coh_cmd) [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~coh_cmd_link*&&direction==out"] name]
-#set p_out(coh_req) [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~coh_req_link*&&direction==out"] name]
-#foreach grp [list io_cmd io_resp coh_cmd coh_req] {
-#  foreach i [list 0 1] {
-#    set                  pins [index_collection $p_in($grp)  [expr $i * [sizeof $p_in($grp)] / 2]  [expr ($i + 1) * [sizeof $p_in($grp)] / 2 - 1]]
-#    append_to_collection pins [index_collection $p_out($grp) [expr $i * [sizeof $p_out($grp)] / 2] [expr ($i + 1) * [sizeof $p_out($grp)] / 2 - 1]]
-#    switch -glob $grp {
-#      "io_cmd" {
-#        set layer M4
-#        set pitch [expr [get_attribute [get_layers $layer] pitch] * 8]
-#        if { $i == 0 } {
-#          set side 1
-#        } else {
-#          set side 7
-#        }
-#        set offset [expr 20 * $tile_height]
-#      }
-#      "io_resp" {
-#        set layer M6
-#        set pitch [expr [get_attribute [get_layers $layer] pitch] * 8]
-#        if { $i == 0 } {
-#          set side 1
-#        } else {
-#          set side 7
-#        }
-#        set offset [expr 20 * $tile_height]
-#      }
-#      "coh_cmd" {
-#        set layer M3
-#        set pitch [expr [get_attribute [get_layers $layer] pitch] * 8]
-#        if { $i == 0 } {
-#          set side 8
-#          set offset [expr 20 * $tile_height]
-#        } else {
-#          set side 8
-#          set offset [expr 600 * $tile_height]
-#        }
-#      }
-#      "coh_req" {
-#        set layer M5
-#        set pitch [expr [get_attribute [get_layers $layer] pitch] * 8]
-#        if { $i == 0 } {
-#          set side 8
-#          set offset [expr 20 * $tile_height]
-#        } else {
-#          set side 8
-#          set offset [expr 600 * $tile_height]
-#        }
-#      }
-#    }
-#    set idx 0
-#    foreach_in_collection pin $pins {
-#      set_pin_physical_constraints -pin_name [get_attribute $pin name] -cell $cell_name -layers $layer -side $side -offset [expr $offset + $idx * $pitch]
-#      incr idx
-#    }
-#  }
-#}
+set cell [get_attribute [get_plan_groups dmc_controller] logic_cell]
+set cell_name [get_attribute $cell full_name]
+set dmc_pins(app_wr)  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~app_wdf_*"] name]
+set dmc_pins(app_rd)  [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~app_rd_*"] name]
+set dmc_pins(app_cmd) [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~app_*&&name!~app_wdf_*&&name!~app_rd_*"] name]
+append_to_collection dmc_pins(app_cmd) [get_pins -of_objects $cell -filter "name==init_calib_complete_o"]
+append_to_collection dmc_pins(app_cmd) [get_pins -of_objects $cell -filter "name=~ui_*"]
+set dmc_pins(dfi) [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~dfi_*"] name]
+set dmc_pins(cfg) [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~dmc_p_i*"] name]
+foreach name [array name dmc_pins] {
+  switch -glob $name {
+    "app_wr" {
+      set layer M3
+      set pitch [expr [get_attribute [get_layers $layer] pitch] * 3]
+      set side 2
+      set offset [expr 20 * $tile_height]
+    }
+    "app_rd" {
+      set layer M5
+      set pitch [expr [get_attribute [get_layers $layer] pitch] * 3]
+      set side 2
+      set offset [expr 20 * $tile_height]
+    }
+    "app_cmd" {
+      set layer M7
+      set pitch [expr [get_attribute [get_layers $layer] pitch] * 3]
+      set side 2
+      set offset [expr 20 * $tile_height]
+    }
+    "dfi" {
+      set layer M5
+      set pitch [expr [get_attribute [get_layers $layer] pitch] * 8]
+      set side 4
+      set offset [expr 50 * $tile_height]
+    }
+    "cfg" {
+      set layer M6
+      set pitch [expr [get_attribute [get_layers $layer] pitch] * 8]
+      set side 3
+      set offset [expr 40 * $tile_height]
+    }
+  }
+  set idx 0
+  foreach_in_collection pin $dmc_pins($name) {
+    set_pin_physical_constraints -pin_name [get_attribute $pin name] -cell $cell_name -layers $layer -side $side -offset [expr $offset + $idx * $pitch]
+    incr idx
+  }
+}
 #set pins [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~*did_i*"] name]
 #append_to_collection pins [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~*reset_i*"] name]
 #append_to_collection pins [sort_collection -dictionary [get_pins -of_objects $cell -filter "name=~*clk_i*"] name]

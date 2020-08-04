@@ -55,6 +55,8 @@ foreach_in_collection va [get_voltage_areas] {
     } elseif { [regexp "tunnel" $va_name] } {
       create_power_plan_regions blockage_ct_ppr_next -voltage_area $va -expand [list [expr 20.0 * $m9_pitch] [expr 11.0 * $tile_height - $m1_pitch]]
     }
+  } elseif { [regexp "dmc" $va_name] } {
+    create_power_plan_regions blockage_dmc_ppr_${index} -voltage_area $va -expand [list [expr 20.0 * $m9_pitch] [expr 11.0 * $tile_height - $m1_pitch]]
   } else {
     puts "No power plan regions created for voltage area $va_name"
   }

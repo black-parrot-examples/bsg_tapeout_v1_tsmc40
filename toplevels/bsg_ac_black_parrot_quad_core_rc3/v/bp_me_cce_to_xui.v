@@ -69,7 +69,7 @@ assign app_wdf_data_o  = mem_cmd_cast_li.data;
 assign app_wdf_mask_o  = '0;
 assign app_wdf_end_o   = app_wdf_wren_o;
 
-assign mem_cmd_ready_o = rd_cyc? 1'b0: app_rdy_i;
+assign mem_cmd_ready_o = rd_cyc? 1'b0: app_rdy_i & app_wdf_rdy_i;
 
 assign mem_resp_cast_lo.data            = rd_cyc? rd_data: '0;
 assign mem_resp_cast_lo.header.payload  = mem_cmd_cast.header.payload;

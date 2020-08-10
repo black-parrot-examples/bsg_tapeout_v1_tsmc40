@@ -22,6 +22,7 @@ set bp_me_dir     ${blackparrot_dir}/bp_me
 
 set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_cache/bsg_cache_pkg.v
+  $basejump_stl_dir/bsg_tag/bsg_tag_pkg.v
   $basejump_stl_dir/bsg_noc/bsg_noc_pkg.v
   $basejump_stl_dir/bsg_noc/bsg_wormhole_router_pkg.v
   $bp_common_dir/src/include/bp_common_pkg.vh
@@ -254,6 +255,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_async/bsg_sync_sync.v
   $basejump_stl_dir/bsg_async/bsg_async_ptr_gray.v
   $basejump_stl_dir/bsg_clk_gen/bsg_clk_gen.v
+  $basejump_stl_dir/bsg_clk_gen/bsg_dly_line.v
   $basejump_stl_dir/bsg_async/bsg_async_fifo.v
   $basejump_stl_dir/bsg_async/bsg_async_credit_counter.v
   $basejump_stl_dir/bsg_dataflow/bsg_round_robin_1_to_n.v
@@ -279,6 +281,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_misc/bsg_counter_clock_downsample.v
   $basejump_stl_dir/bsg_misc/bsg_strobe.v
   $basejump_stl_dir/bsg_noc/bsg_ready_and_link_async_to_wormhole.v
+  $basejump_stl_dir/bsg_noc/bsg_noc_switch_static.v
   $basejump_stl_dir/bsg_tag/bsg_tag_master.v
   $basejump_stl_dir/bsg_tag/bsg_tag_client.v
   $basejump_stl_dir/bsg_tag/bsg_tag_client_unsync.v
@@ -287,6 +290,7 @@ set SVERILOG_SOURCE_FILES [join "
   $basejump_stl_dir/bsg_dmc/bsg_dmc.v
   $basejump_stl_dir/bsg_dmc/bsg_dmc_controller.v
   $basejump_stl_dir/bsg_dmc/bsg_dmc_phy.v
+  $basejump_stl_dir/bsg_dmc/bsg_dmc_clk_rst_gen.v
   $basejump_stl_dir/bsg_dataflow/bsg_make_2D_array.v
   $basejump_stl_dir/bsg_dataflow/bsg_flatten_2D_array.v
   
@@ -296,6 +300,7 @@ set SVERILOG_SOURCE_FILES [join "
   $bsg_designs_target_dir/v/bsg_chip.v
   $bsg_designs_target_dir/v/bsg_clk_gen_power_domain.v
   $bsg_designs_target_dir/v/bsg_clk_gen_osc.v
+  $bsg_designs_target_dir/v/bp_me_cce_to_xui.v
 
   $bsg_packaging_dir/$bsg_package/pinouts/$bsg_pinout/common/verilog/bsg_chip_swizzle_adapter.v
 "]
